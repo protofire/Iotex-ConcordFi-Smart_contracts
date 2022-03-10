@@ -5,12 +5,12 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   setBorrowRate,
   pretendBorrow,
 } = require("../Utils/BankerJoe");
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, admin, accounts;
   beforeEach(async () => {
     [root, admin, ...accounts] = saddle.accounts;
@@ -19,18 +19,18 @@ describe("JToken", function () {
   describe("constructor", () => {
     it("fails when non erc-20 underlying", async () => {
       await expect(
-        makeJToken({ underlying: { _address: root } })
+        makeGToken({ underlying: { _address: root } })
       ).rejects.toRevert("revert");
     });
 
     it("fails when 0 initial exchange rate", async () => {
-      await expect(makeJToken({ exchangeRate: 0 })).rejects.toRevert(
+      await expect(makeGToken({ exchangeRate: 0 })).rejects.toRevert(
         "revert initial exchange rate must be greater than zero."
       );
     });
 
     it("succeeds with erc-20 underlying and non-zero exchange rate", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       expect(await call(jToken, "underlying")).toEqual(
         jToken.underlying._address
       );
@@ -38,7 +38,7 @@ describe("JToken", function () {
     });
 
     it("succeeds when setting admin to contructor argument", async () => {
-      const jToken = await makeJToken({ admin: admin });
+      const jToken = await makeGToken({ admin: admin });
       expect(await call(jToken, "admin")).toEqual(admin);
     });
   });
@@ -47,15 +47,15 @@ describe("JToken", function () {
     let jToken;
 
     beforeEach(async () => {
-      jToken = await makeJToken({
-        name: "JToken Foo",
+      jToken = await makeGToken({
+        name: "GToken Foo",
         symbol: "cFOO",
         decimals: 10,
       });
     });
 
     it("should return correct name", async () => {
-      expect(await call(jToken, "name")).toEqual("JToken Foo");
+      expect(await call(jToken, "name")).toEqual("GToken Foo");
     });
 
     it("should return correct symbol", async () => {
@@ -69,7 +69,7 @@ describe("JToken", function () {
 
   describe("balanceOfUnderlying", () => {
     it("has an underlying balance", async () => {
-      const jToken = await makeJToken({ supportMarket: true, exchangeRate: 2 });
+      const jToken = await makeGToken({ supportMarket: true, exchangeRate: 2 });
       await send(jToken, "harnessSetBalance", [root, 100]);
       expect(await call(jToken, "balanceOfUnderlying", [root])).toEqualNumber(
         200
@@ -79,7 +79,7 @@ describe("JToken", function () {
 
   describe("borrowRatePerSecond", () => {
     it("has a borrow rate", async () => {
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -97,7 +97,7 @@ describe("JToken", function () {
 
   describe("supplyRatePerSecond", () => {
     it("returns 0 if there's no supply", async () => {
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -118,7 +118,7 @@ describe("JToken", function () {
       const kink = 0.95;
       const jump = 5 * multiplier;
       const roof = 1;
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -149,7 +149,7 @@ describe("JToken", function () {
 
     beforeEach(async () => {
       borrower = accounts[0];
-      jToken = await makeJToken();
+      jToken = await makeGToken();
     });
 
     beforeEach(async () => {
@@ -190,7 +190,7 @@ describe("JToken", function () {
 
     beforeEach(async () => {
       borrower = accounts[0];
-      jToken = await makeJToken({ joetrollerOpts: { kind: "bool" } });
+      jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
     });
 
     it("returns 0 for account with no borrows", async () => {
@@ -237,7 +237,7 @@ describe("JToken", function () {
       exchangeRate = 2;
 
     beforeEach(async () => {
-      jToken = await makeJToken({ exchangeRate });
+      jToken = await makeGToken({ exchangeRate });
     });
 
     it("returns initial exchange rate with zero jTokenSupply", async () => {
@@ -312,7 +312,7 @@ describe("JToken", function () {
 
   describe("getCash", () => {
     it("gets the cash", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       const result = await call(jToken, "getCash");
       expect(result).toEqualNumber(0);
     });

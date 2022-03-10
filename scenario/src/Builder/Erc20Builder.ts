@@ -139,7 +139,7 @@ export async function buildErc20(
         #### ReEntrant
 
         * "ReEntrant symbol:<String> name:string fun:<String> funSig:<String> ...funArgs:<Value>" - A token that loves to call back to spook its caller
-          * E.g. "Erc20 Deploy ReEntrant PHREAK PHREAK "transfer" "mint(uint256)" 0 - A token that will call back to a JToken's mint function
+          * E.g. "Erc20 Deploy ReEntrant PHREAK PHREAK "transfer" "mint(uint256)" 0 - A token that will call back to a GToken's mint function
 
         Note: valid functions: totalSupply, balanceOf, transfer, transferFrom, approve, allowance
       `,

@@ -10,7 +10,7 @@ const actions: string[] = [
   "Debug",
   "From",
   "Invariant",
-  "Joetroller",
+  "Gtroller",
   "jToken",
   "Erc20",
 ];

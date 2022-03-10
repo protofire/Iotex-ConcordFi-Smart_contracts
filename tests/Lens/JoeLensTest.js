@@ -1,7 +1,7 @@
 const { avaxUnsigned, avaxMantissa } = require("../Utils/Avalanche");
 const {
-  makeJoetroller,
-  makeJToken,
+  makeGtroller,
+  makeGToken,
   fastForward,
   quickMint,
   preApprove,
@@ -26,8 +26,8 @@ function cullTuple(tuple) {
 
 async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
   await preApprove(jToken, minter, mintAmount);
-  await send(jToken.joetroller, "setMintAllowed", [true]);
-  await send(jToken.joetroller, "setMintVerify", [true]);
+  await send(jToken.gTroller, "setMintAllowed", [true]);
+  await send(jToken.gTroller, "setMintVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
     minter,
@@ -47,20 +47,20 @@ describe("JoeLens", () => {
   });
 
   describe("jTokenMetadata", () => {
-    its ("returns correct values from reward lens", async () => {
+    its("returns correct values from reward lens", async () => {
       let rewardLens = await makeRewardLens();
-      let jCollateralCapErc20 = await makeJToken({
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
       });
 
       await send(rewardLens, "setMarketRewards", [
-        jCollateralCapErc20._address, 
-        1, 
-        2, 
-        3, 
-        4
-      ])
+        jCollateralCapErc20._address,
+        1,
+        2,
+        3,
+        4,
+      ]);
 
       expect(
         cullTuple(
@@ -96,26 +96,23 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "1",
         borrowJoeRewardsPerSecond: "2",
         supplyAvaxRewardsPerSecond: "3",
-        borrowAvaxRewardsPerSecond: "4"
+        borrowAvaxRewardsPerSecond: "4",
       });
-    })
+    });
 
     it("is correct for a jErc20", async () => {
-      let jErc20 = await makeJToken();
-      await send(jErc20.joetroller, "_supportMarket", [jErc20._address, 0]);
-      await send(jErc20.joetroller, "_setMarketSupplyCaps", [
+      let jErc20 = await makeGToken();
+      await send(jErc20.gTroller, "_supportMarket", [jErc20._address, 0]);
+      await send(jErc20.gTroller, "_setMarketSupplyCaps", [
         [jErc20._address],
         [100],
       ]);
-      await send(jErc20.joetroller, "_setMarketBorrowCaps", [
+      await send(jErc20.gTroller, "_setMarketBorrowCaps", [
         [jErc20._address],
         [200],
       ]);
-      await send(jErc20.joetroller, "_setMintPaused", [jErc20._address, true]);
-      await send(jErc20.joetroller, "_setBorrowPaused", [
-        jErc20._address,
-        true,
-      ]);
+      await send(jErc20.gTroller, "_setMintPaused", [jErc20._address, true]);
+      await send(jErc20.gTroller, "_setBorrowPaused", [jErc20._address, true]);
       expect(
         cullTuple(await call(joeLens, "jTokenMetadata", [jErc20._address]))
       ).toEqual({
@@ -144,12 +141,12 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "0",
         borrowJoeRewardsPerSecond: "0",
         supplyAvaxRewardsPerSecond: "0",
-        borrowAvaxRewardsPerSecond: "0"
+        borrowAvaxRewardsPerSecond: "0",
       });
     });
 
     it("is correct for jAvax", async () => {
-      let jAvax = await makeJToken({
+      let jAvax = await makeGToken({
         kind: "javax",
       });
 
@@ -181,12 +178,12 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "0",
         borrowJoeRewardsPerSecond: "0",
         supplyAvaxRewardsPerSecond: "0",
-        borrowAvaxRewardsPerSecond: "0"
+        borrowAvaxRewardsPerSecond: "0",
       });
     });
 
     it("is correct for a jCollateralCapErc20", async () => {
-      let jCollateralCapErc20 = await makeJToken({
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
       });
@@ -224,12 +221,12 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "0",
         borrowJoeRewardsPerSecond: "0",
         supplyAvaxRewardsPerSecond: "0",
-        borrowAvaxRewardsPerSecond: "0"
+        borrowAvaxRewardsPerSecond: "0",
       });
     });
 
     it("is correct for a jCollateralCapErc20 with collateral cap", async () => {
-      let jCollateralCapErc20 = await makeJToken({
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
       });
@@ -270,12 +267,12 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "0",
         borrowJoeRewardsPerSecond: "0",
         supplyAvaxRewardsPerSecond: "0",
-        borrowAvaxRewardsPerSecond: "0"
+        borrowAvaxRewardsPerSecond: "0",
       });
     });
 
     it("is correct for a jWrappedNative", async () => {
-      let jWrappedNative = await makeJToken({
+      let jWrappedNative = await makeGToken({
         kind: "jwrapped",
         supportMarket: true,
       });
@@ -309,25 +306,25 @@ describe("JoeLens", () => {
         supplyJoeRewardsPerSecond: "0",
         borrowJoeRewardsPerSecond: "0",
         supplyAvaxRewardsPerSecond: "0",
-        borrowAvaxRewardsPerSecond: "0"
+        borrowAvaxRewardsPerSecond: "0",
       });
     });
   });
 
   describe("jTokenMetadataAll", () => {
     it("is correct for a jErc20 and jAvax", async () => {
-      let joetroller = await makeJoetroller();
-      let jErc20 = await makeJToken({ joetroller: joetroller });
-      let jAvax = await makeJToken({ kind: "javax", joetroller: joetroller });
-      let jCollateralCapErc20 = await makeJToken({
+      let gTroller = await makeGtroller();
+      let jErc20 = await makeGToken({ gTroller: gTroller });
+      let jAvax = await makeGToken({ kind: "javax", gTroller: gTroller });
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
-        joetroller: joetroller,
+        gTroller: gTroller,
       });
-      let jWrappedNative = await makeJToken({
+      let jWrappedNative = await makeGToken({
         kind: "jwrapped",
         supportMarket: true,
-        joetroller: joetroller,
+        gTroller: gTroller,
       });
       expect(
         await send(jCollateralCapErc20, "_setCollateralCap", [100])
@@ -370,7 +367,7 @@ describe("JoeLens", () => {
           supplyJoeRewardsPerSecond: "0",
           borrowJoeRewardsPerSecond: "0",
           supplyAvaxRewardsPerSecond: "0",
-          borrowAvaxRewardsPerSecond: "0"
+          borrowAvaxRewardsPerSecond: "0",
         },
         {
           borrowRatePerSecond: "0",
@@ -398,7 +395,7 @@ describe("JoeLens", () => {
           supplyJoeRewardsPerSecond: "0",
           borrowJoeRewardsPerSecond: "0",
           supplyAvaxRewardsPerSecond: "0",
-          borrowAvaxRewardsPerSecond: "0"
+          borrowAvaxRewardsPerSecond: "0",
         },
         {
           borrowRatePerSecond: "0",
@@ -430,7 +427,7 @@ describe("JoeLens", () => {
           supplyJoeRewardsPerSecond: "0",
           borrowJoeRewardsPerSecond: "0",
           supplyAvaxRewardsPerSecond: "0",
-          borrowAvaxRewardsPerSecond: "0"
+          borrowAvaxRewardsPerSecond: "0",
         },
         {
           jToken: jWrappedNative._address,
@@ -458,26 +455,26 @@ describe("JoeLens", () => {
           supplyJoeRewardsPerSecond: "0",
           borrowJoeRewardsPerSecond: "0",
           supplyAvaxRewardsPerSecond: "0",
-          borrowAvaxRewardsPerSecond: "0"
+          borrowAvaxRewardsPerSecond: "0",
         },
       ]);
     });
 
-    it("fails for mismatch joetroller", async () => {
-      let joetroller = await makeJoetroller();
-      let joetroller2 = await makeJoetroller();
-      let jErc20 = await makeJToken({ joetroller: joetroller });
-      let jAvax = await makeJToken({ kind: "javax", joetroller: joetroller });
-      let jCollateralCapErc20 = await makeJToken({
+    it("fails for mismatch gTroller", async () => {
+      let gTroller = await makeGtroller();
+      let gTroller2 = await makeGtroller();
+      let jErc20 = await makeGToken({ gTroller: gTroller });
+      let jAvax = await makeGToken({ kind: "javax", gTroller: gTroller });
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
-        joetroller: joetroller2,
-      }); // different joetroller
-      let jWrappedNative = await makeJToken({
+        gTroller: gTroller2,
+      }); // different gTroller
+      let jWrappedNative = await makeGToken({
         kind: "jwrapped",
         supportMarket: true,
-        joetroller: joetroller2,
-      }); // different joetroller
+        gTroller: gTroller2,
+      }); // different gTroller
       await expect(
         call(joeLens, "jTokenMetadataAll", [
           [
@@ -487,7 +484,7 @@ describe("JoeLens", () => {
             jWrappedNative._address,
           ],
         ])
-      ).rejects.toRevert("revert mismatch joetroller");
+      ).rejects.toRevert("revert mismatch gTroller");
     });
 
     it("fails for invalid input", async () => {
@@ -499,7 +496,7 @@ describe("JoeLens", () => {
 
   describe("jTokenBalances", () => {
     it("is correct for jERC20", async () => {
-      let jErc20 = await makeJToken();
+      let jErc20 = await makeGToken();
       let avaxBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(
@@ -522,7 +519,7 @@ describe("JoeLens", () => {
     });
 
     it("is correct for jAVAX", async () => {
-      let jAvax = await makeJToken({ kind: "javax" });
+      let jAvax = await makeGToken({ kind: "javax" });
       let avaxBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(
@@ -545,9 +542,9 @@ describe("JoeLens", () => {
     });
 
     it("is correct for jCollateralCapErc20", async () => {
-      let jCollateralCapErc20 = await makeJToken({
+      let jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
-        joetrollerOpts: { kind: "bool" },
+        gTrollerOpts: { kind: "bool" },
       });
       await send(jCollateralCapErc20, "harnessSetBalance", [acct, mintTokens]);
       await send(jCollateralCapErc20, "harnessSetCollateralBalance", [
@@ -585,8 +582,8 @@ describe("JoeLens", () => {
 
   describe("jTokenBalancesAll", () => {
     it("is correct for jAvax and jErc20", async () => {
-      let jErc20 = await makeJToken();
-      let jAvax = await makeJToken({ kind: "javax" });
+      let jErc20 = await makeGToken();
+      let jAvax = await makeGToken({ kind: "javax" });
       let avaxBalance = await web3.eth.getBalance(acct);
 
       expect(
@@ -629,11 +626,11 @@ describe("JoeLens", () => {
 
   describe("getAccountLimits", () => {
     it("gets correct values", async () => {
-      let joetroller = await makeJoetroller();
+      let gTroller = await makeGtroller();
 
       expect(
         cullTuple(
-          await call(joeLens, "getAccountLimits", [joetroller._address, acct])
+          await call(joeLens, "getAccountLimits", [gTroller._address, acct])
         )
       ).toEqual({
         healthFactor: "0",
@@ -651,8 +648,8 @@ describe("JoeLens", () => {
     let jToken;
     beforeEach(async () => {
       [root, minter, ...accounts] = saddle.accounts;
-      jToken = await makeJToken({
-        joetrollerOpts: { kind: "bool" },
+      jToken = await makeGToken({
+        gTrollerOpts: { kind: "bool" },
         exchangeRate,
         supportMarket: true,
       });
@@ -660,9 +657,9 @@ describe("JoeLens", () => {
     });
 
     it("gets claimable rewards", async () => {
-      const joetroller = jToken.joetroller;
+      const gTroller = jToken.gTroller;
       const rewardDistributorAddress = await call(
-        joetroller,
+        gTroller,
         "rewardDistributor"
       );
       const rewardDistributor = await saddle.getContractAt(
@@ -681,7 +678,7 @@ describe("JoeLens", () => {
       await fastForward(rewardDistributor, 10);
       const pendingRewards = await call(joeLens, "getClaimableRewards", [
         "0",
-        jToken.joetroller._address,
+        jToken.gTroller._address,
         joeAddress,
         minter,
       ]);

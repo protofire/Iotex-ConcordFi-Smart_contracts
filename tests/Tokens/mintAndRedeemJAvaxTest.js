@@ -6,7 +6,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   balanceOf,
   fastForward,
   setBalance,
@@ -22,8 +22,8 @@ const redeemTokens = avaxUnsigned(10e3);
 const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
 async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await send(jToken.joetroller, "setMintAllowed", [true]);
-  await send(jToken.joetroller, "setMintVerify", [true]);
+  await send(jToken.gTroller, "setMintAllowed", [true]);
+  await send(jToken.gTroller, "setMintVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
 }
@@ -43,8 +43,8 @@ async function preRedeem(
   redeemAmount,
   exchangeRate
 ) {
-  await send(jToken.joetroller, "setRedeemAllowed", [true]);
-  await send(jToken.joetroller, "setRedeemVerify", [true]);
+  await send(jToken.gTroller, "setRedeemAllowed", [true]);
+  await send(jToken.gTroller, "setRedeemVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
   await setAvaxBalance(jToken, redeemAmount);
@@ -52,7 +52,7 @@ async function preRedeem(
   await setBalance(jToken, redeemer, redeemTokens);
 }
 
-async function redeemJTokens(jToken, redeemer, redeemTokens, redeemAmount) {
+async function redeemGTokens(jToken, redeemer, redeemTokens, redeemAmount) {
   return send(jToken, "redeem", [redeemTokens], { from: redeemer });
 }
 
@@ -66,9 +66,9 @@ describe("CAvax", () => {
 
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
+    jToken = await makeGToken({
       kind: "javax",
-      joetrollerOpts: { kind: "bool" },
+      gTrollerOpts: { kind: "bool" },
     });
     await fastForward(jToken, 1);
   });
@@ -110,7 +110,7 @@ describe("CAvax", () => {
     });
   });
 
-  [redeemJTokens, redeemUnderlying].forEach((redeem) => {
+  [redeemGTokens, redeemUnderlying].forEach((redeem) => {
     describe(redeem.name, () => {
       beforeEach(async () => {
         await preRedeem(

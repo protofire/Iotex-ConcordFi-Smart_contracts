@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "../JToken.sol";
+import "../GToken.sol";
 
 contract PriceOracle {
     /**
@@ -11,5 +11,5 @@ contract PriceOracle {
      * @return The underlying asset price mantissa (scaled by 1e18).
      *  Zero means the price is unavailable.
      */
-    function getUnderlyingPrice(JToken jToken) external view returns (uint256);
+    function getUnderlyingPrice(GToken jToken) external view returns (uint256);
 }

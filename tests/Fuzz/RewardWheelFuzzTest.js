@@ -98,7 +98,7 @@ describe.skip("RewardWheelFuzzTest", () => {
       borrowBalances: {},
       borrowIndexSnapshots: {},
 
-      // flywheel & joetroller
+      // flywheel & gTroller
       rewardSupplySpeed: new bn(1),
       rewardSupplyIndex: new bn(1),
       rewardSupplyIndexSnapshots: {},

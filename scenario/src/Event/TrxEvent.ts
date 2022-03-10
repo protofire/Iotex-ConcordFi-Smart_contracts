@@ -28,7 +28,7 @@ export function trxCommands() {
         #### Value
 
         * "Value <Amount> <Event>" - Runs event with a set amount for any transactions
-          * E.g. "Value 1.0e18 (JToken cEth Mint 1.0e18)"
+          * E.g. "Value 1.0e18 (GToken cEth Mint 1.0e18)"
       `,
       "Value",
       [new Arg("amount", getNumberV), new Arg("event", getEventV)],
@@ -44,7 +44,7 @@ export function trxCommands() {
         #### GasPrice
 
         * "GasPrice <Amount> <Event>" - Runs event with a given gas price
-          * E.g. "GasPrice 0 (JToken cEth Mint 1.0e18)"
+          * E.g. "GasPrice 0 (GToken cEth Mint 1.0e18)"
       `,
       "GasPrice",
       [new Arg("gasPrice", getNumberV), new Arg("event", getEventV)],

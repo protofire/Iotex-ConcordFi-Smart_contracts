@@ -1,23 +1,23 @@
 import { Contract } from '../Contract';
 import { Sendable } from '../Invokation';
-import { JTokenMethods, JTokenScenarioMethods } from './JToken';
+import { GTokenMethods, GTokenScenarioMethods } from './GToken';
 
-interface JErc20DelegateMethods extends JTokenMethods {
+interface GXrc20DelegateMethods extends GTokenMethods {
   _becomeImplementation(data: string): Sendable<void>;
   _resignImplementation(): Sendable<void>;
 }
 
-interface JErc20DelegateScenarioMethods extends JTokenScenarioMethods {
+interface GXrc20DelegateScenarioMethods extends GTokenScenarioMethods {
   _becomeImplementation(data: string): Sendable<void>;
   _resignImplementation(): Sendable<void>;
 }
 
-export interface JErc20Delegate extends Contract {
-  methods: JErc20DelegateMethods;
+export interface GXrc20Delegate extends Contract {
+  methods: GXrc20DelegateMethods;
   name: string;
 }
 
-export interface JErc20DelegateScenario extends Contract {
-  methods: JErc20DelegateScenarioMethods;
+export interface GXrc20DelegateScenario extends Contract {
+  methods: GXrc20DelegateScenarioMethods;
   name: string;
 }

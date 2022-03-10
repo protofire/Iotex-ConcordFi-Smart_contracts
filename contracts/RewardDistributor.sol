@@ -4,8 +4,8 @@ pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
 import "./EIP20Interface.sol";
-import "./Joetroller.sol";
-import "./JToken.sol";
+import "./Gtroller.sol";
+import "./GToken.sol";
 
 contract RewardDistributorStorage {
     /**
@@ -16,7 +16,7 @@ contract RewardDistributorStorage {
     /**
      * @notice Active brains of Unitroller
      */
-    Joetroller public joetroller;
+    Gtroller public gTroller;
 
     struct RewardMarketState {
         /// @notice The market's last updated joeBorrowIndex or joeSupplyIndex
@@ -55,15 +55,15 @@ contract RewardDistributorStorage {
 
 contract RewardDistributor is RewardDistributorStorage, Exponential {
     /// @notice Emitted when a new reward supply speed is calculated for a market
-    event RewardSupplySpeedUpdated(uint8 rewardType, JToken indexed jToken, uint256 newSpeed);
+    event RewardSupplySpeedUpdated(uint8 rewardType, GToken indexed jToken, uint256 newSpeed);
 
     /// @notice Emitted when a new reward borrow speed is calculated for a market
-    event RewardBorrowSpeedUpdated(uint8 rewardType, JToken indexed jToken, uint256 newSpeed);
+    event RewardBorrowSpeedUpdated(uint8 rewardType, GToken indexed jToken, uint256 newSpeed);
 
     /// @notice Emitted when JOE/AVAX is distributed to a supplier
     event DistributedSupplierReward(
         uint8 rewardType,
-        JToken indexed jToken,
+        GToken indexed jToken,
         address indexed supplier,
         uint256 rewardDelta,
         uint256 rewardSupplyIndex
@@ -72,7 +72,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     /// @notice Emitted when JOE/AVAX is distributed to a borrower
     event DistributedBorrowerReward(
         uint8 rewardType,
-        JToken indexed jToken,
+        GToken indexed jToken,
         address indexed borrower,
         uint256 rewardDelta,
         uint256 rewardBorrowIndex
@@ -89,7 +89,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
 
     function initialize() public {
         require(!initialized, "RewardDistributor already initialized");
-        joetroller = Joetroller(msg.sender);
+        gTroller = Gtroller(msg.sender);
         initialized = true;
     }
 
@@ -97,7 +97,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      * @notice Checks caller is admin, or this contract is becoming the new implementation
      */
     function adminOrInitializing() internal view returns (bool) {
-        return msg.sender == admin || msg.sender == address(joetroller);
+        return msg.sender == admin || msg.sender == address(gTroller);
     }
 
     /**
@@ -109,7 +109,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      */
     function _setRewardSpeed(
         uint8 rewardType,
-        JToken jToken,
+        GToken jToken,
         uint256 rewardSupplySpeed,
         uint256 rewardBorrowSpeed
     ) public {
@@ -127,7 +127,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      */
     function setRewardSpeedInternal(
         uint8 rewardType,
-        JToken jToken,
+        GToken jToken,
         uint256 newSupplySpeed,
         uint256 newBorrowSpeed
     ) internal {
@@ -138,7 +138,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
             updateRewardSupplyIndex(rewardType, address(jToken));
         } else if (newSupplySpeed != 0) {
             // Add the JOE market
-            require(joetroller.isMarketListed(address(jToken)), "reward market is not listed");
+            require(gTroller.isMarketListed(address(jToken)), "reward market is not listed");
 
             if (
                 rewardSupplyState[rewardType][address(jToken)].index == 0 &&
@@ -164,7 +164,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
             updateRewardBorrowIndex(rewardType, address(jToken), borrowIndex);
         } else if (newBorrowSpeed != 0) {
             // Add the JOE market
-            require(joetroller.isMarketListed(address(jToken)), "reward market is not listed");
+            require(gTroller.isMarketListed(address(jToken)), "reward market is not listed");
 
             if (
                 rewardBorrowState[rewardType][address(jToken)].index == 0 &&
@@ -195,7 +195,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         uint256 blockTimestamp = getBlockTimestamp();
         uint256 deltaTimestamps = sub_(blockTimestamp, uint256(supplyState.timestamp));
         if (deltaTimestamps > 0 && supplySpeed > 0) {
-            uint256 supplyTokens = JToken(jToken).totalSupply();
+            uint256 supplyTokens = GToken(jToken).totalSupply();
             uint256 rewardAccrued = mul_(deltaTimestamps, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(rewardAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
@@ -225,7 +225,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         uint256 blockTimestamp = getBlockTimestamp();
         uint256 deltaTimestamps = sub_(blockTimestamp, uint256(borrowState.timestamp));
         if (deltaTimestamps > 0 && borrowSpeed > 0) {
-            uint256 borrowAmount = div_(JToken(jToken).totalBorrows(), marketBorrowIndex);
+            uint256 borrowAmount = div_(GToken(jToken).totalBorrows(), marketBorrowIndex);
             uint256 rewardAccrued = mul_(deltaTimestamps, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(rewardAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
@@ -260,11 +260,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         }
 
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
-        uint256 supplierTokens = JToken(jToken).balanceOf(supplier);
+        uint256 supplierTokens = GToken(jToken).balanceOf(supplier);
         uint256 supplierDelta = mul_(supplierTokens, deltaIndex);
         uint256 supplierAccrued = add_(rewardAccrued[rewardType][supplier], supplierDelta);
         rewardAccrued[rewardType][supplier] = supplierAccrued;
-        emit DistributedSupplierReward(rewardType, JToken(jToken), supplier, supplierDelta, supplyIndex.mantissa);
+        emit DistributedSupplierReward(rewardType, GToken(jToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
 
     /**
@@ -289,11 +289,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
 
         if (borrowerIndex.mantissa > 0) {
             Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
-            uint256 borrowerAmount = div_(JToken(jToken).borrowBalanceStored(borrower), marketBorrowIndex);
+            uint256 borrowerAmount = div_(GToken(jToken).borrowBalanceStored(borrower), marketBorrowIndex);
             uint256 borrowerDelta = mul_(borrowerAmount, deltaIndex);
             uint256 borrowerAccrued = add_(rewardAccrued[rewardType][borrower], borrowerDelta);
             rewardAccrued[rewardType][borrower] = borrowerAccrued;
-            emit DistributedBorrowerReward(rewardType, JToken(jToken), borrower, borrowerDelta, borrowIndex.mantissa);
+            emit DistributedBorrowerReward(rewardType, GToken(jToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
 
@@ -335,7 +335,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      * @param holder The address to claim JOE/AVAX for
      */
     function claimReward(uint8 rewardType, address payable holder) public {
-        return claimReward(rewardType, holder, joetroller.getAllMarkets());
+        return claimReward(rewardType, holder, gTroller.getAllMarkets());
     }
 
     /**
@@ -347,7 +347,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     function claimReward(
         uint8 rewardType,
         address payable holder,
-        JToken[] memory jTokens
+        GToken[] memory jTokens
     ) public {
         address payable[] memory holders = new address payable[](1);
         holders[0] = holder;
@@ -365,14 +365,14 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     function claimReward(
         uint8 rewardType,
         address payable[] memory holders,
-        JToken[] memory jTokens,
+        GToken[] memory jTokens,
         bool borrowers,
         bool suppliers
     ) public payable {
         require(rewardType <= 1, "rewardType is invalid");
         for (uint256 i = 0; i < jTokens.length; i++) {
-            JToken jToken = jTokens[i];
-            require(joetroller.isMarketListed(address(jToken)), "market must be listed");
+            GToken jToken = jTokens[i];
+            require(gTroller.isMarketListed(address(jToken)), "market must be listed");
             if (borrowers == true) {
                 Exp memory borrowIndex = Exp({mantissa: jToken.borrowIndex()});
                 updateRewardBorrowIndex(rewardType, address(jToken), borrowIndex);
@@ -458,11 +458,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     }
 
     /**
-     * @notice Set the Joetroller address
+     * @notice Set the Gtroller address
      */
-    function setJoetroller(address _joetroller) public {
-        require(msg.sender == admin, "only admin can set Joetroller");
-        joetroller = Joetroller(_joetroller);
+    function setGtroller(address _gTroller) public {
+        require(msg.sender == admin, "only admin can set Gtroller");
+        gTroller = Gtroller(_gTroller);
     }
 
     /**

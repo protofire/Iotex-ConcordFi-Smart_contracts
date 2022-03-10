@@ -2,14 +2,14 @@
 
 pragma solidity ^0.5.16;
 
-import "./JCollateralCapErc20.sol";
+import "./GWrappedNative.sol";
 
 /**
- * @title Cream's JCollateralCapErc20Delegate Contract
- * @notice JTokens which wrap an EIP-20 underlying and are delegated to
+ * @title Cream's GWrappedNativeDelegate Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are delegated to
  * @author Cream
  */
-contract JCollateralCapErc20Delegate is JCollateralCapErc20 {
+contract GWrappedNativeDelegate is GWrappedNative {
     /**
      * @notice Construct an empty delegate
      */
@@ -30,14 +30,15 @@ contract JCollateralCapErc20Delegate is JCollateralCapErc20 {
 
         require(msg.sender == admin, "only the admin may call _becomeImplementation");
 
-        // Set internal cash when becoming implementation
-        internalCash = getCashOnChain();
-
-        // Set JToken version in joetroller
-        JoetrollerInterfaceExtension(address(joetroller)).updateJTokenVersion(
+        // Set GToken version in gTroller and convert native token to wrapped token.
+        GtrollerInterfaceExtension(address(gTroller)).updateGTokenVersion(
             address(this),
-            JoetrollerV1Storage.Version.COLLATERALCAP
+            GtrollerV1Storage.Version.WRAPPEDNATIVE
         );
+        uint256 balance = address(this).balance;
+        if (balance > 0) {
+            WrappedNativeInterface(underlying).deposit.value(balance)();
+        }
     }
 
     /**

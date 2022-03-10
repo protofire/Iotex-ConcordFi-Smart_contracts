@@ -2,7 +2,7 @@ const { address, avaxMantissa } = require("./Utils/Avalanche");
 
 const {
   makeToken,
-  makeJToken,
+  makeGToken,
   makeCurveSwap,
   makePriceOracle,
   makeMockAggregator,
@@ -17,17 +17,17 @@ describe("PriceOracleProxy", () => {
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    jAvax = await makeJToken({
+    jAvax = await makeGToken({
       kind: "jwrapped",
-      joetrollerOpts: { kind: "v1-no-proxy" },
+      gTrollerOpts: { kind: "v1-no-proxy" },
       supportMarket: true,
     });
-    jDai = await makeJToken({
-      joetroller: jAvax.joetroller,
+    jDai = await makeGToken({
+      gTroller: jAvax.gTroller,
       supportMarket: true,
     });
-    jOther = await makeJToken({
-      joetroller: jAvax.joetroller,
+    jOther = await makeGToken({
+      gTroller: jAvax.gTroller,
       supportMarket: true,
     });
 
@@ -79,7 +79,7 @@ describe("PriceOracleProxy", () => {
     });
 
     it("returns for token without a price", async () => {
-      let unlistedToken = await makeJToken({ joetroller: jAvax.joetroller });
+      let unlistedToken = await makeGToken({ gTroller: jAvax.gTroller });
 
       await expect(readAndVerifyProxyPrice(unlistedToken, 0)).rejects.toRevert(
         "revert invalid price"

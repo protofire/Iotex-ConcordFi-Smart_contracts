@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-contract JoetrollerErrorReporter {
+contract GtrollerErrorReporter {
     enum Error {
         NO_ERROR,
         UNAUTHORIZED,
@@ -215,18 +215,18 @@ contract UnitrollerAdminStorage {
 }
 
 /**
- * @title JoetrollerCore
- * @dev Storage for the joetroller is at this address, while execution is delegated to the `implementation`.
- * JTokens should reference this contract as their joetroller.
+ * @title GtrollerCore
+ * @dev Storage for the gTroller is at this address, while execution is delegated to the `implementation`.
+ * GTokens should reference this contract as their gTroller.
  */
-contract Unitroller is UnitrollerAdminStorage, JoetrollerErrorReporter {
+contract Unitroller is UnitrollerAdminStorage, GtrollerErrorReporter {
     /**
      * @notice Emitted when pendingImplementation is changed
      */
     event NewPendingImplementation(address oldPendingImplementation, address newPendingImplementation);
 
     /**
-     * @notice Emitted when pendingImplementation is accepted, which means joetroller implementation is updated
+     * @notice Emitted when pendingImplementation is accepted, which means gTroller implementation is updated
      */
     event NewImplementation(address oldImplementation, address newImplementation);
 
@@ -261,7 +261,7 @@ contract Unitroller is UnitrollerAdminStorage, JoetrollerErrorReporter {
     }
 
     /**
-     * @notice Accepts new implementation of joetroller. msg.sender must be pendingImplementation
+     * @notice Accepts new implementation of gTroller. msg.sender must be pendingImplementation
      * @dev Admin function for new implementation to accept it's role as implementation
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -483,7 +483,7 @@ interface ERC3156FlashBorrowerInterface {
     ) external returns (bytes32);
 }
 
-contract JoetrollerV1Storage is UnitrollerAdminStorage {
+contract GtrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Oracle which gives the price of any given asset
      */
@@ -502,7 +502,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in"
      */
-    mapping(address => JToken[]) public accountAssets;
+    mapping(address => GToken[]) public accountAssets;
 
     enum Version {
         VANILLA,
@@ -521,7 +521,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
         uint256 collateralFactorMantissa;
         /// @notice Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
-        /// @notice JToken version
+        /// @notice GToken version
         Version version;
     }
 
@@ -545,7 +545,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
     mapping(address => bool) public borrowGuardianPaused;
 
     /// @notice A list of all markets
-    JToken[] public allMarkets;
+    GToken[] public allMarkets;
 
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
@@ -1110,9 +1110,9 @@ contract Exponential is CarefulMath {
     }
 }
 
-contract JoetrollerInterface {
-    /// @notice Indicator that this is a Joetroller contract (for inspection)
-    bool public constant isJoetroller = true;
+contract GtrollerInterface {
+    /// @notice Indicator that this is a Gtroller contract (for inspection)
+    bool public constant isGtroller = true;
 
     /*** Assets You Are In ***/
 
@@ -1231,10 +1231,10 @@ contract JoetrollerInterface {
     ) external view returns (uint256, uint256);
 }
 
-interface JoetrollerInterfaceExtension {
-    function checkMembership(address account, JToken jToken) external view returns (bool);
+interface GtrollerInterfaceExtension {
+    function checkMembership(address account, GToken jToken) external view returns (bool);
 
-    function updateJTokenVersion(address jToken, JoetrollerV1Storage.Version version) external;
+    function updateGTokenVersion(address jToken, GtrollerV1Storage.Version version) external;
 
     function flashloanAllowed(
         address jToken,
@@ -1246,7 +1246,7 @@ interface JoetrollerInterfaceExtension {
 
 pragma experimental ABIEncoderV2;
 
-contract JTokenStorage {
+contract GTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -1291,7 +1291,7 @@ contract JTokenStorage {
     /**
      * @notice Contract which oversees inter-jToken operations
      */
-    JoetrollerInterface public joetroller;
+    GtrollerInterface public gTroller;
 
     /**
      * @notice Model which tells what the current interest rate should be
@@ -1299,7 +1299,7 @@ contract JTokenStorage {
     InterestRateModel public interestRateModel;
 
     /**
-     * @notice Initial exchange rate used when minting the first JTokens (used when totalSupply = 0)
+     * @notice Initial exchange rate used when minting the first GTokens (used when totalSupply = 0)
      */
     uint256 internal initialExchangeRateMantissa;
 
@@ -1359,9 +1359,9 @@ contract JTokenStorage {
     mapping(address => BorrowSnapshot) internal accountBorrows;
 }
 
-contract JErc20Storage {
+contract GXrc20Storage {
     /**
-     * @notice Underlying asset for this JToken
+     * @notice Underlying asset for this GToken
      */
     address public underlying;
 
@@ -1373,7 +1373,7 @@ contract JErc20Storage {
 
 contract JSupplyCapStorage {
     /**
-     * @notice Internal cash counter for this JToken. Should equal underlying.balanceOf(address(this)) for CERC20.
+     * @notice Internal cash counter for this GToken. Should equal underlying.balanceOf(address(this)) for CERC20.
      */
     uint256 public internalCash;
 }
@@ -1396,18 +1396,18 @@ contract JCollateralCapStorage {
     mapping(address => bool) public isCollateralTokenInit;
 
     /**
-     * @notice Collateral cap for this JToken, zero for no cap.
+     * @notice Collateral cap for this GToken, zero for no cap.
      */
     uint256 public collateralCap;
 }
 
 /*** Interface ***/
 
-contract JTokenInterface is JTokenStorage {
+contract GTokenInterface is GTokenStorage {
     /**
-     * @notice Indicator that this is a JToken contract (for inspection)
+     * @notice Indicator that this is a GToken contract (for inspection)
      */
-    bool public constant isJToken = true;
+    bool public constant isGToken = true;
 
     /*** Market Events ***/
 
@@ -1466,9 +1466,9 @@ contract JTokenInterface is JTokenStorage {
     event NewAdmin(address oldAdmin, address newAdmin);
 
     /**
-     * @notice Event emitted when joetroller is changed
+     * @notice Event emitted when gTroller is changed
      */
-    event NewJoetroller(JoetrollerInterface oldJoetroller, JoetrollerInterface newJoetroller);
+    event NewGtroller(GtrollerInterface oldGtroller, GtrollerInterface newGtroller);
 
     /**
      * @notice Event emitted when interestRateModel is changed
@@ -1563,7 +1563,7 @@ contract JTokenInterface is JTokenStorage {
 
     function _acceptAdmin() external returns (uint256);
 
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256);
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256);
 
     function _setReserveFactor(uint256 newReserveFactorMantissa) external returns (uint256);
 
@@ -1572,7 +1572,7 @@ contract JTokenInterface is JTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint256);
 }
 
-contract JErc20Interface is JErc20Storage {
+contract GXrc20Interface is GXrc20Storage {
     /*** User Interface ***/
 
     function mint(uint256 mintAmount) external returns (uint256);
@@ -1590,13 +1590,13 @@ contract JErc20Interface is JErc20Storage {
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256);
 
     function _addReserves(uint256 addAmount) external returns (uint256);
 }
 
-contract JWrappedNativeInterface is JErc20Interface {
+contract GWrappedNativeInterface is GXrc20Interface {
     /**
      * @notice Flash loan fee ratio
      */
@@ -1623,7 +1623,7 @@ contract JWrappedNativeInterface is JErc20Interface {
 
     function repayBorrowBehalfNative(address borrower) external payable returns (uint256);
 
-    function liquidateBorrowNative(address borrower, JTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
         external
         payable
         returns (uint256);
@@ -1638,7 +1638,7 @@ contract JWrappedNativeInterface is JErc20Interface {
     function _addReservesNative() external payable returns (uint256);
 }
 
-contract JCapableErc20Interface is JErc20Interface, JSupplyCapStorage {
+contract GCapableXrc20Interface is GXrc20Interface, JSupplyCapStorage {
     /**
      * @notice Flash loan fee ratio
      */
@@ -1656,7 +1656,7 @@ contract JCapableErc20Interface is JErc20Interface, JSupplyCapStorage {
     function gulp() external;
 }
 
-contract JCollateralCapErc20Interface is JCapableErc20Interface, JCollateralCapStorage {
+contract GCollateralCapXrc20Interface is GCapableXrc20Interface, JCollateralCapStorage {
     /*** Admin Events ***/
 
     /**
@@ -1808,14 +1808,14 @@ interface EIP20NonStandardInterface {
 }
 
 /**
- * @title Compound's JToken Contract
- * @notice Abstract base for JTokens
+ * @title Compound's GToken Contract
+ * @notice Abstract base for GTokens
  * @author Compound
  */
-contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
+contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Initialize the money market
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ EIP-20 name of this token
@@ -1823,7 +1823,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @param decimals_ EIP-20 decimal precision of this token
      */
     function initialize(
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -1837,11 +1837,11 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
         require(initialExchangeRateMantissa > 0, "initial exchange rate must be greater than zero.");
 
-        // Set the joetroller
-        uint256 err = _setJoetroller(joetroller_);
-        require(err == uint256(Error.NO_ERROR), "setting joetroller failed");
+        // Set the gTroller
+        uint256 err = _setGtroller(gTroller_);
+        require(err == uint256(Error.NO_ERROR), "setting gTroller failed");
 
-        // Initialize block timestamp and borrow index (block timestamp mocks depend on joetroller being set)
+        // Initialize block timestamp and borrow index (block timestamp mocks depend on gTroller being set)
         accrualBlockTimestamp = getBlockTimestamp();
         borrowIndex = mantissaOne;
 
@@ -1929,7 +1929,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
     /**
      * @notice Get a snapshot of the account's balances, and the cached exchange rate
-     * @dev This is used by joetroller to more efficiently perform liquidity checks.
+     * @dev This is used by gTroller to more efficiently perform liquidity checks.
      * @param account Address of the account to snapshot
      * @return (possible error, token balance, borrow balance, exchange rate mantissa)
      */
@@ -1943,7 +1943,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
             uint256
         )
     {
-        uint256 jTokenBalance = getJTokenBalanceInternal(account);
+        uint256 jTokenBalance = getGTokenBalanceInternal(account);
         uint256 borrowBalance = borrowBalanceStoredInternal(account);
         uint256 exchangeRateMantissa = exchangeRateStoredInternal();
 
@@ -2073,7 +2073,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -2082,7 +2082,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return calculated exchange rate scaled by 1e18
      */
@@ -2263,7 +2263,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         bool isNative
     ) internal returns (uint256) {
         /* Fail if borrow not allowed */
-        uint256 allowed = joetroller.borrowAllowed(address(this), borrower, borrowAmount);
+        uint256 allowed = gTroller.borrowAllowed(address(this), borrower, borrowAmount);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.BORROW_JOETROLLER_REJECTION, allowed);
         }
@@ -2320,7 +2320,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
         /* We call the defense hook */
         // unused function
-        // joetroller.borrowVerify(address(this), borrower, borrowAmount);
+        // gTroller.borrowVerify(address(this), borrower, borrowAmount);
 
         return uint256(Error.NO_ERROR);
     }
@@ -2388,7 +2388,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         bool isNative
     ) internal returns (uint256, uint256) {
         /* Fail if repayBorrow not allowed */
-        uint256 allowed = joetroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
+        uint256 allowed = gTroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
         if (allowed != 0) {
             return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REPAY_BORROW_JOETROLLER_REJECTION, allowed), 0);
         }
@@ -2453,7 +2453,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
         /* We call the defense hook */
         // unused function
-        // joetroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
+        // gTroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
 
         return (uint256(Error.NO_ERROR), vars.actualRepayAmount);
     }
@@ -2470,7 +2470,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     function liquidateBorrowInternal(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral,
+        GTokenInterface jTokenCollateral,
         bool isNative
     ) internal nonReentrant returns (uint256, uint256) {
         uint256 error = accrueInterest();
@@ -2503,11 +2503,11 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral,
+        GTokenInterface jTokenCollateral,
         bool isNative
     ) internal returns (uint256, uint256) {
         /* Fail if liquidate not allowed */
-        uint256 allowed = joetroller.liquidateBorrowAllowed(
+        uint256 allowed = gTroller.liquidateBorrowAllowed(
             address(this),
             address(jTokenCollateral),
             liquidator,
@@ -2559,7 +2559,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         // (No safe failures beyond this point)
 
         /* We calculate the number of collateral tokens that will be seized */
-        (uint256 amountSeizeError, uint256 seizeTokens) = joetroller.liquidateCalculateSeizeTokens(
+        (uint256 amountSeizeError, uint256 seizeTokens) = gTroller.liquidateCalculateSeizeTokens(
             address(this),
             address(jTokenCollateral),
             actualRepayAmount
@@ -2585,7 +2585,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
         /* We call the defense hook */
         // unused function
-        // joetroller.liquidateBorrowVerify(address(this), address(jTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
+        // gTroller.liquidateBorrowVerify(address(this), address(jTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
 
         return (uint256(Error.NO_ERROR), actualRepayAmount);
     }
@@ -2661,25 +2661,25 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Sets a new joetroller for the market
-     * @dev Admin function to set a new joetroller
+     * @notice Sets a new gTroller for the market
+     * @dev Admin function to set a new gTroller
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256) {
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_JOETROLLER_OWNER_CHECK);
         }
 
-        JoetrollerInterface oldJoetroller = joetroller;
-        // Ensure invoke joetroller.isJoetroller() returns true
-        require(newJoetroller.isJoetroller(), "marker method returned false");
+        GtrollerInterface oldGtroller = gTroller;
+        // Ensure invoke gTroller.isGtroller() returns true
+        require(newGtroller.isGtroller(), "marker method returned false");
 
-        // Set market's joetroller to newJoetroller
-        joetroller = newJoetroller;
+        // Set market's gTroller to newGtroller
+        gTroller = newGtroller;
 
-        // Emit NewJoetroller(oldJoetroller, newJoetroller)
-        emit NewJoetroller(oldJoetroller, newJoetroller);
+        // Emit NewGtroller(oldGtroller, newGtroller)
+        emit NewGtroller(oldGtroller, newGtroller);
 
         return uint256(Error.NO_ERROR);
     }
@@ -2844,7 +2844,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         totalReserves = totalReservesNew;
 
         // doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
-        // Restrict reducing reserves in native token. Implementations except `JWrappedNative` won't use parameter `isNative`.
+        // Restrict reducing reserves in native token. Implementations except `GWrappedNative` won't use parameter `isNative`.
         doTransferOut(admin, reduceAmount, true);
 
         emit ReservesReduced(admin, reduceAmount, totalReservesNew);
@@ -2947,7 +2947,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Get the account's jToken balances
      */
-    function getJTokenBalanceInternal(address account) internal view returns (uint256);
+    function getGTokenBalanceInternal(address account) internal view returns (uint256);
 
     /**
      * @notice User supplies assets into the market and receives jTokens in exchange
@@ -2972,7 +2972,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another JToken.
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
      *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
      */
     function seizeInternal(
@@ -3002,31 +3002,31 @@ contract PriceOracle {
      * @return The underlying asset price mantissa (scaled by 1e18).
      *  Zero means the price is unavailable.
      */
-    function getUnderlyingPrice(JToken jToken) external view returns (uint256);
+    function getUnderlyingPrice(GToken jToken) external view returns (uint256);
 }
 
 /**
- * @title Compound's Joetroller Contract
+ * @title Compound's Gtroller Contract
  * @author Compound (modified by Cream)
  */
-contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerErrorReporter, Exponential {
+contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
-    event MarketListed(JToken jToken);
+    event MarketListed(GToken jToken);
 
     /// @notice Emitted when an admin delists a market
-    event MarketDelisted(JToken jToken);
+    event MarketDelisted(GToken jToken);
 
     /// @notice Emitted when an account enters a market
-    event MarketEntered(JToken jToken, address account);
+    event MarketEntered(GToken jToken, address account);
 
     /// @notice Emitted when an account exits a market
-    event MarketExited(JToken jToken, address account);
+    event MarketExited(GToken jToken, address account);
 
     /// @notice Emitted when close factor is changed by admin
     event NewCloseFactor(uint256 oldCloseFactorMantissa, uint256 newCloseFactorMantissa);
 
     /// @notice Emitted when a collateral factor is changed by admin
-    event NewCollateralFactor(JToken jToken, uint256 oldCollateralFactorMantissa, uint256 newCollateralFactorMantissa);
+    event NewCollateralFactor(GToken jToken, uint256 oldCollateralFactorMantissa, uint256 newCollateralFactorMantissa);
 
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint256 oldLiquidationIncentiveMantissa, uint256 newLiquidationIncentiveMantissa);
@@ -3041,16 +3041,16 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     event ActionPaused(string action, bool pauseState);
 
     /// @notice Emitted when an action is paused on a market
-    event ActionPaused(JToken jToken, string action, bool pauseState);
+    event ActionPaused(GToken jToken, string action, bool pauseState);
 
     /// @notice Emitted when borrow cap for a jToken is changed
-    event NewBorrowCap(JToken indexed jToken, uint256 newBorrowCap);
+    event NewBorrowCap(GToken indexed jToken, uint256 newBorrowCap);
 
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
     /// @notice Emitted when supply cap for a jToken is changed
-    event NewSupplyCap(JToken indexed jToken, uint256 newSupplyCap);
+    event NewSupplyCap(GToken indexed jToken, uint256 newSupplyCap);
 
     /// @notice Emitted when supply cap guardian is changed
     event NewSupplyCapGuardian(address oldSupplyCapGuardian, address newSupplyCapGuardian);
@@ -3059,7 +3059,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     event CreditLimitChanged(address protocol, uint256 creditLimit);
 
     /// @notice Emitted when jToken version is changed
-    event NewJTokenVersion(JToken jToken, Version oldVersion, Version newVersion);
+    event NewGTokenVersion(GToken jToken, Version oldVersion, Version newVersion);
 
     // No collateralFactorMantissa may exceed this value
     uint256 internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
@@ -3073,7 +3073,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @dev The automatic getter may be used to access an individual market.
      * @return The list of market addresses
      */
-    function getAllMarkets() public view returns (JToken[] memory) {
+    function getAllMarkets() public view returns (GToken[] memory) {
         return allMarkets;
     }
 
@@ -3088,8 +3088,8 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param account The address of the account to pull assets for
      * @return A dynamic list with the assets the account has entered
      */
-    function getAssetsIn(address account) external view returns (JToken[] memory) {
-        JToken[] memory assetsIn = accountAssets[account];
+    function getAssetsIn(address account) external view returns (GToken[] memory) {
+        GToken[] memory assetsIn = accountAssets[account];
 
         return assetsIn;
     }
@@ -3100,7 +3100,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param jToken The jToken to check
      * @return True if the account is in the asset, otherwise false.
      */
-    function checkMembership(address account, JToken jToken) external view returns (bool) {
+    function checkMembership(address account, GToken jToken) external view returns (bool) {
         return markets[address(jToken)].accountMembership[account];
     }
 
@@ -3114,7 +3114,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
 
         uint256[] memory results = new uint256[](len);
         for (uint256 i = 0; i < len; i++) {
-            JToken jToken = JToken(jTokens[i]);
+            GToken jToken = GToken(jTokens[i]);
 
             results[i] = uint256(addToMarketInternal(jToken, msg.sender));
         }
@@ -3128,7 +3128,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
-    function addToMarketInternal(JToken jToken, address borrower) internal returns (Error) {
+    function addToMarketInternal(GToken jToken, address borrower) internal returns (Error) {
         Market storage marketToJoin = markets[address(jToken)];
 
         if (!marketToJoin.isListed) {
@@ -3138,7 +3138,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
 
         if (marketToJoin.version == Version.COLLATERALCAP) {
             // register collateral for the borrower if the token is CollateralCap version.
-            JCollateralCapErc20Interface(address(jToken)).registerCollateral(borrower);
+            GCollateralCapXrc20Interface(address(jToken)).registerCollateral(borrower);
         }
 
         if (marketToJoin.accountMembership[borrower] == true) {
@@ -3167,7 +3167,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @return Whether or not the account successfully exited the market
      */
     function exitMarket(address jTokenAddress) external returns (uint256) {
-        JToken jToken = JToken(jTokenAddress);
+        GToken jToken = GToken(jTokenAddress);
         /* Get sender tokensHeld and amountOwed underlying from the jToken */
         (uint256 oErr, uint256 tokensHeld, uint256 amountOwed, ) = jToken.getAccountSnapshot(msg.sender);
         require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
@@ -3186,7 +3186,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         Market storage marketToExit = markets[jTokenAddress];
 
         if (marketToExit.version == Version.COLLATERALCAP) {
-            JCollateralCapErc20Interface(jTokenAddress).unregisterCollateral(msg.sender);
+            GCollateralCapXrc20Interface(jTokenAddress).unregisterCollateral(msg.sender);
         }
 
         /* Return true if the sender is not already ‘in’ the market */
@@ -3199,7 +3199,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
 
         /* Delete jToken from the account’s list of assets */
         // load into memory for faster iteration
-        JToken[] memory userAssetList = accountAssets[msg.sender];
+        GToken[] memory userAssetList = accountAssets[msg.sender];
         uint256 len = userAssetList.length;
         uint256 assetIndex = len;
         for (uint256 i = 0; i < len; i++) {
@@ -3213,7 +3213,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         assert(assetIndex < len);
 
         // copy last item in list to location of item to be removed, reduce length by 1
-        JToken[] storage storedList = accountAssets[msg.sender];
+        GToken[] storage storedList = accountAssets[msg.sender];
         if (assetIndex != storedList.length - 1) {
             storedList[assetIndex] = storedList[storedList.length - 1];
         }
@@ -3258,9 +3258,9 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         uint256 supplyCap = supplyCaps[jToken];
         // Supply cap of 0 corresponds to unlimited supplying
         if (supplyCap != 0) {
-            uint256 totalCash = JToken(jToken).getCash();
-            uint256 totalBorrows = JToken(jToken).totalBorrows();
-            uint256 totalReserves = JToken(jToken).totalReserves();
+            uint256 totalCash = GToken(jToken).getCash();
+            uint256 totalBorrows = GToken(jToken).totalBorrows();
+            uint256 totalReserves = GToken(jToken).totalReserves();
             // totalSupplies = totalCash + totalBorrows - totalReserves
             (MathError mathErr, uint256 totalSupplies) = addThenSubUInt(totalCash, totalBorrows, totalReserves);
             require(mathErr == MathError.NO_ERROR, "totalSupplies failed");
@@ -3339,7 +3339,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         /* Otherwise, perform a hypothetical liquidity check to guard against shortfall */
         (Error err, , uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             redeemer,
-            JToken(jToken),
+            GToken(jToken),
             redeemTokens,
             0
         );
@@ -3400,7 +3400,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
             require(msg.sender == jToken, "sender must be jToken");
 
             // attempt to add borrower to the market
-            Error err = addToMarketInternal(JToken(jToken), borrower);
+            Error err = addToMarketInternal(GToken(jToken), borrower);
             if (err != Error.NO_ERROR) {
                 return uint256(err);
             }
@@ -3409,21 +3409,21 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
             assert(markets[jToken].accountMembership[borrower]);
         }
 
-        if (oracle.getUnderlyingPrice(JToken(jToken)) == 0) {
+        if (oracle.getUnderlyingPrice(GToken(jToken)) == 0) {
             return uint256(Error.PRICE_ERROR);
         }
 
         uint256 borrowCap = borrowCaps[jToken];
         // Borrow cap of 0 corresponds to unlimited borrowing
         if (borrowCap != 0) {
-            uint256 totalBorrows = JToken(jToken).totalBorrows();
+            uint256 totalBorrows = GToken(jToken).totalBorrows();
             uint256 nextTotalBorrows = add_(totalBorrows, borrowAmount);
             require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
         (Error err, , uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             borrower,
-            JToken(jToken),
+            GToken(jToken),
             0,
             borrowAmount
         );
@@ -3435,7 +3435,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         }
 
         // Keep the flywheel going
-        Exp memory borrowIndex = Exp({mantissa: JToken(jToken).borrowIndex()});
+        Exp memory borrowIndex = Exp({mantissa: GToken(jToken).borrowIndex()});
         RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(jToken, borrower, borrowIndex);
 
         return uint256(Error.NO_ERROR);
@@ -3487,7 +3487,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         }
 
         // Keep the flywheel going
-        Exp memory borrowIndex = Exp({mantissa: JToken(jToken).borrowIndex()});
+        Exp memory borrowIndex = Exp({mantissa: GToken(jToken).borrowIndex()});
         RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(jToken, borrower, borrowIndex);
         return uint256(Error.NO_ERROR);
     }
@@ -3553,7 +3553,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         }
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
-        uint256 borrowBalance = JToken(jTokenBorrowed).borrowBalanceStored(borrower);
+        uint256 borrowBalance = GToken(jTokenBorrowed).borrowBalanceStored(borrower);
         uint256 maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
         if (repayAmount > maxClose) {
             return uint256(Error.TOO_MUCH_REPAY);
@@ -3619,7 +3619,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
-        if (JToken(jTokenCollateral).joetroller() != JToken(jTokenBorrowed).joetroller()) {
+        if (GToken(jTokenCollateral).gTroller() != GToken(jTokenBorrowed).gTroller()) {
             return uint256(Error.JOETROLLER_MISMATCH);
         }
 
@@ -3735,21 +3735,21 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     }
 
     /**
-     * @notice Update JToken's version.
+     * @notice Update GToken's version.
      * @param jToken Version of the asset being updated
      * @param newVersion The new version
      */
-    function updateJTokenVersion(address jToken, Version newVersion) external {
+    function updateGTokenVersion(address jToken, Version newVersion) external {
         require(msg.sender == jToken, "only jToken could update its version");
 
-        // This function will be called when a new JToken implementation becomes active.
-        // If a new JToken is newly created, this market is not listed yet. The version of
+        // This function will be called when a new GToken implementation becomes active.
+        // If a new GToken is newly created, this market is not listed yet. The version of
         // this market will be taken care of when calling `_supportMarket`.
         if (isMarketListed(jToken)) {
             Version oldVersion = markets[jToken].version;
             markets[jToken].version = newVersion;
 
-            emit NewJTokenVersion(JToken(jToken), oldVersion, newVersion);
+            emit NewGTokenVersion(GToken(jToken), oldVersion, newVersion);
         }
     }
 
@@ -3799,7 +3799,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     {
         (Error err, uint256 liquidity, uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             account,
-            JToken(0),
+            GToken(0),
             0,
             0
         );
@@ -3822,7 +3822,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
             uint256
         )
     {
-        return getHypotheticalAccountLiquidityInternal(account, JToken(0), 0, 0);
+        return getHypotheticalAccountLiquidityInternal(account, GToken(0), 0, 0);
     }
 
     /**
@@ -3851,7 +3851,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     {
         (Error err, uint256 liquidity, uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             account,
-            JToken(jTokenModify),
+            GToken(jTokenModify),
             redeemTokens,
             borrowAmount
         );
@@ -3872,7 +3872,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      */
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        JToken jTokenModify,
+        GToken jTokenModify,
         uint256 redeemTokens,
         uint256 borrowAmount
     )
@@ -3893,9 +3893,9 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         uint256 oErr;
 
         // For each asset the account is in
-        JToken[] memory assets = accountAssets[account];
+        GToken[] memory assets = accountAssets[account];
         for (uint256 i = 0; i < assets.length; i++) {
-            JToken asset = assets[i];
+            GToken asset = assets[i];
 
             // Read the balances and exchange rate from the jToken
             (oErr, vars.jTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(
@@ -3982,8 +3982,8 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         uint256 actualRepayAmount
     ) external view returns (uint256, uint256) {
         /* Read oracle prices for borrowed and collateral markets */
-        uint256 priceBorrowedMantissa = oracle.getUnderlyingPrice(JToken(jTokenBorrowed));
-        uint256 priceCollateralMantissa = oracle.getUnderlyingPrice(JToken(jTokenCollateral));
+        uint256 priceBorrowedMantissa = oracle.getUnderlyingPrice(GToken(jTokenBorrowed));
+        uint256 priceCollateralMantissa = oracle.getUnderlyingPrice(GToken(jTokenCollateral));
         if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
             return (uint256(Error.PRICE_ERROR), 0);
         }
@@ -3994,7 +3994,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
          *  seizeTokens = seizeAmount / exchangeRate
          *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
-        uint256 exchangeRateMantissa = JToken(jTokenCollateral).exchangeRateStored(); // Note: reverts on error
+        uint256 exchangeRateMantissa = GToken(jTokenCollateral).exchangeRateStored(); // Note: reverts on error
         Exp memory numerator = mul_(
             Exp({mantissa: liquidationIncentiveMantissa}),
             Exp({mantissa: priceBorrowedMantissa})
@@ -4024,7 +4024,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     }
 
     /**
-     * @notice Sets a new price oracle for the joetroller
+     * @notice Sets a new price oracle for the gTroller
      * @dev Admin function to set a new price oracle
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -4034,10 +4034,10 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_PRICE_ORACLE_OWNER_CHECK);
         }
 
-        // Track the old oracle for the joetroller
+        // Track the old oracle for the gTroller
         PriceOracle oldOracle = oracle;
 
-        // Set joetroller's oracle to newOracle
+        // Set gTroller's oracle to newOracle
         oracle = newOracle;
 
         // Emit NewPriceOracle(oldOracle, newOracle)
@@ -4072,7 +4072,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
      */
-    function _setCollateralFactor(JToken jToken, uint256 newCollateralFactorMantissa) external returns (uint256) {
+    function _setCollateralFactor(GToken jToken, uint256 newCollateralFactorMantissa) external returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
@@ -4138,11 +4138,11 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param version The version of the market (token)
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _supportMarket(JToken jToken, Version version) external returns (uint256) {
+    function _supportMarket(GToken jToken, Version version) external returns (uint256) {
         require(msg.sender == admin, "only admin may support market");
         require(!isMarketListed(address(jToken)), "market already listed");
 
-        jToken.isJToken(); // Sanity check to make sure its really a JToken
+        jToken.isGToken(); // Sanity check to make sure its really a GToken
 
         markets[address(jToken)] = Market({isListed: true, collateralFactorMantissa: 0, version: version});
 
@@ -4157,12 +4157,12 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @notice Remove the market from the markets mapping
      * @param jToken The address of the market (token) to delist
      */
-    function _delistMarket(JToken jToken) external {
+    function _delistMarket(GToken jToken) external {
         require(msg.sender == admin, "only admin may delist market");
         require(isMarketListed(address(jToken)), "market not listed");
         require(jToken.totalSupply() == 0, "market not empty");
 
-        jToken.isJToken(); // Sanity check to make sure its really a JToken
+        jToken.isGToken(); // Sanity check to make sure its really a GToken
 
         delete markets[address(jToken)];
 
@@ -4180,9 +4180,9 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
 
     function _addMarketInternal(address jToken) internal {
         for (uint256 i = 0; i < allMarkets.length; i++) {
-            require(allMarkets[i] != JToken(jToken), "market already added");
+            require(allMarkets[i] != GToken(jToken), "market already added");
         }
-        allMarkets.push(JToken(jToken));
+        allMarkets.push(GToken(jToken));
     }
 
     /**
@@ -4209,7 +4209,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param jTokens The addresses of the markets (tokens) to change the supply caps for
      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
      */
-    function _setMarketSupplyCaps(JToken[] calldata jTokens, uint256[] calldata newSupplyCaps) external {
+    function _setMarketSupplyCaps(GToken[] calldata jTokens, uint256[] calldata newSupplyCaps) external {
         require(
             msg.sender == admin || msg.sender == supplyCapGuardian,
             "only admin or supply cap guardian can set supply caps"
@@ -4233,7 +4233,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
      * @param jTokens The addresses of the markets (tokens) to change the borrow caps for
      * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
      */
-    function _setMarketBorrowCaps(JToken[] calldata jTokens, uint256[] calldata newBorrowCaps) external {
+    function _setMarketBorrowCaps(GToken[] calldata jTokens, uint256[] calldata newBorrowCaps) external {
         require(
             msg.sender == admin || msg.sender == borrowCapGuardian,
             "only admin or borrow cap guardian can set borrow caps"
@@ -4289,7 +4289,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         return uint256(Error.NO_ERROR);
     }
 
-    function _setMintPaused(JToken jToken, bool state) public returns (bool) {
+    function _setMintPaused(GToken jToken, bool state) public returns (bool) {
         require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
@@ -4299,7 +4299,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         return state;
     }
 
-    function _setBorrowPaused(JToken jToken, bool state) public returns (bool) {
+    function _setBorrowPaused(GToken jToken, bool state) public returns (bool) {
         require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
@@ -4309,7 +4309,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
         return state;
     }
 
-    function _setFlashloanPaused(JToken jToken, bool state) public returns (bool) {
+    function _setFlashloanPaused(GToken jToken, bool state) public returns (bool) {
         require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
@@ -4379,7 +4379,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     function claimReward(
         uint8 rewardType,
         address payable holder,
-        JToken[] memory jTokens
+        GToken[] memory jTokens
     ) public {
         RewardDistributor(rewardDistributor).claimReward(rewardType, holder, jTokens);
     }
@@ -4395,7 +4395,7 @@ contract Joetroller is JoetrollerV1Storage, JoetrollerInterface, JoetrollerError
     function claimReward(
         uint8 rewardType,
         address payable[] memory holders,
-        JToken[] memory jTokens,
+        GToken[] memory jTokens,
         bool borrowers,
         bool suppliers
     ) public payable {
@@ -4412,7 +4412,7 @@ contract RewardDistributorStorage {
     /**
      * @notice Active brains of Unitroller
      */
-    Joetroller public joetroller;
+    Gtroller public gTroller;
 
     struct RewardMarketState {
         /// @notice The market's last updated joeBorrowIndex or joeSupplyIndex
@@ -4448,12 +4448,12 @@ contract RewardDistributorStorage {
 
 contract RewardDistributor is RewardDistributorStorage, Exponential {
     /// @notice Emitted when a new reward speed is calculated for a market
-    event RewardSpeedUpdated(uint8 rewardType, JToken indexed jToken, uint256 newSpeed);
+    event RewardSpeedUpdated(uint8 rewardType, GToken indexed jToken, uint256 newSpeed);
 
     /// @notice Emitted when JOE/AVAX is distributed to a supplier
     event DistributedSupplierReward(
         uint8 rewardType,
-        JToken indexed jToken,
+        GToken indexed jToken,
         address indexed supplier,
         uint256 rewardDelta,
         uint256 rewardSupplyIndex
@@ -4462,7 +4462,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     /// @notice Emitted when JOE/AVAX is distributed to a borrower
     event DistributedBorrowerReward(
         uint8 rewardType,
-        JToken indexed jToken,
+        GToken indexed jToken,
         address indexed borrower,
         uint256 rewardDelta,
         uint256 rewardBorrowIndex
@@ -4479,7 +4479,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
 
     function initialize() public {
         require(!initialized, "RewardDistributor already initialized");
-        joetroller = Joetroller(msg.sender);
+        gTroller = Gtroller(msg.sender);
         initialized = true;
     }
 
@@ -4487,7 +4487,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      * @notice Checks caller is admin, or this contract is becoming the new implementation
      */
     function adminOrInitializing() internal view returns (bool) {
-        return msg.sender == admin || msg.sender == address(joetroller);
+        return msg.sender == admin || msg.sender == address(gTroller);
     }
 
     /**
@@ -4498,7 +4498,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      */
     function _setRewardSpeed(
         uint8 rewardType,
-        JToken jToken,
+        GToken jToken,
         uint256 rewardSpeed
     ) public {
         require(rewardType <= 1, "rewardType is invalid");
@@ -4514,7 +4514,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      */
     function setRewardSpeedInternal(
         uint8 rewardType,
-        JToken jToken,
+        GToken jToken,
         uint256 newSpeed
     ) internal {
         uint256 currentRewardSpeed = rewardSpeeds[rewardType][address(jToken)];
@@ -4525,7 +4525,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
             updateRewardBorrowIndex(rewardType, address(jToken), borrowIndex);
         } else if (newSpeed != 0) {
             // Add the JOE market
-            require(joetroller.isMarketListed(address(jToken)), "reward market is not listed");
+            require(gTroller.isMarketListed(address(jToken)), "reward market is not listed");
 
             if (
                 rewardSupplyState[rewardType][address(jToken)].index == 0 &&
@@ -4566,7 +4566,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         uint256 blockTimestamp = getBlockTimestamp();
         uint256 deltaTimestamps = sub_(blockTimestamp, uint256(supplyState.timestamp));
         if (deltaTimestamps > 0 && supplySpeed > 0) {
-            uint256 supplyTokens = JToken(jToken).totalSupply();
+            uint256 supplyTokens = GToken(jToken).totalSupply();
             uint256 rewardAccrued = mul_(deltaTimestamps, supplySpeed);
             Double memory ratio = supplyTokens > 0 ? fraction(rewardAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
@@ -4595,7 +4595,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         uint256 blockTimestamp = getBlockTimestamp();
         uint256 deltaTimestamps = sub_(blockTimestamp, uint256(borrowState.timestamp));
         if (deltaTimestamps > 0 && borrowSpeed > 0) {
-            uint256 borrowAmount = div_(JToken(jToken).totalBorrows(), marketBorrowIndex);
+            uint256 borrowAmount = div_(GToken(jToken).totalBorrows(), marketBorrowIndex);
             uint256 rewardAccrued = mul_(deltaTimestamps, borrowSpeed);
             Double memory ratio = borrowAmount > 0 ? fraction(rewardAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
@@ -4630,11 +4630,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
         }
 
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
-        uint256 supplierTokens = JToken(jToken).balanceOf(supplier);
+        uint256 supplierTokens = GToken(jToken).balanceOf(supplier);
         uint256 supplierDelta = mul_(supplierTokens, deltaIndex);
         uint256 supplierAccrued = add_(rewardAccrued[rewardType][supplier], supplierDelta);
         rewardAccrued[rewardType][supplier] = supplierAccrued;
-        emit DistributedSupplierReward(rewardType, JToken(jToken), supplier, supplierDelta, supplyIndex.mantissa);
+        emit DistributedSupplierReward(rewardType, GToken(jToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
 
     /**
@@ -4658,11 +4658,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
 
         if (borrowerIndex.mantissa > 0) {
             Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
-            uint256 borrowerAmount = div_(JToken(jToken).borrowBalanceStored(borrower), marketBorrowIndex);
+            uint256 borrowerAmount = div_(GToken(jToken).borrowBalanceStored(borrower), marketBorrowIndex);
             uint256 borrowerDelta = mul_(borrowerAmount, deltaIndex);
             uint256 borrowerAccrued = add_(rewardAccrued[rewardType][borrower], borrowerDelta);
             rewardAccrued[rewardType][borrower] = borrowerAccrued;
-            emit DistributedBorrowerReward(rewardType, JToken(jToken), borrower, borrowerDelta, borrowIndex.mantissa);
+            emit DistributedBorrowerReward(rewardType, GToken(jToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
 
@@ -4703,7 +4703,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
      * @param holder The address to claim JOE/AVAX for
      */
     function claimReward(uint8 rewardType, address payable holder) public {
-        return claimReward(rewardType, holder, joetroller.getAllMarkets());
+        return claimReward(rewardType, holder, gTroller.getAllMarkets());
     }
 
     /**
@@ -4714,7 +4714,7 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     function claimReward(
         uint8 rewardType,
         address payable holder,
-        JToken[] memory jTokens
+        GToken[] memory jTokens
     ) public {
         address payable[] memory holders = new address payable[](1);
         holders[0] = holder;
@@ -4732,14 +4732,14 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     function claimReward(
         uint8 rewardType,
         address payable[] memory holders,
-        JToken[] memory jTokens,
+        GToken[] memory jTokens,
         bool borrowers,
         bool suppliers
     ) public payable {
         require(rewardType <= 1, "rewardType is invalid");
         for (uint256 i = 0; i < jTokens.length; i++) {
-            JToken jToken = jTokens[i];
-            require(joetroller.isMarketListed(address(jToken)), "market must be listed");
+            GToken jToken = jTokens[i];
+            require(gTroller.isMarketListed(address(jToken)), "market must be listed");
             if (borrowers == true) {
                 Exp memory borrowIndex = Exp({mantissa: jToken.borrowIndex()});
                 updateRewardBorrowIndex(rewardType, address(jToken), borrowIndex);
@@ -4823,11 +4823,11 @@ contract RewardDistributor is RewardDistributorStorage, Exponential {
     }
 
     /**
-     * @notice Set the Joetroller address
+     * @notice Set the Gtroller address
      */
-    function setJoetroller(address _joetroller) public {
-        require(msg.sender == admin, "only admin can set Joetroller");
-        joetroller = Joetroller(_joetroller);
+    function setGtroller(address _gTroller) public {
+        require(msg.sender == admin, "only admin can set Gtroller");
+        gTroller = Gtroller(_gTroller);
     }
 
     /**

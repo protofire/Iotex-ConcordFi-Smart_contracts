@@ -5,7 +5,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   makeFlashloanReceiver,
   balanceOf,
 } = require("../Utils/BankerJoe");
@@ -19,10 +19,10 @@ describe("Flashloan test", function () {
   let reservesFactor = 0.5;
 
   beforeEach(async () => {
-    jToken = await makeJToken({ kind: "jwrapped", supportMarket: true });
+    jToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
     flashloanReceiver = await makeFlashloanReceiver({ kind: "native" });
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.joetroller._address,
+      jToken.gTroller._address,
       saddle.accounts[0],
     ]);
 
@@ -146,7 +146,7 @@ describe("Flashloan test", function () {
     });
   });
 
-  it("reject by joetroller", async () => {
+  it("reject by gTroller", async () => {
     const borrowAmount = 10_000;
     const totalFee = 8;
     expect(
@@ -158,7 +158,7 @@ describe("Flashloan test", function () {
       ])
     ).toSucceed();
 
-    await send(jToken.joetroller, "_setFlashloanPaused", [
+    await send(jToken.gTroller, "_setFlashloanPaused", [
       jToken._address,
       true,
     ]);
@@ -172,7 +172,7 @@ describe("Flashloan test", function () {
       ])
     ).rejects.toRevert("revert flashloan is paused");
 
-    await send(jToken.joetroller, "_setFlashloanPaused", [
+    await send(jToken.gTroller, "_setFlashloanPaused", [
       jToken._address,
       false,
     ]);
@@ -193,9 +193,9 @@ describe("Flashloan re-entry test", () => {
   let cash = 1000_000;
 
   beforeEach(async () => {
-    jToken = await makeJToken({ kind: "jwrapped", supportMarket: true });
+    jToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.joetroller._address,
+      jToken.gTroller._address,
       saddle.accounts[0],
     ]);
     await send(jToken.underlying, "harnessSetBalance", [jToken._address, cash]);

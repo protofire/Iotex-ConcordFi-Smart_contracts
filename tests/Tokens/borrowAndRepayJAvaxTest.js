@@ -6,7 +6,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   balanceOf,
   borrowSnapshot,
   totalBorrows,
@@ -25,8 +25,8 @@ const borrowAmount = avaxUnsigned(10e3);
 const repayAmount = avaxUnsigned(10e2);
 
 async function preBorrow(jToken, borrower, borrowAmount) {
-  await send(jToken.joetroller, "setBorrowAllowed", [true]);
-  await send(jToken.joetroller, "setBorrowVerify", [true]);
+  await send(jToken.gTroller, "setBorrowAllowed", [true]);
+  await send(jToken.gTroller, "setBorrowVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken, "harnessSetFailTransferToAddress", [borrower, false]);
   await send(jToken, "harnessSetAccountBorrows", [borrower, 0, 0]);
@@ -47,8 +47,8 @@ async function borrow(jToken, borrower, borrowAmount, opts = {}) {
 
 async function preRepay(jToken, benefactor, borrower, repayAmount) {
   // setup either benefactor OR borrower for success in repaying
-  await send(jToken.joetroller, "setRepayBorrowAllowed", [true]);
-  await send(jToken.joetroller, "setRepayBorrowVerify", [true]);
+  await send(jToken.gTroller, "setRepayBorrowAllowed", [true]);
+  await send(jToken.gTroller, "setRepayBorrowVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await pretendBorrow(jToken, borrower, 1, 1, repayAmount);
 }
@@ -70,27 +70,27 @@ async function repayBorrow(jToken, borrower, repayAmount) {
   });
 }
 
-describe("JAvax", function () {
+describe("GIotx", function () {
   let jToken, root, borrower, benefactor, accounts;
   beforeEach(async () => {
     [root, borrower, benefactor, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
+    jToken = await makeGToken({
       kind: "javax",
-      joetrollerOpts: { kind: "bool" },
+      gTrollerOpts: { kind: "bool" },
     });
   });
 
   describe("borrowFresh", () => {
     beforeEach(async () => await preBorrow(jToken, borrower, borrowAmount));
 
-    it("fails if joetroller tells it to", async () => {
-      await send(jToken.joetroller, "setBorrowAllowed", [false]);
+    it("fails if gTroller tells it to", async () => {
+      await send(jToken.gTroller, "setBorrowAllowed", [false]);
       expect(
         await borrowFresh(jToken, borrower, borrowAmount)
       ).toHaveTrollReject("BORROW_JOETROLLER_REJECTION");
     });
 
-    it("proceeds if joetroller tells it to", async () => {
+    it("proceeds if gTroller tells it to", async () => {
       await expect(
         await borrowFresh(jToken, borrower, borrowAmount)
       ).toSucceed();
@@ -148,7 +148,7 @@ describe("JAvax", function () {
     });
 
     xit("reverts if borrowVerify fails", async () => {
-      await send(jToken.joetroller, "setBorrowVerify", [false]);
+      await send(jToken.gTroller, "setBorrowVerify", [false]);
       await expect(
         borrowFresh(jToken, borrower, borrowAmount)
       ).rejects.toRevert("revert borrowVerify rejected borrow");
@@ -250,7 +250,7 @@ describe("JAvax", function () {
         });
 
         it("fails if repay is not allowed", async () => {
-          await send(jToken.joetroller, "setRepayBorrowAllowed", [false]);
+          await send(jToken.gTroller, "setRepayBorrowAllowed", [false]);
           expect(
             await repayBorrowFresh(jToken, payer, borrower, repayAmount)
           ).toHaveTrollReject(
@@ -303,7 +303,7 @@ describe("JAvax", function () {
         });
 
         xit("reverts if repayBorrowVerify fails", async () => {
-          await send(jToken.joetroller, "setRepayBorrowVerify", [false]);
+          await send(jToken.gTroller, "setRepayBorrowVerify", [false]);
           await expect(
             repayBorrowFresh(jToken, payer, borrower, repayAmount)
           ).rejects.toRevert("revert repayBorrowVerify rejected repayBorrow");
@@ -390,7 +390,7 @@ describe("JAvax", function () {
     });
 
     it("reverts when repay borrow fresh fails", async () => {
-      await send(jToken.joetroller, "setRepayBorrowAllowed", [false]);
+      await send(jToken.gTroller, "setRepayBorrowAllowed", [false]);
       await expect(
         repayBorrow(jToken, borrower, repayAmount)
       ).rejects.toRevertWithError(

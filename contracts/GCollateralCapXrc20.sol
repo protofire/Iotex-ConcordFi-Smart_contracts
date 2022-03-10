@@ -2,20 +2,20 @@
 
 pragma solidity ^0.5.16;
 
-import "./JToken.sol";
+import "./GToken.sol";
 import "./ERC3156FlashLenderInterface.sol";
 import "./ERC3156FlashBorrowerInterface.sol";
 
 /**
- * @title Cream's JCollateralCapErc20 Contract
- * @notice JTokens which wrap an EIP-20 underlying with collateral cap
+ * @title Cream's GCollateralCapXrc20 Contract
+ * @notice GTokens which wrap an EIP-20 underlying with collateral cap
  * @author Cream
  */
-contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolSeizeShareStorage {
+contract GCollateralCapXrc20 is GToken, GCollateralCapXrc20Interface, GProtocolSeizeShareStorage {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -24,15 +24,15 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
      */
     function initialize(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
     ) public {
-        // JToken initialize does the bulk of the work
-        super.initialize(joetroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        // GToken initialize does the bulk of the work
+        super.initialize(gTroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -113,7 +113,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256) {
         (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -156,7 +156,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
      */
     function maxFlashLoan() external view returns (uint256) {
         uint256 amount = 0;
-        if (JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(address(this), address(0), amount, "")) {
+        if (GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(address(this), address(0), amount, "")) {
             amount = getCashPrior();
         }
         return amount;
@@ -168,7 +168,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
      */
     function flashFee(uint256 amount) external view returns (uint256) {
         require(
-            JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(address(this), address(0), amount, ""),
+            GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(address(this), address(0), amount, ""),
             "flashloan is paused"
         );
         return div_(mul_(amount, flashFeeBips), 10000);
@@ -191,7 +191,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         require(amount > 0, "flashLoan amount should be greater than zero");
         require(accrueInterest() == uint256(Error.NO_ERROR), "accrue interest failed");
         require(
-            JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(
+            GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(
                 address(this),
                 address(receiver),
                 amount,
@@ -241,14 +241,14 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
     /**
      * @notice Register account collateral tokens if there is space.
      * @param account The account to register
-     * @dev This function could only be called by joetroller.
+     * @dev This function could only be called by gTroller.
      * @return The actual registered amount of collateral
      */
     function registerCollateral(address account) external returns (uint256) {
         // Make sure accountCollateralTokens of `account` is initialized.
         initializeAccountCollateralTokens(account);
 
-        require(msg.sender == address(joetroller), "only joetroller may register collateral for user");
+        require(msg.sender == address(gTroller), "only gTroller may register collateral for user");
 
         uint256 amount = sub_(accountTokens[account], accountCollateralTokens[account]);
         return increaseUserCollateralInternal(account, amount);
@@ -256,14 +256,14 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
 
     /**
      * @notice Unregister account collateral tokens if the account still has enough collateral.
-     * @dev This function could only be called by joetroller.
+     * @dev This function could only be called by gTroller.
      * @param account The account to unregister
      */
     function unregisterCollateral(address account) external {
         // Make sure accountCollateralTokens of `account` is initialized.
         initializeAccountCollateralTokens(account);
 
-        require(msg.sender == address(joetroller), "only joetroller may unregister collateral for user");
+        require(msg.sender == address(gTroller), "only gTroller may unregister collateral for user");
 
         decreaseUserCollateralInternal(account, accountCollateralTokens[account]);
     }
@@ -304,7 +304,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
          * access accountTokens to call this function to check if accountCollateralTokens needed to be initialized.
          */
         if (!isCollateralTokenInit[account]) {
-            if (JoetrollerInterfaceExtension(address(joetroller)).checkMembership(account, JToken(this))) {
+            if (GtrollerInterfaceExtension(address(gTroller)).checkMembership(account, GToken(this))) {
                 accountCollateralTokens[account] = accountTokens[account];
                 totalCollateralTokens = add_(totalCollateralTokens, accountTokens[account]);
 
@@ -432,10 +432,10 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         }
 
         /**
-         * Since bufferTokens are not collateralized and can be transferred freely, we only check with joetroller
+         * Since bufferTokens are not collateralized and can be transferred freely, we only check with gTroller
          * whether collateralized tokens can be transferred.
          */
-        uint256 allowed = joetroller.transferAllowed(address(this), src, dst, collateralTokens);
+        uint256 allowed = gTroller.transferAllowed(address(this), src, dst, collateralTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.TRANSFER_JOETROLLER_REJECTION, allowed);
         }
@@ -473,7 +473,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         emit Transfer(src, dst, tokens);
 
         // unused function
-        // joetroller.transferVerify(address(this), src, dst, tokens);
+        // gTroller.transferVerify(address(this), src, dst, tokens);
 
         return uint256(Error.NO_ERROR);
     }
@@ -482,7 +482,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
      * @notice Get the account's jToken balances
      * @param account The address of the account
      */
-    function getJTokenBalanceInternal(address account) internal view returns (uint256) {
+    function getGTokenBalanceInternal(address account) internal view returns (uint256) {
         if (isCollateralTokenInit[account]) {
             return accountCollateralTokens[account];
         } else {
@@ -529,7 +529,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
      * @param amount The amount of collateral user wants to decrease
      */
     function decreaseUserCollateralInternal(address account, uint256 amount) internal {
-        require(joetroller.redeemAllowed(address(this), account, amount) == 0, "joetroller rejection");
+        require(gTroller.redeemAllowed(address(this), account, amount) == 0, "gTroller rejection");
 
         /*
          * Return if amount is zero.
@@ -568,7 +568,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         initializeAccountCollateralTokens(minter);
 
         /* Fail if mint not allowed */
-        uint256 allowed = joetroller.mintAllowed(address(this), minter, mintAmount);
+        uint256 allowed = gTroller.mintAllowed(address(this), minter, mintAmount);
         if (allowed != 0) {
             return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.MINT_JOETROLLER_REJECTION, allowed), 0);
         }
@@ -621,7 +621,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         /*
          * We only allocate collateral tokens if the minter has entered the market.
          */
-        if (JoetrollerInterfaceExtension(address(joetroller)).checkMembership(minter, JToken(this))) {
+        if (GtrollerInterfaceExtension(address(gTroller)).checkMembership(minter, GToken(this))) {
             increaseUserCollateralInternal(minter, vars.mintTokens);
         }
 
@@ -631,7 +631,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
 
         /* We call the defense hook */
         // unused function
-        // joetroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
+        // gTroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
 
         return (uint256(Error.NO_ERROR), vars.actualMintAmount);
     }
@@ -686,7 +686,6 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
             vars.redeemAmount = redeemAmountIn;
         }
 
-
         /**
          * For every user, accountTokens must be greater than or equal to accountCollateralTokens.
          * The buffer between the two values will be redeemed first.
@@ -699,7 +698,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
             collateralTokens = vars.redeemTokens - bufferTokens;
         }
 
-        uint256 allowed = joetroller.redeemAllowed(address(this), redeemer, collateralTokens);
+        uint256 allowed = gTroller.redeemAllowed(address(this), redeemer, collateralTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REDEEM_JOETROLLER_REJECTION, allowed);
         }
@@ -744,14 +743,14 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
         /* We call the defense hook */
-        joetroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+        gTroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another JToken.
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
      *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
      * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
      * @param liquidator The account receiving seized collateral
@@ -770,7 +769,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
         initializeAccountCollateralTokens(borrower);
 
         /* Fail if seize not allowed */
-        uint256 allowed = joetroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        uint256 allowed = gTroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.LIQUIDATE_SEIZE_JOETROLLER_REJECTION, allowed);
         }
@@ -816,7 +815,7 @@ contract JCollateralCapErc20 is JToken, JCollateralCapErc20Interface, JProtocolS
 
         /* We call the defense hook */
         // unused function
-        // joetroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        // gTroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
 
         return uint256(Error.NO_ERROR);
     }

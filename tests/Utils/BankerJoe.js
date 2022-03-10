@@ -9,45 +9,41 @@ const {
   mergeInterface,
 } = require("./Avalanche");
 
-async function makeJoetroller(opts = {}) {
+async function makeGtroller(opts = {}) {
   const { root = saddle.account, kind = "unitroller" } = opts || {};
 
   if (kind == "bool") {
-    const joetroller = await deploy("BoolJoetroller");
+    const gTroller = await deploy("BoolGtroller");
     const priceOracle =
       opts.priceOracle || (await makePriceOracle(opts.priceOracleOpts));
     const rewardDistributor = await makeRewardDistributor();
 
-    await send(joetroller, "_setPriceOracle", [priceOracle._address]);
-    await send(joetroller, "_setRewardDistributor", [
-      rewardDistributor._address,
-    ]);
-    return Object.assign(joetroller, { priceOracle });
+    await send(gTroller, "_setPriceOracle", [priceOracle._address]);
+    await send(gTroller, "_setRewardDistributor", [rewardDistributor._address]);
+    return Object.assign(gTroller, { priceOracle });
   }
 
   if (kind == "false-marker") {
-    return await deploy("FalseMarkerMethodJoetroller");
+    return await deploy("FalseMarkerMethodGtroller");
   }
 
   if (kind == "v1-no-proxy") {
-    const joetroller = await deploy("JoetrollerHarness");
+    const gTroller = await deploy("GtrollerHarness");
     const priceOracle =
       opts.priceOracle || (await makePriceOracle(opts.priceOracleOpts));
     const closeFactor = avaxMantissa(dfn(opts.closeFactor, 0.051));
     const rewardDistributor = await makeRewardDistributor();
 
-    await send(joetroller, "_setCloseFactor", [closeFactor]);
-    await send(joetroller, "_setPriceOracle", [priceOracle._address]);
-    await send(joetroller, "_setRewardDistributor", [
-      rewardDistributor._address,
-    ]);
+    await send(gTroller, "_setCloseFactor", [closeFactor]);
+    await send(gTroller, "_setPriceOracle", [priceOracle._address]);
+    await send(gTroller, "_setRewardDistributor", [rewardDistributor._address]);
 
-    return Object.assign(joetroller, { priceOracle });
+    return Object.assign(gTroller, { priceOracle });
   }
 
   if (kind == "banker-joe") {
     const unitroller = opts.unitroller || (await deploy("Unitroller"));
-    const joetroller = await deploy("BankerJoeJoetrollerHarness");
+    const gTroller = await deploy("BankerJoeGtrollerHarness");
     const priceOracle =
       opts.priceOracle || (await makePriceOracle(opts.priceOracleOpts));
     const closeFactor = avaxMantissa(dfn(opts.closeFactor, 0.051));
@@ -55,9 +51,9 @@ async function makeJoetroller(opts = {}) {
     const joe = opts.joe || (await deploy("Joe", [opts.joeOwner || root]));
     const rewardDistributor = await makeRewardDistributor();
 
-    await send(unitroller, "_setPendingImplementation", [joetroller._address]);
-    await send(joetroller, "_become", [unitroller._address]);
-    mergeInterface(unitroller, joetroller);
+    await send(unitroller, "_setPendingImplementation", [gTroller._address]);
+    await send(gTroller, "_become", [unitroller._address]);
+    mergeInterface(unitroller, gTroller);
     await send(unitroller, "_setLiquidationIncentive", [liquidationIncentive]);
     await send(unitroller, "_setCloseFactor", [closeFactor]);
     await send(unitroller, "_setPriceOracle", [priceOracle._address]);
@@ -71,16 +67,16 @@ async function makeJoetroller(opts = {}) {
 
   if (kind == "unitroller") {
     const unitroller = opts.unitroller || (await deploy("Unitroller"));
-    const joetroller = await deploy("JoetrollerHarness");
+    const gTroller = await deploy("GtrollerHarness");
     const priceOracle =
       opts.priceOracle || (await makePriceOracle(opts.priceOracleOpts));
     const rewardDistributor = await makeRewardDistributor();
     const closeFactor = avaxMantissa(dfn(opts.closeFactor, 0.051));
     const liquidationIncentive = avaxMantissa(1);
 
-    await send(unitroller, "_setPendingImplementation", [joetroller._address]);
-    await send(joetroller, "_become", [unitroller._address]);
-    mergeInterface(unitroller, joetroller);
+    await send(unitroller, "_setPendingImplementation", [gTroller._address]);
+    await send(gTroller, "_become", [unitroller._address]);
+    mergeInterface(unitroller, gTroller);
     await send(unitroller, "_setLiquidationIncentive", [liquidationIncentive]);
     await send(unitroller, "_setCloseFactor", [closeFactor]);
     await send(unitroller, "_setPriceOracle", [priceOracle._address]);
@@ -92,18 +88,17 @@ async function makeJoetroller(opts = {}) {
   }
 }
 
-async function makeJToken(opts = {}) {
+async function makeGToken(opts = {}) {
   const { root = saddle.account, kind = "jerc20" } = opts || {};
 
-  const joetroller =
-    opts.joetroller || (await makeJoetroller(opts.joetrollerOpts));
+  const gTroller = opts.gTroller || (await makeGtroller(opts.gTrollerOpts));
   const interestRateModel =
     opts.interestRateModel ||
     (await makeInterestRateModel(opts.interestRateModelOpts));
   const exchangeRate = avaxMantissa(dfn(opts.exchangeRate, 1));
   const decimals = avaxUnsigned(dfn(opts.decimals, 8));
   const symbol = opts.symbol || (kind === "javax" ? "jAVAX" : "jOMG");
-  const name = opts.name || `JToken ${symbol}`;
+  const name = opts.name || `GToken ${symbol}`;
   const admin = opts.admin || root;
 
   let jToken, underlying;
@@ -112,8 +107,8 @@ async function makeJToken(opts = {}) {
 
   switch (kind) {
     case "javax":
-      jToken = await deploy("JAvaxHarness", [
-        joetroller._address,
+      jToken = await deploy("GIotxHarness", [
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -125,10 +120,10 @@ async function makeJToken(opts = {}) {
 
     case "jcapable":
       underlying = opts.underlying || (await makeToken(opts.underlyingOpts));
-      jDelegatee = await deploy("JCapableErc20Delegate");
-      jDelegator = await deploy("JErc20Delegator", [
+      jDelegatee = await deploy("GCapableXrc20Delegate");
+      jDelegator = await deploy("GXrc20Delegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -139,17 +134,17 @@ async function makeJToken(opts = {}) {
         "0x0",
       ]);
       jToken = await saddle.getContractAt(
-        "JCapableErc20Delegate",
+        "GCapableXrc20Delegate",
         jDelegator._address
       );
       break;
 
     case "jcollateralcap":
       underlying = opts.underlying || (await makeToken(opts.underlyingOpts));
-      jDelegatee = await deploy("JCollateralCapErc20DelegateHarness");
-      jDelegator = await deploy("JCollateralCapErc20Delegator", [
+      jDelegatee = await deploy("GCollateralCapXrc20DelegateHarness");
+      jDelegator = await deploy("GCollateralCapXrc20Delegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -160,7 +155,7 @@ async function makeJToken(opts = {}) {
         "0x0",
       ]);
       jToken = await saddle.getContractAt(
-        "JCollateralCapErc20DelegateHarness",
+        "GCollateralCapXrc20DelegateHarness",
         jDelegator._address
       );
       version = 1; // jcollateralcap's version is 1
@@ -174,9 +169,9 @@ async function makeJToken(opts = {}) {
       const joeBar = await deploy("JoeBar", [joeToken._address]);
 
       jDelegatee = await deploy("JJLPDelegateHarness");
-      jDelegator = await deploy("JErc20Delegator", [
+      jDelegator = await deploy("GXrc20Delegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -197,10 +192,10 @@ async function makeJToken(opts = {}) {
 
     case "jjtoken":
       underlying = opts.underlying || (await makeToken({ kind: "jtoken" }));
-      jDelegatee = await deploy("JJTokenDelegateHarness");
-      jDelegator = await deploy("JErc20Delegator", [
+      jDelegatee = await deploy("JGTokenDelegateHarness");
+      jDelegator = await deploy("GXrc20Delegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -211,17 +206,17 @@ async function makeJToken(opts = {}) {
         "0x0",
       ]);
       jToken = await saddle.getContractAt(
-        "JJTokenDelegateHarness",
+        "JGTokenDelegateHarness",
         jDelegator._address
       ); // XXXS at
       break;
 
     case "jwrapped":
       underlying = await makeToken({ kind: "wrapped" });
-      jDelegatee = await deploy("JWrappedNativeDelegateHarness");
-      jDelegator = await deploy("JWrappedNativeDelegator", [
+      jDelegatee = await deploy("GWrappedNativeDelegateHarness");
+      jDelegator = await deploy("GWrappedNativeDelegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -232,7 +227,7 @@ async function makeJToken(opts = {}) {
         "0x0",
       ]);
       jToken = await saddle.getContractAt(
-        "JWrappedNativeDelegateHarness",
+        "GWrappedNativeDelegateHarness",
         jDelegator._address
       ); // XXXS at
       version = 2; // cwrappednative's version is 2
@@ -241,10 +236,10 @@ async function makeJToken(opts = {}) {
     case "jerc20":
     default:
       underlying = opts.underlying || (await makeToken(opts.underlyingOpts));
-      jDelegatee = await deploy("JErc20DelegateHarness");
-      jDelegator = await deploy("JErc20Delegator", [
+      jDelegatee = await deploy("GXrc20DelegateHarness");
+      jDelegator = await deploy("GXrc20Delegator", [
         underlying._address,
-        joetroller._address,
+        gTroller._address,
         interestRateModel._address,
         exchangeRate,
         name,
@@ -255,19 +250,19 @@ async function makeJToken(opts = {}) {
         "0x0",
       ]);
       jToken = await saddle.getContractAt(
-        "JErc20DelegateHarness",
+        "GXrc20DelegateHarness",
         jDelegator._address
       ); // XXXS at
       break;
   }
 
   if (opts.supportMarket) {
-    await send(joetroller, "_supportMarket", [jToken._address, version]);
+    await send(gTroller, "_supportMarket", [jToken._address, version]);
   }
 
   if (opts.underlyingPrice) {
     const price = avaxMantissa(opts.underlyingPrice);
-    await send(joetroller.priceOracle, "setUnderlyingPrice", [
+    await send(gTroller.priceOracle, "setUnderlyingPrice", [
       jToken._address,
       price,
     ]);
@@ -276,7 +271,7 @@ async function makeJToken(opts = {}) {
   if (opts.collateralFactor) {
     const factor = avaxMantissa(opts.collateralFactor);
     expect(
-      await send(joetroller, "_setCollateralFactor", [jToken._address, factor])
+      await send(gTroller, "_setCollateralFactor", [jToken._address, factor])
     ).toSucceed();
   }
 
@@ -284,7 +279,7 @@ async function makeJToken(opts = {}) {
     name,
     symbol,
     underlying,
-    joetroller,
+    gTroller,
     interestRateModel,
   });
 }
@@ -349,11 +344,11 @@ async function makeMockReference(opts = {}) {
   return await deploy("MockReference");
 }
 
-async function makeJTokenAdmin(opts = {}) {
+async function makeGTokenAdmin(opts = {}) {
   const { root = saddle.account } = opts || {};
 
   const admin = opts.admin || root;
-  return await deploy("JTokenAdmin", [admin]);
+  return await deploy("GTokenAdmin", [admin]);
 }
 
 async function makeToken(opts = {}) {
@@ -371,15 +366,15 @@ async function makeToken(opts = {}) {
     const symbol = opts.symbol || "jOMG";
     const name = opts.name || `Banker Joe ${symbol}`;
 
-    const joetroller = await makeJoetroller({ kind: "banker-joe" });
-    const jToken = await deploy("JTokenHarness", [
+    const gTroller = await makeGtroller({ kind: "banker-joe" });
+    const jToken = await deploy("GTokenHarness", [
       quantity,
       name,
       decimals,
       symbol,
-      joetroller._address,
+      gTroller._address,
     ]);
-    await send(joetroller, "_supportMarket", [jToken._address, 0]);
+    await send(gTroller, "_supportMarket", [jToken._address, 0]);
     return jToken;
   } else if (kind == "curveToken") {
     const quantity = avaxUnsigned(dfn(opts.quantity, 1e25));
@@ -552,7 +547,7 @@ async function totalReserves(jToken) {
 
 async function enterMarkets(jTokens, from) {
   return await send(
-    jTokens[0].joetroller,
+    jTokens[0].gTroller,
     "enterMarkets",
     [jTokens.map((c) => c._address)],
     { from }
@@ -697,7 +692,7 @@ async function quickRedeemUnderlying(
 }
 
 async function setOraclePrice(jToken, price) {
-  return send(jToken.joetroller.priceOracle, "setUnderlyingPrice", [
+  return send(jToken.gTroller.priceOracle, "setUnderlyingPrice", [
     jToken._address,
     avaxMantissa(price),
   ]);
@@ -753,8 +748,8 @@ async function pretendBorrow(
 }
 
 module.exports = {
-  makeJoetroller,
-  makeJToken,
+  makeGtroller,
+  makeGToken,
   makeInterestRateModel,
   makePriceOracle,
   makeMockAggregator,
@@ -764,7 +759,7 @@ module.exports = {
   makeToken,
   makeCurveSwap,
   makeRewardDistributor,
-  makeJTokenAdmin,
+  makeGTokenAdmin,
 
   balanceOf,
   collateralTokenBalance,

@@ -1,7 +1,7 @@
 const { avaxGasCost, avaxUnsigned, UInt256Max } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   fastForward,
   setBalance,
   getBalances,
@@ -22,20 +22,20 @@ async function preLiquidate(
   jTokenCollateral
 ) {
   // setup for success in liquidating
-  await send(jToken.joetroller, "setLiquidateBorrowAllowed", [true]);
-  await send(jToken.joetroller, "setLiquidateBorrowVerify", [true]);
-  await send(jToken.joetroller, "setRepayBorrowAllowed", [true]);
-  await send(jToken.joetroller, "setRepayBorrowVerify", [true]);
-  await send(jToken.joetroller, "setSeizeAllowed", [true]);
-  await send(jToken.joetroller, "setSeizeVerify", [true]);
-  await send(jToken.joetroller, "setFailCalculateSeizeTokens", [false]);
+  await send(jToken.gTroller, "setLiquidateBorrowAllowed", [true]);
+  await send(jToken.gTroller, "setLiquidateBorrowVerify", [true]);
+  await send(jToken.gTroller, "setRepayBorrowAllowed", [true]);
+  await send(jToken.gTroller, "setRepayBorrowVerify", [true]);
+  await send(jToken.gTroller, "setSeizeAllowed", [true]);
+  await send(jToken.gTroller, "setSeizeVerify", [true]);
+  await send(jToken.gTroller, "setFailCalculateSeizeTokens", [false]);
   await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
     liquidator,
     false,
   ]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jTokenCollateral.interestRateModel, "setFailBorrowRate", [false]);
-  await send(jTokenCollateral.joetroller, "setCalculatedSeizeTokens", [
+  await send(jTokenCollateral.gTroller, "setCalculatedSeizeTokens", [
     seizeTokens,
   ]);
   await setBalance(jTokenCollateral, liquidator, 0);
@@ -82,14 +82,14 @@ async function seize(jToken, liquidator, borrower, seizeAmount) {
   return send(jToken, "seize", [liquidator, borrower, seizeAmount]);
 }
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, liquidator, borrower, accounts;
   let jToken, jTokenCollateral;
 
   beforeEach(async () => {
     [root, liquidator, borrower, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({ joetrollerOpts: { kind: "bool" } });
-    jTokenCollateral = await makeJToken({ joetroller: jToken.joetroller });
+    jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
+    jTokenCollateral = await makeGToken({ gTroller: jToken.gTroller });
   });
 
   beforeEach(async () => {
@@ -103,8 +103,8 @@ describe("JToken", function () {
   });
 
   describe("liquidateBorrowFresh", () => {
-    it("fails if joetroller tells it to", async () => {
-      await send(jToken.joetroller, "setLiquidateBorrowAllowed", [false]);
+    it("fails if gTroller tells it to", async () => {
+      await send(jToken.gTroller, "setLiquidateBorrowAllowed", [false]);
       expect(
         await liquidateFresh(
           jToken,
@@ -116,7 +116,7 @@ describe("JToken", function () {
       ).toHaveTrollReject("LIQUIDATE_JOETROLLER_REJECTION", "MATH_ERROR");
     });
 
-    it("proceeds if joetroller tells it to", async () => {
+    it("proceeds if gTroller tells it to", async () => {
       expect(
         await liquidateFresh(
           jToken,
@@ -188,7 +188,7 @@ describe("JToken", function () {
         [jToken, jTokenCollateral],
         [liquidator, borrower]
       );
-      await send(jToken.joetroller, "setFailCalculateSeizeTokens", [true]);
+      await send(jToken.gTroller, "setFailCalculateSeizeTokens", [true]);
       await expect(
         liquidateFresh(
           jToken,
@@ -208,7 +208,7 @@ describe("JToken", function () {
     });
 
     it("fails if repay fails", async () => {
-      await send(jToken.joetroller, "setRepayBorrowAllowed", [false]);
+      await send(jToken.gTroller, "setRepayBorrowAllowed", [false]);
       expect(
         await liquidateFresh(
           jToken,
@@ -221,7 +221,7 @@ describe("JToken", function () {
     });
 
     it("reverts if seize fails", async () => {
-      await send(jToken.joetroller, "setSeizeAllowed", [false]);
+      await send(jToken.gTroller, "setSeizeAllowed", [false]);
       await expect(
         liquidateFresh(
           jToken,
@@ -234,7 +234,7 @@ describe("JToken", function () {
     });
 
     xit("reverts if liquidateBorrowVerify fails", async () => {
-      await send(jToken.joetroller, "setLiquidateBorrowVerify", [false]);
+      await send(jToken.gTroller, "setLiquidateBorrowVerify", [false]);
       await expect(
         liquidateFresh(
           jToken,
@@ -358,7 +358,7 @@ describe("JToken", function () {
     // XXX verify callers are properly checked
 
     it("fails if seize is not allowed", async () => {
-      await send(jToken.joetroller, "setSeizeAllowed", [false]);
+      await send(jToken.gTroller, "setSeizeAllowed", [false]);
       expect(
         await seize(jTokenCollateral, liquidator, borrower, seizeTokens)
       ).toHaveTrollReject("LIQUIDATE_SEIZE_JOETROLLER_REJECTION", "MATH_ERROR");

@@ -1,41 +1,40 @@
 import { Event } from "../Event";
 import { World } from "../World";
-import { JoetrollerImpl } from "../Contract/JoetrollerImpl";
+import { GtrollerImpl } from "../Contract/GtrollerImpl";
 import { AddressV, Value } from "../Value";
 import { Arg, Fetcher, getFetcherValue } from "../Command";
-import { getJoetrollerImpl } from "../ContractLookup";
+import { getGtrollerImpl } from "../ContractLookup";
 
-export async function getJoetrollerImplAddress(
+export async function getGtrollerImplAddress(
   world: World,
-  joetrollerImpl: JoetrollerImpl
+  gTrollerImpl: GtrollerImpl
 ): Promise<AddressV> {
-  return new AddressV(joetrollerImpl._address);
+  return new AddressV(gTrollerImpl._address);
 }
 
-export function joetrollerImplFetchers() {
+export function gTrollerImplFetchers() {
   return [
-    new Fetcher<{ joetrollerImpl: JoetrollerImpl }, AddressV>(
+    new Fetcher<{ gTrollerImpl: GtrollerImpl }, AddressV>(
       `
         #### Address
 
-        * "JoetrollerImpl Address" - Returns address of joetroller implementation
+        * "GtrollerImpl Address" - Returns address of gTroller implementation
       `,
       "Address",
-      [new Arg("joetrollerImpl", getJoetrollerImpl)],
-      (world, { joetrollerImpl }) =>
-        getJoetrollerImplAddress(world, joetrollerImpl),
+      [new Arg("gTrollerImpl", getGtrollerImpl)],
+      (world, { gTrollerImpl }) => getGtrollerImplAddress(world, gTrollerImpl),
       { namePos: 1 }
     ),
   ];
 }
 
-export async function getJoetrollerImplValue(
+export async function getGtrollerImplValue(
   world: World,
   event: Event
 ): Promise<Value> {
   return await getFetcherValue<any, any>(
-    "JoetrollerImpl",
-    joetrollerImplFetchers(),
+    "GtrollerImpl",
+    gTrollerImplFetchers(),
     world,
     event
   );

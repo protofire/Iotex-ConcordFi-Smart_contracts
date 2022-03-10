@@ -1,6 +1,6 @@
 const { avaxUnsigned, avaxMantissa, both } = require("../Utils/Avalanche");
 
-const { fastForward, makeJToken } = require("../Utils/BankerJoe");
+const { fastForward, makeGToken } = require("../Utils/BankerJoe");
 
 const factor = avaxMantissa(0.02);
 
@@ -8,7 +8,7 @@ const reserves = avaxUnsigned(3e12);
 const cash = avaxUnsigned(reserves.multipliedBy(2));
 const reduction = avaxUnsigned(2e12);
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, accounts;
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
@@ -17,7 +17,7 @@ describe("JToken", function () {
   describe("_setReserveFactorFresh", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
     });
 
     it("rejects change by non-admin", async () => {
@@ -77,7 +77,7 @@ describe("JToken", function () {
   describe("_setReserveFactor", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
     });
 
     beforeEach(async () => {
@@ -117,7 +117,7 @@ describe("JToken", function () {
   describe("_reduceReservesFresh", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
       expect(
         await send(jToken, "harnessSetTotalReserves", [reserves])
       ).toSucceed();
@@ -196,7 +196,7 @@ describe("JToken", function () {
   describe("_reduceReserves", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
       await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
       expect(
         await send(jToken, "harnessSetTotalReserves", [reserves])
@@ -240,7 +240,7 @@ describe("JToken", function () {
   describe("gulp", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken({ kind: "jcapable" });
+      jToken = await makeGToken({ kind: "jcapable" });
     });
 
     it("absorbs excess cash into reserves", async () => {

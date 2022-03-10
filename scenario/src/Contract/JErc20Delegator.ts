@@ -1,9 +1,9 @@
 import { Contract } from "../Contract";
 import { Callable, Sendable } from "../Invokation";
-import { JTokenMethods } from "./JToken";
+import { GTokenMethods } from "./GToken";
 import { encodedNumber } from "../Encoding";
 
-interface JErc20DelegatorMethods extends JTokenMethods {
+interface GXrc20DelegatorMethods extends GTokenMethods {
   implementation(): Callable<string>;
   _setImplementation(
     implementation_: string,
@@ -12,27 +12,27 @@ interface JErc20DelegatorMethods extends JTokenMethods {
   ): Sendable<void>;
 }
 
-interface JErc20DelegatorScenarioMethods extends JErc20DelegatorMethods {
+interface GXrc20DelegatorScenarioMethods extends GXrc20DelegatorMethods {
   setTotalBorrows(amount: encodedNumber): Sendable<void>;
   setTotalReserves(amount: encodedNumber): Sendable<void>;
 }
 
-export interface JErc20Delegator extends Contract {
-  methods: JErc20DelegatorMethods;
+export interface GXrc20Delegator extends Contract {
+  methods: GXrc20DelegatorMethods;
   name: string;
 }
 
-export interface JErc20DelegatorScenario extends Contract {
-  methods: JErc20DelegatorMethods;
+export interface GXrc20DelegatorScenario extends Contract {
+  methods: GXrc20DelegatorMethods;
   name: string;
 }
 
-export interface JCollateralCapErc20DelegatorScenario extends Contract {
-  methods: JErc20DelegatorMethods;
+export interface GCollateralCapXrc20DelegatorScenario extends Contract {
+  methods: GXrc20DelegatorMethods;
   name: string;
 }
 
-export interface JWrappedNativeDelegatorScenario extends Contract {
-  methods: JErc20DelegatorMethods;
+export interface GWrappedNativeDelegatorScenario extends Contract {
+  methods: GXrc20DelegatorMethods;
   name: string;
 }

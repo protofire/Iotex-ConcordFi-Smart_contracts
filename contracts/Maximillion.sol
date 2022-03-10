@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "./JWrappedNative.sol";
+import "./GWrappedNative.sol";
 
 /**
  * @title Compound's Maximillion Contract
@@ -12,12 +12,12 @@ contract Maximillion {
     /**
      * @notice The default jAvax market to repay in
      */
-    JWrappedNative public jAvax;
+    GWrappedNative public jAvax;
 
     /**
-     * @notice Construct a Maximillion to repay max in a JWrappedNative market
+     * @notice Construct a Maximillion to repay max in a GWrappedNative market
      */
-    constructor(JWrappedNative jAvax_) public {
+    constructor(GWrappedNative jAvax_) public {
         jAvax = jAvax_;
     }
 
@@ -36,7 +36,7 @@ contract Maximillion {
      * @param borrower The address of the borrower account to repay on behalf of
      * @param jAvax_ The address of the jAvax contract to repay in
      */
-    function repayBehalfExplicit(address borrower, JWrappedNative jAvax_) public payable {
+    function repayBehalfExplicit(address borrower, GWrappedNative jAvax_) public payable {
         uint256 received = msg.value;
         uint256 borrows = jAvax_.borrowBalanceCurrent(borrower);
         if (received > borrows) {

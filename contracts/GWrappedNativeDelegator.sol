@@ -2,18 +2,18 @@
 
 pragma solidity ^0.5.16;
 
-import "./JTokenInterfaces.sol";
+import "./GTokenInterfaces.sol";
 
 /**
- * @title Cream's JCollateralCapErc20Delegator Contract
- * @notice JTokens which wrap an EIP-20 underlying and delegate to an implementation
- * @author Cream
+ * @title Compound's GWrappedNativeDelegator Contract
+ * @notice GTokens which wrap an EIP-20 underlying and delegate to an implementation
+ * @author Compound
  */
-contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Interface, JDelegatorInterface {
+contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -25,7 +25,7 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
      */
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -44,7 +44,7 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
             abi.encodeWithSignature(
                 "initialize(address,address,address,uint256,string,string,uint8)",
                 underlying_,
-                joetroller_,
+                gTroller_,
                 interestRateModel_,
                 initialExchangeRateMantissa_,
                 name_,
@@ -71,7 +71,7 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
         bool allowResign,
         bytes memory becomeImplementationData
     ) public {
-        require(msg.sender == admin, "CErc20Delegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "GWrappedNativeDelegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -97,12 +97,32 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
+     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function mintNative() external payable returns (uint256) {
+        delegateAndReturn();
+    }
+
+    /**
      * @notice Sender redeems jTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of jTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint256 redeemTokens) external returns (uint256) {
+        redeemTokens; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemNative(uint256 redeemTokens) external returns (uint256) {
         redeemTokens; // Shh
         delegateAndReturn();
     }
@@ -119,11 +139,32 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
+     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @dev Accrues interest whether or not the operation succeeds, unless reverted
+     * @param redeemAmount The amount of underlying to redeem
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemUnderlyingNative(uint256 redeemAmount) external returns (uint256) {
+        redeemAmount; // Shh
+        delegateAndReturn();
+    }
+
+    /**
      * @notice Sender borrows assets from the protocol to their own address
      * @param borrowAmount The amount of the underlying asset to borrow
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function borrow(uint256 borrowAmount) external returns (uint256) {
+        borrowAmount; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Sender borrows assets from the protocol to their own address
+     * @param borrowAmount The amount of the underlying asset to borrow
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function borrowNative(uint256 borrowAmount) external returns (uint256) {
         borrowAmount; // Shh
         delegateAndReturn();
     }
@@ -135,6 +176,14 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
      */
     function repayBorrow(uint256 repayAmount) external returns (uint256) {
         repayAmount; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Sender repays their own borrow
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function repayBorrowNative() external payable returns (uint256) {
         delegateAndReturn();
     }
 
@@ -151,6 +200,16 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
+     * @notice Sender repays a borrow belonging to borrower
+     * @param borrower the account with the debt being payed off
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function repayBorrowBehalfNative(address borrower) external payable returns (uint256) {
+        borrower; // Shh
+        delegateAndReturn();
+    }
+
+    /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @param borrower The borrower of this jToken to be liquidated
@@ -161,11 +220,48 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256) {
         borrower;
         repayAmount;
         jTokenCollateral; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice The sender liquidates the borrowers collateral.
+     *  The collateral seized is transferred to the liquidator.
+     * @param borrower The borrower of this jToken to be liquidated
+     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
+        external
+        payable
+        returns (uint256)
+    {
+        borrower;
+        jTokenCollateral; // Shh
+        delegateAndReturn();
+    }
+
+    /**
+     * @notice Flash loan funds to a given account.
+     * @param receiver The receiver address for the funds
+     * @param amount The amount of the funds to be loaned
+     * @param data The other data
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+
+    function flashLoan(
+        ERC3156FlashBorrowerInterface receiver,
+        address initiator,
+        uint256 amount,
+        bytes calldata data
+    ) external returns (bool) {
+        receiver;
+        amount;
+        data; // Shh
         delegateAndReturn();
     }
 
@@ -214,56 +310,6 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
-     * @notice Gulps excess contract cash to reserves
-     * @dev This function calculates excess ERC20 gained from a ERC20.transfer() call and adds the excess to reserves.
-     */
-    function gulp() external {
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Flash loan funds to a given account.
-     * @param receiver The receiver address for the funds
-     * @param initiator flash loan initiator
-     * @param amount The amount of the funds to be loaned
-     * @param data The other data
-     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
-     */
-    function flashLoan(
-        ERC3156FlashBorrowerInterface receiver,
-        address initiator,
-        uint256 amount,
-        bytes calldata data
-    ) external returns (bool) {
-        receiver;
-        initiator;
-        amount;
-        data; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Register account collateral tokens if there is space.
-     * @param account The account to register
-     * @dev This function could only be called by joetroller.
-     * @return The actual registered amount of collateral
-     */
-    function registerCollateral(address account) external returns (uint256) {
-        account; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Unregister account collateral tokens if the account still has enough collateral.
-     * @dev This function could only be called by joetroller.
-     * @param account The account to unregister
-     */
-    function unregisterCollateral(address account) external {
-        account; // Shh
-        delegateAndReturn();
-    }
-
-    /**
      * @notice Get the current allowance from `owner` for `spender`
      * @param owner The address of the account which owns the tokens to be spent
      * @param spender The address of the account which may transfer tokens
@@ -298,7 +344,7 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
 
     /**
      * @notice Get a snapshot of the account's balances, and the cached exchange rate
-     * @dev This is used by joetroller to more efficiently perform liquidity checks.
+     * @dev This is used by gTroller to more efficiently perform liquidity checks.
      * @param account Address of the account to snapshot
      * @return (possible error, token balance, borrow balance, exchange rate mantissa)
      */
@@ -369,7 +415,7 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -428,12 +474,12 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
-     * @notice Sets a new joetroller for the market
-     * @dev Admin function to set a new joetroller
+     * @notice Sets a new gTroller for the market
+     * @dev Admin function to set a new gTroller
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256) {
-        newJoetroller; // Shh
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256) {
+        newGtroller; // Shh
         delegateAndReturn();
     }
 
@@ -467,6 +513,14 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
     }
 
     /**
+     * @notice Accrues interest and adds reserves by transferring from admin
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function _addReservesNative() external payable returns (uint256) {
+        delegateAndReturn();
+    }
+
+    /**
      * @notice Accrues interest and reduces reserves by transferring to admin
      * @param reduceAmount Amount of reduction to reserves
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -484,15 +538,6 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint256) {
         newInterestRateModel; // Shh
-        delegateAndReturn();
-    }
-
-    /**
-     * @notice Set collateral cap of this market, 0 for no cap
-     * @param newCollateralCap The new collateral cap
-     */
-    function _setCollateralCap(uint256 newCollateralCap) external {
-        newCollateralCap; // Shh
         delegateAndReturn();
     }
 
@@ -583,8 +628,6 @@ contract JCollateralCapErc20Delegator is JTokenInterface, JCollateralCapErc20Int
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function() external payable {
-        require(msg.value == 0, "CErc20Delegator:fallback: cannot send value to fallback");
-
         // delegate all other functions to current implementation
         delegateAndReturn();
     }

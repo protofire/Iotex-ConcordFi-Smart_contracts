@@ -2,18 +2,18 @@
 
 pragma solidity ^0.5.16;
 
-import "./JErc20.sol";
+import "./GXrc20.sol";
 
 /**
- * @title Joeound's JErc20Immutable Contract
- * @notice JTokens which wrap an EIP-20 underlying and are immutable
+ * @title Joeound's GXrc20Immutable Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are immutable
  * @author Joeound
  */
-contract JErc20Immutable is JErc20 {
+contract GXrc20Immutable is GXrc20 {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -23,7 +23,7 @@ contract JErc20Immutable is JErc20 {
      */
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -35,15 +35,7 @@ contract JErc20Immutable is JErc20 {
         admin = msg.sender;
 
         // Initialize the market
-        initialize(
-            underlying_,
-            joetroller_,
-            interestRateModel_,
-            initialExchangeRateMantissa_,
-            name_,
-            symbol_,
-            decimals_
-        );
+        initialize(underlying_, gTroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;

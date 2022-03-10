@@ -1,7 +1,7 @@
 import {
   ErrorReporter,
   NoErrorReporter,
-  JoetrollerErrorReporter,
+  GtrollerErrorReporter,
 } from "./ErrorReporter";
 import { mustArray } from "./Utils";
 import { World } from "./World";

@@ -4,10 +4,10 @@ const { expect } = require("chai");
 const TIMELOCK_ADDRESS = "0x243cc1760F0b96c533C11656491e7EBB9663Bf33";
 const JUSDC_DELEGATOR_ARTIFACT = require("../deployments/avalanche/JUsdcDelegator.json");
 const JUSDC_DELEGATE_ARTIFACT_V1 = require("../deployments/avalanche/versions/JUsdcDelegateV1.json");
-const JAVAX_DELEGATOR_ARTIFACT = require("../deployments/avalanche/JAvaxDelegator.json");
-const JAVAX_DELEGATE_ARTIFACT_V1 = require("../deployments/avalanche/versions/JAvaxDelegateV1.json");
+const JAVAX_DELEGATOR_ARTIFACT = require("../deployments/avalanche/GIotxDelegator.json");
+const JAVAX_DELEGATE_ARTIFACT_V1 = require("../deployments/avalanche/versions/GIotxDelegateV1.json");
 
-describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", function () {
+describe("GCollateralCapXrc20 and GWrappedNative implementation upgrades", function () {
   before(async function () {
     // Accounts
     this.signers = await ethers.getSigners();
@@ -23,19 +23,19 @@ describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", funct
       JUSDC_DELEGATE_ARTIFACT_V1.bytecode
     );
     this.JUsdcDelegateCFNew = await ethers.getContractFactory(
-      "JCollateralCapErc20Delegate"
+      "GCollateralCapXrc20Delegate"
     );
 
-    this.JAvaxDelegatorCF = await ethers.getContractFactory(
+    this.GIotxDelegatorCF = await ethers.getContractFactory(
       JAVAX_DELEGATOR_ARTIFACT.abi,
       JAVAX_DELEGATOR_ARTIFACT.bytecode
     );
-    this.JAvaxDelegateCFOld = await ethers.getContractFactory(
+    this.GIotxDelegateCFOld = await ethers.getContractFactory(
       JAVAX_DELEGATE_ARTIFACT_V1.abi,
       JAVAX_DELEGATE_ARTIFACT_V1.bytecode
     );
-    this.JAvaxDelegateCFNew = await ethers.getContractFactory(
-      "JWrappedNativeDelegate"
+    this.GIotxDelegateCFNew = await ethers.getContractFactory(
+      "GWrappedNativeDelegate"
     );
 
     // Contracts
@@ -46,10 +46,10 @@ describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", funct
       JUSDC_DELEGATOR_ARTIFACT.address
     );
 
-    this.jAvaxDelegator = await this.JAvaxDelegatorCF.attach(
+    this.jAvaxDelegator = await this.GIotxDelegatorCF.attach(
       JAVAX_DELEGATOR_ARTIFACT.address
     );
-    this.jAvax = await this.JAvaxDelegateCFOld.attach(
+    this.jAvax = await this.GIotxDelegateCFOld.attach(
       JAVAX_DELEGATOR_ARTIFACT.address
     );
   });
@@ -85,7 +85,7 @@ describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", funct
   });
 
   describe("V2 (protocolSeizeShare)", function () {
-    it("successfully upgrades JCollateralCapErc20Delegate", async function () {
+    it("successfully upgrades GCollateralCapXrc20Delegate", async function () {
       // Get storage values before upgrade
       const implBefore = await this.jUsdc.implementation();
       const totalSupplyBefore = await this.jUsdc.totalSupply();
@@ -144,7 +144,7 @@ describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", funct
       expect(protocolSeizeShareMantissaAfter).to.equal(newProtocolSeizeShare);
     });
 
-    it("successfully upgrades JWrappedNativeDelegate", async function () {
+    it("successfully upgrades GWrappedNativeDelegate", async function () {
       // Get storage values before upgrade
       const implBefore = await this.jAvax.implementation();
       const totalSupplyBefore = await this.jAvax.totalSupply();
@@ -153,13 +153,13 @@ describe("JCollateralCapErc20 and JWrappedNative implementation upgrades", funct
       const totalCashBefore = await this.jAvax.getCash();
       const borrowIndexBefore = await this.jAvax.borrowIndex();
 
-      const newDelegate = await this.JAvaxDelegateCFNew.deploy();
+      const newDelegate = await this.GIotxDelegateCFNew.deploy();
 
       // Upgrade implementation contract
       await this.jAvaxDelegator
         .connect(this.admin)
         ._setImplementation(newDelegate.address, false, "0x");
-      this.jAvax = await this.JAvaxDelegateCFNew.attach(
+      this.jAvax = await this.GIotxDelegateCFNew.attach(
         JAVAX_DELEGATOR_ARTIFACT.address
       );
 

@@ -14,7 +14,7 @@ const errorReporterPath = path.join(
   "ErrorReporter.sol"
 );
 const contents = solparse.parseFile(errorReporterPath);
-const [JoetrollerErrorReporter, TokenErrorReporter] = contents.body.filter(
+const [GtrollerErrorReporter, TokenErrorReporter] = contents.body.filter(
   (k) => k.type === "ContractStatement"
 );
 
@@ -50,7 +50,7 @@ const MathErrorInv = CarefulMath.body.find(
 const MathError = invert(MathErrorInv);
 
 module.exports = {
-  JoetrollerErr: parse(JoetrollerErrorReporter),
+  GtrollerErr: parse(GtrollerErrorReporter),
   TokenErr: parse(TokenErrorReporter),
   MathErr: {
     Error: MathError,

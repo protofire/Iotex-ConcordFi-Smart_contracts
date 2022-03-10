@@ -2,11 +2,11 @@
 
 pragma solidity ^0.5.16;
 
-import "./JoetrollerInterface.sol";
+import "./GtrollerInterface.sol";
 import "./InterestRateModel.sol";
 import "./ERC3156FlashBorrowerInterface.sol";
 
-contract JTokenStorage {
+contract GTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -51,7 +51,7 @@ contract JTokenStorage {
     /**
      * @notice Contract which oversees inter-jToken operations
      */
-    JoetrollerInterface public joetroller;
+    GtrollerInterface public gTroller;
 
     /**
      * @notice Model which tells what the current interest rate should be
@@ -59,7 +59,7 @@ contract JTokenStorage {
     InterestRateModel public interestRateModel;
 
     /**
-     * @notice Initial exchange rate used when minting the first JTokens (used when totalSupply = 0)
+     * @notice Initial exchange rate used when minting the first GTokens (used when totalSupply = 0)
      */
     uint256 internal initialExchangeRateMantissa;
 
@@ -119,9 +119,9 @@ contract JTokenStorage {
     mapping(address => BorrowSnapshot) internal accountBorrows;
 }
 
-contract JErc20Storage {
+contract GXrc20Storage {
     /**
-     * @notice Underlying asset for this JToken
+     * @notice Underlying asset for this GToken
      */
     address public underlying;
 
@@ -133,7 +133,7 @@ contract JErc20Storage {
 
 contract JSupplyCapStorage {
     /**
-     * @notice Internal cash counter for this JToken. Should equal underlying.balanceOf(address(this)) for CERC20.
+     * @notice Internal cash counter for this GToken. Should equal underlying.balanceOf(address(this)) for CERC20.
      */
     uint256 public internalCash;
 }
@@ -156,18 +156,18 @@ contract JCollateralCapStorage {
     mapping(address => bool) public isCollateralTokenInit;
 
     /**
-     * @notice Collateral cap for this JToken, zero for no cap.
+     * @notice Collateral cap for this GToken, zero for no cap.
      */
     uint256 public collateralCap;
 }
 
 /*** Interface ***/
 
-contract JTokenInterface is JTokenStorage {
+contract GTokenInterface is GTokenStorage {
     /**
-     * @notice Indicator that this is a JToken contract (for inspection)
+     * @notice Indicator that this is a GToken contract (for inspection)
      */
-    bool public constant isJToken = true;
+    bool public constant isGToken = true;
 
     /*** Market Events ***/
 
@@ -226,9 +226,9 @@ contract JTokenInterface is JTokenStorage {
     event NewAdmin(address oldAdmin, address newAdmin);
 
     /**
-     * @notice Event emitted when joetroller is changed
+     * @notice Event emitted when gTroller is changed
      */
-    event NewJoetroller(JoetrollerInterface oldJoetroller, JoetrollerInterface newJoetroller);
+    event NewGtroller(GtrollerInterface oldGtroller, GtrollerInterface newGtroller);
 
     /**
      * @notice Event emitted when interestRateModel is changed
@@ -323,7 +323,7 @@ contract JTokenInterface is JTokenStorage {
 
     function _acceptAdmin() external returns (uint256);
 
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256);
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256);
 
     function _setReserveFactor(uint256 newReserveFactorMantissa) external returns (uint256);
 
@@ -332,7 +332,7 @@ contract JTokenInterface is JTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint256);
 }
 
-contract JErc20Interface is JErc20Storage {
+contract GXrc20Interface is GXrc20Storage {
     /*** User Interface ***/
 
     function mint(uint256 mintAmount) external returns (uint256);
@@ -350,13 +350,13 @@ contract JErc20Interface is JErc20Storage {
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256);
 
     function _addReserves(uint256 addAmount) external returns (uint256);
 }
 
-contract JWrappedNativeInterface is JErc20Interface {
+contract GWrappedNativeInterface is GXrc20Interface {
     /**
      * @notice Flash loan fee ratio
      */
@@ -383,7 +383,7 @@ contract JWrappedNativeInterface is JErc20Interface {
 
     function repayBorrowBehalfNative(address borrower) external payable returns (uint256);
 
-    function liquidateBorrowNative(address borrower, JTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
         external
         payable
         returns (uint256);
@@ -398,7 +398,7 @@ contract JWrappedNativeInterface is JErc20Interface {
     function _addReservesNative() external payable returns (uint256);
 }
 
-contract JCapableErc20Interface is JErc20Interface, JSupplyCapStorage {
+contract GCapableXrc20Interface is GXrc20Interface, JSupplyCapStorage {
     /**
      * @notice Flash loan fee ratio
      */
@@ -416,7 +416,7 @@ contract JCapableErc20Interface is JErc20Interface, JSupplyCapStorage {
     function gulp() external;
 }
 
-contract JCollateralCapErc20Interface is JCapableErc20Interface, JCollateralCapStorage {
+contract GCollateralCapXrc20Interface is GCapableXrc20Interface, JCollateralCapStorage {
     /*** Admin Events ***/
 
     /**
@@ -495,7 +495,7 @@ interface IFlashloanReceiver {
     ) external;
 }
 
-contract JProtocolSeizeShareStorage {
+contract GProtocolSeizeShareStorage {
     /**
      * @notice Event emitted when the protocol share of seized collateral is changed
      */

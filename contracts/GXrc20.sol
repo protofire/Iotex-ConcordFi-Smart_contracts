@@ -2,18 +2,18 @@
 
 pragma solidity ^0.5.16;
 
-import "./JToken.sol";
+import "./GToken.sol";
 
 /**
- * @title Deprecated Cream's JCapableErc20 Contract
- * @notice JTokens which wrap an EIP-20 underlying
- * @author Cream
+ * @title Compound's GXrc20 Contract
+ * @notice GTokens which wrap an EIP-20 underlying
+ * @author Compound
  */
-contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareStorage {
+contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -22,15 +22,15 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
      */
     function initialize(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
     ) public {
-        // JToken initialize does the bulk of the work
-        super.initialize(joetroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        // GToken initialize does the bulk of the work
+        super.initialize(gTroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -111,7 +111,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256) {
         (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -126,79 +126,14 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         return _addReservesInternal(addAmount, false);
     }
 
-    /**
-     * @notice Absorb excess cash into reserves.
-     */
-    function gulp() external nonReentrant {
-        uint256 cashOnChain = getCashOnChain();
-        uint256 cashPrior = getCashPrior();
-
-        uint256 excessCash = sub_(cashOnChain, cashPrior);
-        totalReserves = add_(totalReserves, excessCash);
-        internalCash = cashOnChain;
-    }
-
-    /**
-     * @notice Flash loan funds to a given account.
-     * @param receiver The receiver address for the funds
-     * @param amount The amount of the funds to be loaned
-     * @param params The other parameters
-     */
-    function flashLoan(
-        address receiver,
-        uint256 amount,
-        bytes calldata params
-    ) external nonReentrant {
-        require(amount > 0, "flashLoan amount should be greater than zero");
-        require(accrueInterest() == uint256(Error.NO_ERROR), "accrue interest failed");
-
-        uint256 cashOnChainBefore = getCashOnChain();
-        uint256 cashBefore = getCashPrior();
-        require(cashBefore >= amount, "INSUFFICIENT_LIQUIDITY");
-
-        // 1. calculate fee, 1 bips = 1/10000
-        uint256 totalFee = div_(mul_(amount, flashFeeBips), 10000);
-
-        // 2. transfer fund to receiver
-        doTransferOut(address(uint160(receiver)), amount, false);
-
-        // 3. update totalBorrows
-        totalBorrows = add_(totalBorrows, amount);
-
-        // 4. execute receiver's callback function
-        IFlashloanReceiver(receiver).executeOperation(msg.sender, underlying, amount, totalFee, params);
-
-        // 5. check balance
-        uint256 cashOnChainAfter = getCashOnChain();
-        require(cashOnChainAfter == add_(cashOnChainBefore, totalFee), "BALANCE_INCONSISTENT");
-
-        // 6. update reserves and internal cash and totalBorrows
-        uint256 reservesFee = mul_ScalarTruncate(Exp({mantissa: reserveFactorMantissa}), totalFee);
-        totalReserves = add_(totalReserves, reservesFee);
-        internalCash = add_(cashBefore, totalFee);
-        totalBorrows = sub_(totalBorrows, amount);
-
-        emit Flashloan(receiver, amount, totalFee, reservesFee);
-    }
-
     /*** Safe Token ***/
 
     /**
-     * @notice Gets internal balance of this contract in terms of the underlying.
-     *  It excludes balance from direct transfer.
+     * @notice Gets balance of this contract in terms of the underlying
      * @dev This excludes the value of the current message, if any
      * @return The quantity of underlying tokens owned by this contract
      */
     function getCashPrior() internal view returns (uint256) {
-        return internalCash;
-    }
-
-    /**
-     * @notice Gets total balance of this contract in terms of the underlying
-     * @dev This excludes the value of the current message, if any
-     * @return The quantity of underlying tokens owned by this contract
-     */
-    function getCashOnChain() internal view returns (uint256) {
         EIP20Interface token = EIP20Interface(underlying);
         return token.balanceOf(address(this));
     }
@@ -231,12 +166,12 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
                 success := not(0) // set success to true
             }
             case 32 {
-                // This is a joeliant ERC-20
+                // This is a compliant ERC-20
                 returndatacopy(0, 0, 32)
                 success := mload(0) // Set `success = returndata` of external call
             }
             default {
-                // This is an excessively non-joeliant ERC-20, revert.
+                // This is an excessively non-compliant ERC-20, revert.
                 revert(0, 0)
             }
         }
@@ -244,9 +179,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
 
         // Calculate the amount that was *actually* transferred
         uint256 balanceAfter = EIP20Interface(underlying).balanceOf(address(this));
-        uint256 transferredIn = sub_(balanceAfter, balanceBefore);
-        internalCash = add_(internalCash, transferredIn);
-        return transferredIn;
+        return sub_(balanceAfter, balanceBefore);
     }
 
     /**
@@ -276,17 +209,16 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
                 success := not(0) // set success to true
             }
             case 32 {
-                // This is a joelaint ERC-20
+                // This is a complaint ERC-20
                 returndatacopy(0, 0, 32)
                 success := mload(0) // Set `success = returndata` of external call
             }
             default {
-                // This is an excessively non-joeliant ERC-20, revert.
+                // This is an excessively non-compliant ERC-20, revert.
                 revert(0, 0)
             }
         }
         require(success, "TOKEN_TRANSFER_OUT_FAILED");
-        internalCash = sub_(internalCash, amount);
     }
 
     /**
@@ -305,7 +237,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         uint256 tokens
     ) internal returns (uint256) {
         /* Fail if transfer not allowed */
-        uint256 allowed = joetroller.transferAllowed(address(this), src, dst, tokens);
+        uint256 allowed = gTroller.transferAllowed(address(this), src, dst, tokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.TRANSFER_JOETROLLER_REJECTION, allowed);
         }
@@ -336,7 +268,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         emit Transfer(src, dst, tokens);
 
         // unused function
-        // joetroller.transferVerify(address(this), src, dst, tokens);
+        // gTroller.transferVerify(address(this), src, dst, tokens);
 
         return uint256(Error.NO_ERROR);
     }
@@ -345,7 +277,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
      * @notice Get the account's jToken balances
      * @param account The address of the account
      */
-    function getJTokenBalanceInternal(address account) internal view returns (uint256) {
+    function getGTokenBalanceInternal(address account) internal view returns (uint256) {
         return accountTokens[account];
     }
 
@@ -369,7 +301,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         bool isNative
     ) internal returns (uint256, uint256) {
         /* Fail if mint not allowed */
-        uint256 allowed = joetroller.mintAllowed(address(this), minter, mintAmount);
+        uint256 allowed = gTroller.mintAllowed(address(this), minter, mintAmount);
         if (allowed != 0) {
             return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.MINT_JOETROLLER_REJECTION, allowed), 0);
         }
@@ -425,7 +357,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
 
         /* We call the defense hook */
         // unused function
-        // joetroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
+        // gTroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
 
         return (uint256(Error.NO_ERROR), vars.actualMintAmount);
     }
@@ -480,7 +412,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         }
 
         /* Fail if redeem not allowed */
-        uint256 allowed = joetroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
+        uint256 allowed = gTroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REDEEM_JOETROLLER_REJECTION, allowed);
         }
@@ -532,14 +464,14 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
         /* We call the defense hook */
-        joetroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+        gTroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another JToken.
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
      *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
      * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
      * @param liquidator The account receiving seized collateral
@@ -554,7 +486,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
         uint256 seizeTokens
     ) internal returns (uint256) {
         /* Fail if seize not allowed */
-        uint256 allowed = joetroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        uint256 allowed = gTroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.LIQUIDATE_SEIZE_JOETROLLER_REJECTION, allowed);
         }
@@ -594,7 +526,7 @@ contract JCapableErc20 is JToken, JCapableErc20Interface, JProtocolSeizeShareSto
 
         /* We call the defense hook */
         // unused function
-        // joetroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        // gTroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
 
         return uint256(Error.NO_ERROR);
     }

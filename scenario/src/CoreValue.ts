@@ -18,23 +18,20 @@ import {
 } from "./Value";
 import { Arg, Fetcher, getFetcherValue } from "./Command";
 import { getUserValue, userFetchers } from "./Value/UserValue";
+import { gTrollerFetchers, getGtrollerValue } from "./Value/GtrollerValue";
 import {
-  joetrollerFetchers,
-  getJoetrollerValue,
-} from "./Value/JoetrollerValue";
-import {
-  joetrollerImplFetchers,
-  getJoetrollerImplValue,
-} from "./Value/JoetrollerImplValue";
+  gTrollerImplFetchers,
+  getGtrollerImplValue,
+} from "./Value/GtrollerImplValue";
 import {
   getUnitrollerValue,
   unitrollerFetchers,
 } from "./Value/UnitrollerValue";
-import { jTokenFetchers, getJTokenValue } from "./Value/JTokenValue";
+import { jTokenFetchers, getGTokenValue } from "./Value/GTokenValue";
 import {
   jTokenDelegateFetchers,
-  getJTokenDelegateValue,
-} from "./Value/JTokenDelegateValue";
+  getGTokenDelegateValue,
+} from "./Value/GTokenDelegateValue";
 import { erc20Fetchers, getErc20Value } from "./Value/Erc20Value";
 import {
   getInterestRateModelValue,
@@ -872,8 +869,8 @@ const fetchers = [
 
       * "Equal given:<Value> expected:<Value>" - Returns true if given values are equal
         * E.g. "Equal (Exactly 0) Zero"
-        * E.g. "Equal (JToken cZRX TotalSupply) (Exactly 55)"
-        * E.g. "Equal (JToken cZRX Joetroller) (Joetroller Address)"
+        * E.g. "Equal (GToken cZRX TotalSupply) (Exactly 55)"
+        * E.g. "Equal (GToken cZRX Gtroller) (Gtroller Address)"
     `,
     "Equal",
     [new Arg("given", getCoreValue), new Arg("expected", getCoreValue)],
@@ -924,45 +921,45 @@ const fetchers = [
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### Joetroller
+      #### Gtroller
 
-      * "Joetroller ...joetrollerArgs" - Returns joetroller value
+      * "Gtroller ...gTrollerArgs" - Returns gTroller value
     `,
-    "Joetroller",
-    [new Arg("res", getJoetrollerValue, { variadic: true })],
+    "Gtroller",
+    [new Arg("res", getGtrollerValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: joetrollerFetchers() }
+    { subExpressions: gTrollerFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### JoetrollerImpl
+      #### GtrollerImpl
 
-      * "JoetrollerImpl ...joetrollerImplArgs" - Returns joetroller implementation value
+      * "GtrollerImpl ...gTrollerImplArgs" - Returns gTroller implementation value
     `,
-    "JoetrollerImpl",
-    [new Arg("res", getJoetrollerImplValue, { variadic: true })],
+    "GtrollerImpl",
+    [new Arg("res", getGtrollerImplValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: joetrollerImplFetchers() }
+    { subExpressions: gTrollerImplFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### JToken
+      #### GToken
 
-      * "JToken ...jTokenArgs" - Returns jToken value
+      * "GToken ...jTokenArgs" - Returns jToken value
     `,
-    "JToken",
-    [new Arg("res", getJTokenValue, { variadic: true })],
+    "GToken",
+    [new Arg("res", getGTokenValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: jTokenFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### JTokenDelegate
+      #### GTokenDelegate
 
-      * "JTokenDelegate ...jTokenDelegateArgs" - Returns jToken delegate value
+      * "GTokenDelegate ...jTokenDelegateArgs" - Returns jToken delegate value
     `,
-    "JTokenDelegate",
-    [new Arg("res", getJTokenDelegateValue, { variadic: true })],
+    "GTokenDelegate",
+    [new Arg("res", getGTokenDelegateValue, { variadic: true })],
     async (world, { res }) => res,
     { subExpressions: jTokenDelegateFetchers() }
   ),

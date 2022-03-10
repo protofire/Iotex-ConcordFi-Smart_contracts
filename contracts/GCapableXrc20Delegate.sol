@@ -2,14 +2,14 @@
 
 pragma solidity ^0.5.16;
 
-import "./JCapableErc20.sol";
+import "./GCapableXrc20.sol";
 
 /**
- * @title Joeound's JCapableErc20Delegate Contract
- * @notice JTokens which wrap an EIP-20 underlying and are delegated to
+ * @title Joeound's GCapableXrc20Delegate Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are delegated to
  * @author Joeound
  */
-contract JCapableErc20Delegate is JCapableErc20 {
+contract GCapableXrc20Delegate is GCapableXrc20 {
     /**
      * @notice Construct an empty delegate
      */

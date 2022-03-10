@@ -6,14 +6,14 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJoetroller,
+  makeGtroller,
   makePriceOracle,
-  makeJToken,
+  makeGToken,
   makeToken,
   makeRewardDistributor,
 } = require("../Utils/BankerJoe");
 
-describe("Joetroller", () => {
+describe("Gtroller", () => {
   let root, accounts;
 
   beforeEach(async () => {
@@ -22,14 +22,14 @@ describe("Joetroller", () => {
 
   describe("constructor", () => {
     it("on success it sets admin to creator and pendingAdmin is unset", async () => {
-      const joetroller = await makeJoetroller();
-      expect(await call(joetroller, "admin")).toEqual(root);
-      expect(await call(joetroller, "pendingAdmin")).toEqualNumber(0);
+      const gTroller = await makeGtroller();
+      expect(await call(gTroller, "admin")).toEqual(root);
+      expect(await call(gTroller, "pendingAdmin")).toEqualNumber(0);
     });
 
     it("on success it sets closeFactor and maxAssets as specified", async () => {
-      const joetroller = await makeJoetroller();
-      expect(await call(joetroller, "closeFactorMantissa")).toEqualNumber(
+      const gTroller = await makeGtroller();
+      expect(await call(gTroller, "closeFactorMantissa")).toEqualNumber(
         0.051e18
       );
     });
@@ -39,14 +39,14 @@ describe("Joetroller", () => {
     const initialIncentive = avaxMantissa(1.0);
     const validIncentive = avaxMantissa(1.1);
 
-    let joetroller;
+    let gTroller;
     beforeEach(async () => {
-      joetroller = await makeJoetroller();
+      gTroller = await makeGtroller();
     });
 
     it("fails if called by non-admin", async () => {
       const { reply, receipt } = await both(
-        joetroller,
+        gTroller,
         "_setLiquidationIncentive",
         [initialIncentive],
         { from: accounts[0] }
@@ -57,13 +57,13 @@ describe("Joetroller", () => {
         "SET_LIQUIDATION_INCENTIVE_OWNER_CHECK"
       );
       expect(
-        await call(joetroller, "liquidationIncentiveMantissa")
+        await call(gTroller, "liquidationIncentiveMantissa")
       ).toEqualNumber(initialIncentive);
     });
 
     it("accepts a valid incentive and emits a NewLiquidationIncentive event", async () => {
       const { reply, receipt } = await both(
-        joetroller,
+        gTroller,
         "_setLiquidationIncentive",
         [validIncentive]
       );
@@ -73,47 +73,47 @@ describe("Joetroller", () => {
         newLiquidationIncentiveMantissa: validIncentive.toString(),
       });
       expect(
-        await call(joetroller, "liquidationIncentiveMantissa")
+        await call(gTroller, "liquidationIncentiveMantissa")
       ).toEqualNumber(validIncentive);
     });
   });
 
   describe("_setPriceOracle", () => {
-    let joetroller, oldOracle, newOracle;
+    let gTroller, oldOracle, newOracle;
     beforeEach(async () => {
-      joetroller = await makeJoetroller();
-      oldOracle = joetroller.priceOracle;
+      gTroller = await makeGtroller();
+      oldOracle = gTroller.priceOracle;
       newOracle = await makePriceOracle();
     });
 
     it("fails if called by non-admin", async () => {
       expect(
-        await send(joetroller, "_setPriceOracle", [newOracle._address], {
+        await send(gTroller, "_setPriceOracle", [newOracle._address], {
           from: accounts[0],
         })
       ).toHaveTrollFailure("UNAUTHORIZED", "SET_PRICE_ORACLE_OWNER_CHECK");
-      expect(await joetroller.methods.oracle().call()).toEqual(
+      expect(await gTroller.methods.oracle().call()).toEqual(
         oldOracle._address
       );
     });
 
     it.skip("reverts if passed a contract that doesn't implement isPriceOracle", async () => {
       await expect(
-        send(joetroller, "_setPriceOracle", [joetroller._address])
+        send(gTroller, "_setPriceOracle", [gTroller._address])
       ).rejects.toRevert();
-      expect(await call(joetroller, "oracle")).toEqual(oldOracle._address);
+      expect(await call(gTroller, "oracle")).toEqual(oldOracle._address);
     });
 
     it.skip("reverts if passed a contract that implements isPriceOracle as false", async () => {
       await send(newOracle, "setIsPriceOracle", [false]); // Note: not yet implemented
       await expect(
-        send(notOracle, "_setPriceOracle", [joetroller._address])
+        send(notOracle, "_setPriceOracle", [gTroller._address])
       ).rejects.toRevert("revert oracle method isPriceOracle returned false");
-      expect(await call(joetroller, "oracle")).toEqual(oldOracle._address);
+      expect(await call(gTroller, "oracle")).toEqual(oldOracle._address);
     });
 
     it("accepts a valid price oracle and emits a NewPriceOracle event", async () => {
-      const result = await send(joetroller, "_setPriceOracle", [
+      const result = await send(gTroller, "_setPriceOracle", [
         newOracle._address,
       ]);
       expect(result).toSucceed();
@@ -121,22 +121,22 @@ describe("Joetroller", () => {
         oldPriceOracle: oldOracle._address,
         newPriceOracle: newOracle._address,
       });
-      expect(await call(joetroller, "oracle")).toEqual(newOracle._address);
+      expect(await call(gTroller, "oracle")).toEqual(newOracle._address);
     });
   });
 
   describe("_setRewardDistributor", () => {
-    let joetroller;
+    let gTroller;
     let rewardDistributor;
 
     beforeEach(async () => {
-      joetroller = await makeJoetroller();
+      gTroller = await makeGtroller();
       rewardDistributor = await makeRewardDistributor();
     });
 
     it("fails if called by non-admin", async () => {
       const { reply } = await both(
-        joetroller,
+        gTroller,
         "_setRewardDistributor",
         [rewardDistributor._address],
         {
@@ -147,11 +147,11 @@ describe("Joetroller", () => {
     });
 
     it("succeeds NewRewardDistributor event", async () => {
-      const result = await send(joetroller, "_setRewardDistributor", [
+      const result = await send(gTroller, "_setRewardDistributor", [
         rewardDistributor._address,
       ]);
       expect(result).toSucceed();
-      expect(await call(joetroller, "rewardDistributor")).toEqual(
+      expect(await call(gTroller, "rewardDistributor")).toEqual(
         rewardDistributor._address
       );
     });
@@ -159,9 +159,9 @@ describe("Joetroller", () => {
 
   describe("_setCloseFactor", () => {
     it("fails if not called by admin", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       expect(
-        await send(jToken.joetroller, "_setCloseFactor", [1], {
+        await send(jToken.gTroller, "_setCloseFactor", [1], {
           from: accounts[0],
         })
       ).toHaveTrollFailure("UNAUTHORIZED", "SET_CLOSE_FACTOR_OWNER_CHECK");
@@ -173,10 +173,10 @@ describe("Joetroller", () => {
     const one = avaxMantissa(1);
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       expect(
         await send(
-          jToken.joetroller,
+          jToken.gTroller,
           "_setCollateralFactor",
           [jToken._address, half],
           { from: accounts[0] }
@@ -185,9 +185,9 @@ describe("Joetroller", () => {
     });
 
     it("fails if asset is not listed", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       expect(
-        await send(jToken.joetroller, "_setCollateralFactor", [
+        await send(jToken.gTroller, "_setCollateralFactor", [
           jToken._address,
           half,
         ])
@@ -198,9 +198,9 @@ describe("Joetroller", () => {
     });
 
     it("fails if factor is too high", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       expect(
-        await send(jToken.joetroller, "_setCollateralFactor", [
+        await send(jToken.gTroller, "_setCollateralFactor", [
           jToken._address,
           one,
         ])
@@ -211,9 +211,9 @@ describe("Joetroller", () => {
     });
 
     it("fails if factor is set without an underlying price", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       expect(
-        await send(jToken.joetroller, "_setCollateralFactor", [
+        await send(jToken.gTroller, "_setCollateralFactor", [
           jToken._address,
           half,
         ])
@@ -224,11 +224,11 @@ describe("Joetroller", () => {
     });
 
     it("succeeds and sets market", async () => {
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
       });
-      const result = await send(jToken.joetroller, "_setCollateralFactor", [
+      const result = await send(jToken.gTroller, "_setCollateralFactor", [
         jToken._address,
         half,
       ]);
@@ -244,25 +244,25 @@ describe("Joetroller", () => {
     const version = 0;
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeJToken(root);
+      const jToken = await makeGToken(root);
       await expect(
-        send(jToken.joetroller, "_supportMarket", [jToken._address, version], {
+        send(jToken.gTroller, "_supportMarket", [jToken._address, version], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin may support market");
     });
 
-    it("fails if asset is not a JToken", async () => {
-      const joetroller = await makeJoetroller();
+    it("fails if asset is not a GToken", async () => {
+      const gTroller = await makeGtroller();
       const asset = await makeToken(root);
       await expect(
-        send(joetroller, "_supportMarket", [asset._address, version])
+        send(gTroller, "_supportMarket", [asset._address, version])
       ).rejects.toRevert();
     });
 
     it("succeeds and sets market", async () => {
-      const jToken = await makeJToken();
-      const result = await send(jToken.joetroller, "_supportMarket", [
+      const jToken = await makeGToken();
+      const result = await send(jToken.gTroller, "_supportMarket", [
         jToken._address,
         version,
       ]);
@@ -270,25 +270,25 @@ describe("Joetroller", () => {
     });
 
     it("cannot list a market a second time", async () => {
-      const jToken = await makeJToken();
-      const result1 = await send(jToken.joetroller, "_supportMarket", [
+      const jToken = await makeGToken();
+      const result1 = await send(jToken.gTroller, "_supportMarket", [
         jToken._address,
         version,
       ]);
       expect(result1).toHaveLog("MarketListed", { jToken: jToken._address });
       await expect(
-        send(jToken.joetroller, "_supportMarket", [jToken._address, version])
+        send(jToken.gTroller, "_supportMarket", [jToken._address, version])
       ).rejects.toRevert("revert market already listed");
     });
 
     it("can list two different markets", async () => {
-      const jToken1 = await makeJToken();
-      const jToken2 = await makeJToken({ joetroller: jToken1.joetroller });
-      const result1 = await send(jToken1.joetroller, "_supportMarket", [
+      const jToken1 = await makeGToken();
+      const jToken2 = await makeGToken({ gTroller: jToken1.gTroller });
+      const result1 = await send(jToken1.gTroller, "_supportMarket", [
         jToken1._address,
         version,
       ]);
-      const result2 = await send(jToken1.joetroller, "_supportMarket", [
+      const result2 = await send(jToken1.gTroller, "_supportMarket", [
         jToken2._address,
         version,
       ]);
@@ -301,17 +301,17 @@ describe("Joetroller", () => {
     const creditLimit = avaxMantissa(500);
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeJToken(root);
+      const jToken = await makeGToken(root);
       await expect(
-        send(jToken.joetroller, "_setCreditLimit", [accounts[0], creditLimit], {
+        send(jToken.gTroller, "_setCreditLimit", [accounts[0], creditLimit], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin can set protocol credit limit");
     });
 
     it("succeeds and sets credit limit", async () => {
-      const jToken = await makeJToken();
-      const result = await send(jToken.joetroller, "_setCreditLimit", [
+      const jToken = await makeGToken();
+      const result = await send(jToken.gTroller, "_setCreditLimit", [
         accounts[0],
         creditLimit,
       ]);
@@ -322,8 +322,8 @@ describe("Joetroller", () => {
     });
 
     it("succeeds and sets to max credit limit", async () => {
-      const jToken = await makeJToken();
-      const result = await send(jToken.joetroller, "_setCreditLimit", [
+      const jToken = await makeGToken();
+      const result = await send(jToken.gTroller, "_setCreditLimit", [
         accounts[0],
         UInt256Max(),
       ]);
@@ -334,8 +334,8 @@ describe("Joetroller", () => {
     });
 
     it("succeeds and sets to 0 credit limit", async () => {
-      const jToken = await makeJToken();
-      const result = await send(jToken.joetroller, "_setCreditLimit", [
+      const jToken = await makeGToken();
+      const result = await send(jToken.gTroller, "_setCreditLimit", [
         accounts[0],
         0,
       ]);
@@ -350,69 +350,69 @@ describe("Joetroller", () => {
     const version = 0;
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeJToken(root);
+      const jToken = await makeGToken(root);
       await expect(
-        send(jToken.joetroller, "_delistMarket", [jToken._address], {
+        send(jToken.gTroller, "_delistMarket", [jToken._address], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin may delist market");
     });
 
     it("fails if market not listed", async () => {
-      const joetroller = await makeJoetroller();
+      const gTroller = await makeGtroller();
       const asset = await makeToken(root);
       await expect(
-        send(joetroller, "_delistMarket", [asset._address])
+        send(gTroller, "_delistMarket", [asset._address])
       ).rejects.toRevert("revert market not listed");
     });
 
     it("fails if market not empty", async () => {
-      const jToken = await makeJToken(root);
+      const jToken = await makeGToken(root);
       expect(
-        await send(jToken.joetroller, "_supportMarket", [
+        await send(jToken.gTroller, "_supportMarket", [
           jToken._address,
           version,
         ])
       ).toSucceed();
       await send(jToken, "harnessSetTotalSupply", [1]);
       await expect(
-        send(jToken.joetroller, "_delistMarket", [jToken._address])
+        send(jToken.gTroller, "_delistMarket", [jToken._address])
       ).rejects.toRevert("revert market not empty");
     });
 
     it("succeeds and delists market", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       expect(
-        await send(jToken.joetroller, "_supportMarket", [
+        await send(jToken.gTroller, "_supportMarket", [
           jToken._address,
           version,
         ])
       ).toSucceed();
-      const result = await send(jToken.joetroller, "_delistMarket", [
+      const result = await send(jToken.gTroller, "_delistMarket", [
         jToken._address,
       ]);
       expect(result).toHaveLog("MarketDelisted", { jToken: jToken._address });
     });
 
     it("can delist two different markets", async () => {
-      const jToken1 = await makeJToken();
-      const jToken2 = await makeJToken({ joetroller: jToken1.joetroller });
+      const jToken1 = await makeGToken();
+      const jToken2 = await makeGToken({ gTroller: jToken1.gTroller });
       expect(
-        await send(jToken1.joetroller, "_supportMarket", [
+        await send(jToken1.gTroller, "_supportMarket", [
           jToken1._address,
           version,
         ])
       ).toSucceed();
       expect(
-        await send(jToken2.joetroller, "_supportMarket", [
+        await send(jToken2.gTroller, "_supportMarket", [
           jToken2._address,
           version,
         ])
       ).toSucceed();
-      const result1 = await send(jToken1.joetroller, "_delistMarket", [
+      const result1 = await send(jToken1.gTroller, "_delistMarket", [
         jToken1._address,
       ]);
-      const result2 = await send(jToken2.joetroller, "_delistMarket", [
+      const result2 = await send(jToken2.gTroller, "_delistMarket", [
         jToken2._address,
       ]);
       expect(result1).toHaveLog("MarketDelisted", { jToken: jToken1._address });
@@ -422,9 +422,9 @@ describe("Joetroller", () => {
 
   describe("redeemVerify", () => {
     it("should allow you to redeem 0 underlying for 0 tokens", async () => {
-      const joetroller = await makeJoetroller();
-      const jToken = await makeJToken({ joetroller: joetroller });
-      await call(joetroller, "redeemVerify", [
+      const gTroller = await makeGtroller();
+      const jToken = await makeGToken({ gTroller: gTroller });
+      await call(gTroller, "redeemVerify", [
         jToken._address,
         accounts[0],
         0,
@@ -433,9 +433,9 @@ describe("Joetroller", () => {
     });
 
     it("should allow you to redeem 5 underlyig for 5 tokens", async () => {
-      const joetroller = await makeJoetroller();
-      const jToken = await makeJToken({ joetroller: joetroller });
-      await call(joetroller, "redeemVerify", [
+      const gTroller = await makeGtroller();
+      const jToken = await makeGToken({ gTroller: gTroller });
+      await call(gTroller, "redeemVerify", [
         jToken._address,
         accounts[0],
         5,
@@ -444,10 +444,10 @@ describe("Joetroller", () => {
     });
 
     it("should not allow you to redeem 5 underlying for 0 tokens", async () => {
-      const joetroller = await makeJoetroller();
-      const jToken = await makeJToken({ joetroller: joetroller });
+      const gTroller = await makeGtroller();
+      const jToken = await makeGToken({ gTroller: gTroller });
       await expect(
-        call(joetroller, "redeemVerify", [jToken._address, accounts[0], 5, 0])
+        call(gTroller, "redeemVerify", [jToken._address, accounts[0], 5, 0])
       ).rejects.toRevert("revert redeemTokens zero");
     });
   });

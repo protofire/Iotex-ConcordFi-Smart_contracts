@@ -2,11 +2,11 @@
 
 pragma solidity ^0.5.16;
 
-import "./JErc20.sol";
-import "./JToken.sol";
+import "./GXrc20.sol";
+import "./GToken.sol";
 import "./EIP20NonStandardInterface.sol";
 
-contract JTokenAdmin {
+contract GTokenAdmin {
     /// @notice Admin address
     address payable public admin;
 
@@ -43,8 +43,8 @@ contract JTokenAdmin {
      * @notice Get jToken admin
      * @param jToken The jToken address
      */
-    function getJTokenAdmin(address jToken) public view returns (address) {
-        return JToken(jToken).admin();
+    function getGTokenAdmin(address jToken) public view returns (address) {
+        return GToken(jToken).admin();
     }
 
     /**
@@ -53,7 +53,7 @@ contract JTokenAdmin {
      * @param newPendingAdmin The new pending admin
      */
     function _setPendingAdmin(address jToken, address payable newPendingAdmin) external onlyAdmin returns (uint256) {
-        return JTokenInterface(jToken)._setPendingAdmin(newPendingAdmin);
+        return GTokenInterface(jToken)._setPendingAdmin(newPendingAdmin);
     }
 
     /**
@@ -61,16 +61,16 @@ contract JTokenAdmin {
      * @param jToken The jToken address
      */
     function _acceptAdmin(address jToken) external onlyAdmin returns (uint256) {
-        return JTokenInterface(jToken)._acceptAdmin();
+        return GTokenInterface(jToken)._acceptAdmin();
     }
 
     /**
-     * @notice Set jToken joetroller
+     * @notice Set jToken gTroller
      * @param jToken The jToken address
-     * @param newJoetroller The new joetroller address
+     * @param newGtroller The new gTroller address
      */
-    function _setJoetroller(address jToken, JoetrollerInterface newJoetroller) external onlyAdmin returns (uint256) {
-        return JTokenInterface(jToken)._setJoetroller(newJoetroller);
+    function _setGtroller(address jToken, GtrollerInterface newGtroller) external onlyAdmin returns (uint256) {
+        return GTokenInterface(jToken)._setGtroller(newGtroller);
     }
 
     /**
@@ -79,7 +79,7 @@ contract JTokenAdmin {
      * @param newReserveFactorMantissa The new reserve factor
      */
     function _setReserveFactor(address jToken, uint256 newReserveFactorMantissa) external onlyAdmin returns (uint256) {
-        return JTokenInterface(jToken)._setReserveFactor(newReserveFactorMantissa);
+        return GTokenInterface(jToken)._setReserveFactor(newReserveFactorMantissa);
     }
 
     /**
@@ -88,7 +88,7 @@ contract JTokenAdmin {
      * @param reduceAmount The amount of reduction
      */
     function _reduceReserves(address jToken, uint256 reduceAmount) external onlyAdmin returns (uint256) {
-        return JTokenInterface(jToken)._reduceReserves(reduceAmount);
+        return GTokenInterface(jToken)._reduceReserves(reduceAmount);
     }
 
     /**
@@ -101,7 +101,7 @@ contract JTokenAdmin {
         onlyAdmin
         returns (uint256)
     {
-        return JTokenInterface(jToken)._setInterestRateModel(newInterestRateModel);
+        return GTokenInterface(jToken)._setInterestRateModel(newInterestRateModel);
     }
 
     /**
@@ -111,7 +111,7 @@ contract JTokenAdmin {
      * @param newCollateralCap The new collateral cap
      */
     function _setCollateralCap(address jToken, uint256 newCollateralCap) external onlyAdmin {
-        JCollateralCapErc20Interface(jToken)._setCollateralCap(newCollateralCap);
+        GCollateralCapXrc20Interface(jToken)._setCollateralCap(newCollateralCap);
     }
 
     /**
@@ -135,9 +135,9 @@ contract JTokenAdmin {
      * @param reduceAmount The amount of reduction
      */
     function extractReserves(address jToken, uint256 reduceAmount) external onlyReserveManager {
-        require(JTokenInterface(jToken)._reduceReserves(reduceAmount) == 0, "failed to reduce reserves");
+        require(GTokenInterface(jToken)._reduceReserves(reduceAmount) == 0, "failed to reduce reserves");
 
-        address underlying = JErc20(jToken).underlying();
+        address underlying = GXrc20(jToken).underlying();
         _transferToken(underlying, reserveManager, reduceAmount);
     }
 

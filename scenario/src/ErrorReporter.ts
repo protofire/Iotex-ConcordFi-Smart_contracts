@@ -1,4 +1,4 @@
-import { JoetrollerErr, TokenErr } from "./ErrorReporterConstants";
+import { GtrollerErr, TokenErr } from "./ErrorReporterConstants";
 
 export interface ErrorReporter {
   getError(error: any): string | null;
@@ -20,7 +20,7 @@ class NoErrorReporterType implements ErrorReporter {
   }
 }
 
-class JTokenErrorReporterType implements ErrorReporter {
+class GTokenErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
@@ -40,10 +40,10 @@ class JTokenErrorReporterType implements ErrorReporter {
   getDetail(error: any, detail: number): string {
     // Little hack to let us use proper names for cross-contract errors
     if (this.getError(error) === "JOETROLLER_REJECTION") {
-      let joetrollerError = JoetrollerErrorReporter.getError(detail);
+      let gTrollerError = GtrollerErrorReporter.getError(detail);
 
-      if (joetrollerError) {
-        return joetrollerError;
+      if (gTrollerError) {
+        return gTrollerError;
       }
     }
 
@@ -51,13 +51,13 @@ class JTokenErrorReporterType implements ErrorReporter {
   }
 }
 
-class JoetrollerErrorReporterType implements ErrorReporter {
+class GtrollerErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
     } else {
       // TODO: This probably isn't right...
-      return JoetrollerErr.ErrorInv[Number(error)];
+      return GtrollerErr.ErrorInv[Number(error)];
     }
   }
 
@@ -66,16 +66,16 @@ class JoetrollerErrorReporterType implements ErrorReporter {
       return null;
     } else {
       // TODO: This probably isn't right...
-      return JoetrollerErr.FailureInfoInv[Number(info)];
+      return GtrollerErr.FailureInfoInv[Number(info)];
     }
   }
 
   getDetail(error: any, detail: number): string {
     if (this.getError(error) === "REJECTION") {
-      let joetrollerError = JoetrollerErrorReporter.getError(detail);
+      let gTrollerError = GtrollerErrorReporter.getError(detail);
 
-      if (joetrollerError) {
-        return joetrollerError;
+      if (gTrollerError) {
+        return gTrollerError;
       }
     }
 
@@ -97,5 +97,5 @@ export function formatResult(
 
 // Singleton instances
 export const NoErrorReporter = new NoErrorReporterType();
-export const JTokenErrorReporter = new JTokenErrorReporterType();
-export const JoetrollerErrorReporter = new JoetrollerErrorReporterType();
+export const GTokenErrorReporter = new GTokenErrorReporterType();
+export const GtrollerErrorReporter = new GtrollerErrorReporterType();

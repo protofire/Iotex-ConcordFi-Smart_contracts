@@ -2,7 +2,7 @@ import { Contract } from "../Contract";
 import { Callable, Sendable } from "../Invokation";
 import { encodedNumber } from "../Encoding";
 
-export interface JTokenMethods {
+export interface GTokenMethods {
   _resignImplementation(): Sendable<void>;
   balanceOfUnderlying(address: string): Callable<number>;
   borrowBalanceCurrent(address: string): Callable<string>;
@@ -11,7 +11,7 @@ export interface JTokenMethods {
   totalBorrowsCurrent(): Callable<number>;
   totalReserves(): Callable<string>;
   reserveFactorMantissa(): Callable<string>;
-  joetroller(): Callable<string>;
+  gTroller(): Callable<string>;
   exchangeRateStored(): Sendable<number>;
   exchangeRateCurrent(): Callable<number>;
   getCash(): Callable<number>;
@@ -49,7 +49,7 @@ export interface JTokenMethods {
   _reduceReserves(amount: encodedNumber): Sendable<number>;
   _setReserveFactor(reserveFactor: encodedNumber): Sendable<number>;
   _setInterestRateModel(address: string): Sendable<number>;
-  _setJoetroller(address: string): Sendable<number>;
+  _setGtroller(address: string): Sendable<number>;
   underlying(): Callable<string>;
   interestRateModel(): Callable<string>;
   borrowRatePerSecond(): Callable<number>;
@@ -64,17 +64,17 @@ export interface JTokenMethods {
   totalCollateralTokens(): Callable<number>;
 }
 
-export interface JTokenScenarioMethods extends JTokenMethods {
+export interface GTokenScenarioMethods extends GTokenMethods {
   setTotalBorrows(amount: encodedNumber): Sendable<void>;
   setTotalReserves(amount: encodedNumber): Sendable<void>;
 }
 
-export interface JToken extends Contract {
-  methods: JTokenMethods;
+export interface GToken extends Contract {
+  methods: GTokenMethods;
   name: string;
 }
 
-export interface JTokenScenario extends Contract {
-  methods: JTokenScenarioMethods;
+export interface GTokenScenario extends Contract {
+  methods: GTokenScenarioMethods;
   name: string;
 }

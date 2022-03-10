@@ -1,25 +1,25 @@
 const { avaxUnsigned } = require("../Utils/Avalanche");
 
-const { makeJToken, preJJLP } = require("../Utils/BankerJoe");
+const { makeGToken, preJJLP } = require("../Utils/BankerJoe");
 
 const amount = avaxUnsigned(10e4);
 
-describe("JToken", function () {
+describe("GToken", function () {
   let jToken, root, admin, accounts;
   beforeEach(async () => {
     [root, admin, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({ joetrollerOpts: { kind: "bool" } });
+    jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
   });
 
   describe("_setImplementation", () => {
     describe("jcapable", () => {
       let jCapableDelegate;
       beforeEach(async () => {
-        jCapableDelegate = await deploy("JCapableErc20Delegate");
+        jCapableDelegate = await deploy("GCapableXrc20Delegate");
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("JErc20Delegator", jToken._address);
+        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
         await expect(
           send(
             jToken,
@@ -28,7 +28,7 @@ describe("JToken", function () {
             { from: accounts[0] }
           )
         ).rejects.toRevert(
-          "revert JErc20Delegator::_setImplementation: Caller must be admin"
+          "revert GXrc20Delegator::_setImplementation: Caller must be admin"
         );
       });
 
@@ -38,7 +38,7 @@ describe("JToken", function () {
           amount,
         ]);
 
-        jToken = await saddle.getContractAt("JErc20Delegator", jToken._address);
+        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
         expect(
           await send(jToken, "_setImplementation", [
             jCapableDelegate._address,
@@ -48,7 +48,7 @@ describe("JToken", function () {
         ).toSucceed();
 
         jToken = await saddle.getContractAt(
-          "JCapableErc20Delegate",
+          "GCapableXrc20Delegate",
           jToken._address
         );
         const result = await call(jToken, "getCash");
@@ -64,7 +64,7 @@ describe("JToken", function () {
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("JErc20Delegator", jToken._address);
+        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
         await expect(
           send(
             jToken,
@@ -73,7 +73,7 @@ describe("JToken", function () {
             { from: accounts[0] }
           )
         ).rejects.toRevert(
-          "revert JErc20Delegator::_setImplementation: Caller must be admin"
+          "revert GXrc20Delegator::_setImplementation: Caller must be admin"
         );
       });
 
@@ -83,11 +83,11 @@ describe("JToken", function () {
     describe("jjtoken", () => {
       let jjtokenDelegate;
       beforeEach(async () => {
-        jjtokenDelegate = await deploy("JJTokenDelegateHarness");
+        jjtokenDelegate = await deploy("JGTokenDelegateHarness");
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("JErc20Delegator", jToken._address);
+        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
         await expect(
           send(
             jToken,
@@ -96,11 +96,11 @@ describe("JToken", function () {
             { from: accounts[0] }
           )
         ).rejects.toRevert(
-          "revert JErc20Delegator::_setImplementation: Caller must be admin"
+          "revert GXrc20Delegator::_setImplementation: Caller must be admin"
         );
       });
 
-      // It's unlikely to upgrade an implementation to JJTokenDelegate.
+      // It's unlikely to upgrade an implementation to JGTokenDelegate.
     });
   });
 });

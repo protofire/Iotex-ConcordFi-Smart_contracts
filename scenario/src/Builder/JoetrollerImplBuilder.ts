@@ -1,6 +1,6 @@
 import { Event } from "../Event";
 import { World } from "../World";
-import { JoetrollerImpl } from "../Contract/JoetrollerImpl";
+import { GtrollerImpl } from "../Contract/GtrollerImpl";
 import { Invokation, invoke } from "../Invokation";
 import { getStringV } from "../CoreValue";
 import { StringV } from "../Value";
@@ -8,98 +8,98 @@ import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { storeAndSaveContract } from "../Networks";
 import { getContract, getTestContract } from "../Contract";
 
-const JoetrollerScenarioContract = getTestContract("JoetrollerScenario");
-const JoetrollerContract = getContract("Joetroller");
+const GtrollerScenarioContract = getTestContract("GtrollerScenario");
+const GtrollerContract = getContract("Gtroller");
 
-const JoetrollerBorkedContract = getTestContract("JoetrollerBorked");
+const GtrollerBorkedContract = getTestContract("GtrollerBorked");
 
-export interface JoetrollerImplData {
-  invokation: Invokation<JoetrollerImpl>;
+export interface GtrollerImplData {
+  invokation: Invokation<GtrollerImpl>;
   name: string;
   contract: string;
   description: string;
 }
 
-export async function buildJoetrollerImpl(
+export async function buildGtrollerImpl(
   world: World,
   from: string,
   event: Event
 ): Promise<{
   world: World;
-  joetrollerImpl: JoetrollerImpl;
-  joetrollerImplData: JoetrollerImplData;
+  gTrollerImpl: GtrollerImpl;
+  gTrollerImplData: GtrollerImplData;
 }> {
   const fetchers = [
-    new Fetcher<{ name: StringV }, JoetrollerImplData>(
+    new Fetcher<{ name: StringV }, GtrollerImplData>(
       `
         #### Scenario
 
-        * "Scenario name:<String>" - The Joetroller Scenario for local testing
-          * E.g. "JoetrollerImpl Deploy Scenario MyScen"
+        * "Scenario name:<String>" - The Gtroller Scenario for local testing
+          * E.g. "GtrollerImpl Deploy Scenario MyScen"
       `,
       "Scenario",
       [new Arg("name", getStringV)],
       async (world, { name }) => ({
-        invokation: await JoetrollerScenarioContract.deploy<JoetrollerImpl>(
+        invokation: await GtrollerScenarioContract.deploy<GtrollerImpl>(
           world,
           from,
           []
         ),
         name: name.val,
-        contract: "JoetrollerScenario",
-        description: "Scenario Joetroller Impl",
+        contract: "GtrollerScenario",
+        description: "Scenario Gtroller Impl",
       })
     ),
 
-    new Fetcher<{ name: StringV }, JoetrollerImplData>(
+    new Fetcher<{ name: StringV }, GtrollerImplData>(
       `
         #### Standard
 
-        * "Standard name:<String>" - The standard Joetroller contract
-          * E.g. "Joetroller Deploy Standard MyStandard"
+        * "Standard name:<String>" - The standard Gtroller contract
+          * E.g. "Gtroller Deploy Standard MyStandard"
       `,
       "Standard",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
-          invokation: await JoetrollerContract.deploy<JoetrollerImpl>(
+          invokation: await GtrollerContract.deploy<GtrollerImpl>(
             world,
             from,
             []
           ),
           name: name.val,
-          contract: "Joetroller",
-          description: "Standard Joetroller Impl",
+          contract: "Gtroller",
+          description: "Standard Gtroller Impl",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV }, JoetrollerImplData>(
+    new Fetcher<{ name: StringV }, GtrollerImplData>(
       `
         #### Borked
 
-        * "Borked name:<String>" - A Borked Joetroller for testing
-          * E.g. "JoetrollerImpl Deploy Borked MyBork"
+        * "Borked name:<String>" - A Borked Gtroller for testing
+          * E.g. "GtrollerImpl Deploy Borked MyBork"
       `,
       "Borked",
       [new Arg("name", getStringV)],
       async (world, { name }) => ({
-        invokation: await JoetrollerBorkedContract.deploy<JoetrollerImpl>(
+        invokation: await GtrollerBorkedContract.deploy<GtrollerImpl>(
           world,
           from,
           []
         ),
         name: name.val,
-        contract: "JoetrollerBorked",
-        description: "Borked Joetroller Impl",
+        contract: "GtrollerBorked",
+        description: "Borked Gtroller Impl",
       })
     ),
-    new Fetcher<{ name: StringV }, JoetrollerImplData>(
+    new Fetcher<{ name: StringV }, GtrollerImplData>(
       `
         #### Default
 
-        * "name:<String>" - The standard Joetroller contract
-          * E.g. "JoetrollerImpl Deploy MyDefault"
+        * "name:<String>" - The standard Gtroller contract
+          * E.g. "GtrollerImpl Deploy MyDefault"
       `,
       "Default",
       [new Arg("name", getStringV)],
@@ -107,25 +107,25 @@ export async function buildJoetrollerImpl(
         if (world.isLocalNetwork()) {
           // Note: we're going to use the scenario contract as the standard deployment on local networks
           return {
-            invokation: await JoetrollerScenarioContract.deploy<JoetrollerImpl>(
+            invokation: await GtrollerScenarioContract.deploy<GtrollerImpl>(
               world,
               from,
               []
             ),
             name: name.val,
-            contract: "JoetrollerScenario",
-            description: "Scenario Joetroller Impl",
+            contract: "GtrollerScenario",
+            description: "Scenario Gtroller Impl",
           };
         } else {
           return {
-            invokation: await JoetrollerContract.deploy<JoetrollerImpl>(
+            invokation: await GtrollerContract.deploy<GtrollerImpl>(
               world,
               from,
               []
             ),
             name: name.val,
-            contract: "Joetroller",
-            description: "Standard Joetroller Impl",
+            contract: "Gtroller",
+            description: "Standard Gtroller Impl",
           };
         }
       },
@@ -133,36 +133,36 @@ export async function buildJoetrollerImpl(
     ),
   ];
 
-  let joetrollerImplData = await getFetcherValue<any, JoetrollerImplData>(
-    "DeployJoetrollerImpl",
+  let gTrollerImplData = await getFetcherValue<any, GtrollerImplData>(
+    "DeployGtrollerImpl",
     fetchers,
     world,
     event
   );
-  let invokation = joetrollerImplData.invokation;
-  delete joetrollerImplData.invokation;
+  let invokation = gTrollerImplData.invokation;
+  delete gTrollerImplData.invokation;
 
   if (invokation.error) {
     throw invokation.error;
   }
-  const joetrollerImpl = invokation.value!;
+  const gTrollerImpl = invokation.value!;
 
   world = await storeAndSaveContract(
     world,
-    joetrollerImpl,
-    joetrollerImplData.name,
+    gTrollerImpl,
+    gTrollerImplData.name,
     invokation,
     [
       {
-        index: ["Joetroller", joetrollerImplData.name],
+        index: ["Gtroller", gTrollerImplData.name],
         data: {
-          address: joetrollerImpl._address,
-          contract: joetrollerImplData.contract,
-          description: joetrollerImplData.description,
+          address: gTrollerImpl._address,
+          contract: gTrollerImplData.contract,
+          description: gTrollerImplData.description,
         },
       },
     ]
   );
 
-  return { world, joetrollerImpl, joetrollerImplData };
+  return { world, gTrollerImpl, gTrollerImplData };
 }

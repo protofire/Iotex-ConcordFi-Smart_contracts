@@ -2,14 +2,14 @@
 
 pragma solidity ^0.5.16;
 
-import "./JErc20.sol";
+import "./GCollateralCapXrc20.sol";
 
 /**
- * @title Compound's JErc20Delegate Contract
- * @notice JTokens which wrap an EIP-20 underlying and are delegated to
- * @author Compound
+ * @title Cream's GCollateralCapXrc20Delegate Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are delegated to
+ * @author Cream
  */
-contract JErc20Delegate is JErc20, JDelegateInterface {
+contract GCollateralCapXrc20Delegate is GCollateralCapXrc20 {
     /**
      * @notice Construct an empty delegate
      */
@@ -29,6 +29,15 @@ contract JErc20Delegate is JErc20, JDelegateInterface {
         }
 
         require(msg.sender == admin, "only the admin may call _becomeImplementation");
+
+        // Set internal cash when becoming implementation
+        internalCash = getCashOnChain();
+
+        // Set GToken version in gTroller
+        GtrollerInterfaceExtension(address(gTroller)).updateGTokenVersion(
+            address(this),
+            GtrollerV1Storage.Version.COLLATERALCAP
+        );
     }
 
     /**

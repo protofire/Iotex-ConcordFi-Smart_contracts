@@ -1,18 +1,18 @@
 const { both } = require("../Utils/Avalanche");
-const { makeJoetroller, makeJToken } = require("../Utils/BankerJoe");
+const { makeGtroller, makeGToken } = require("../Utils/BankerJoe");
 
 describe("assetListTest", () => {
   let root, customer, accounts;
-  let joetroller;
+  let gTroller;
   let allTokens, OMG, ZRX, BAT, REP, DAI, SKT;
 
   beforeEach(async () => {
     [root, customer, ...accounts] = saddle.accounts;
-    joetroller = await makeJoetroller();
+    gTroller = await makeGtroller();
     allTokens = [OMG, ZRX, BAT, REP, DAI, SKT] = await Promise.all(
       ["OMG", "ZRX", "BAT", "REP", "DAI", "sketch"].map(async (name) =>
-        makeJToken({
-          joetroller,
+        makeGToken({
+          gTroller,
           name,
           symbol: name,
           supportMarket: name != "sketch",
@@ -26,7 +26,7 @@ describe("assetListTest", () => {
     for (let token of allTokens) {
       const isExpected = expectedTokens.some((e) => e.symbol == token.symbol);
       expect(
-        await call(joetroller, "checkMembership", [customer, token._address])
+        await call(gTroller, "checkMembership", [customer, token._address])
       ).toEqual(isExpected);
     }
   }
@@ -37,12 +37,12 @@ describe("assetListTest", () => {
     expectedErrors = null
   ) {
     const { reply, receipt } = await both(
-      joetroller,
+      gTroller,
       "enterMarkets",
       [enterTokens.map((t) => t._address)],
       { from: customer }
     );
-    const assetsIn = await call(joetroller, "getAssetsIn", [customer]);
+    const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
     expectedErrors = expectedErrors || enterTokens.map((_) => "NO_ERROR");
 
     reply.forEach((tokenReply, i) => {
@@ -63,12 +63,12 @@ describe("assetListTest", () => {
     expectedError = "NO_ERROR"
   ) {
     const { reply, receipt } = await both(
-      joetroller,
+      gTroller,
       "exitMarket",
       [exitToken._address],
       { from: customer }
     );
-    const assetsIn = await call(joetroller, "getAssetsIn", [customer]);
+    const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
     expect(reply).toHaveTrollError(expectedError);
     //assert.trollSuccess(receipt); XXX enterMarkets cannot fail, but exitMarket can - kind of confusing
     expect(assetsIn).toEqual(expectedTokens.map((t) => t._address));
@@ -100,7 +100,7 @@ describe("assetListTest", () => {
 
     it("the market must be listed for add to succeed", async () => {
       await enterAndCheckMarkets([SKT], [], ["MARKET_NOT_LISTED"]);
-      await send(joetroller, "_supportMarket", [SKT._address, 0]);
+      await send(gTroller, "_supportMarket", [SKT._address, 0]);
       await enterAndCheckMarkets([SKT], [SKT]);
     });
 
@@ -177,7 +177,7 @@ describe("assetListTest", () => {
     it("enters when called by a jtoken", async () => {
       await send(BAT, "harnessCallBorrowAllowed", [1], { from: customer });
 
-      const assetsIn = await call(joetroller, "getAssetsIn", [customer]);
+      const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
 
       expect([BAT._address]).toEqual(assetsIn);
 
@@ -186,12 +186,12 @@ describe("assetListTest", () => {
 
     it("reverts when called by not a jtoken", async () => {
       await expect(
-        send(joetroller, "borrowAllowed", [BAT._address, customer, 1], {
+        send(gTroller, "borrowAllowed", [BAT._address, customer, 1], {
           from: customer,
         })
       ).rejects.toRevert("revert sender must be jToken");
 
-      const assetsIn = await call(joetroller, "getAssetsIn", [customer]);
+      const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
 
       expect([]).toEqual(assetsIn);
 
@@ -204,7 +204,7 @@ describe("assetListTest", () => {
       await enterAndCheckMarkets([BAT], [BAT]);
 
       await send(BAT, "harnessCallBorrowAllowed", [1], { from: customer });
-      const assetsIn = await call(joetroller, "getAssetsIn", [customer]);
+      const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
       expect([BAT._address]).toEqual(assetsIn);
     });
   });

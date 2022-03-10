@@ -18,19 +18,19 @@ describe("RewardDistributor", function () {
 
     // ABIs
     this.JUsdcDelegator = await ethers.getContractFactory(
-      "JCollateralCapErc20Delegator"
+      "GCollateralCapXrc20Delegator"
     );
     this.JUsdcDelegateCFOld = await ethers.getContractFactory(
       JUSDC_DELEGATE_ARTIFACT_V2.abi,
       JUSDC_DELEGATE_ARTIFACT_V2.bytecode
     );
     this.JUsdcDelegateCFNew = await ethers.getContractFactory(
-      "JCollateralCapErc20Delegate"
+      "GCollateralCapXrc20Delegate"
     );
 
-    this.JoetrollerCF = await ethers.getContractFactory("Joetroller");
+    this.GtrollerCF = await ethers.getContractFactory("Gtroller");
     this.JoeLensCF = await ethers.getContractFactory("JoeLens");
-    this.JoeCF = await ethers.getContractFactory("JErc20");
+    this.JoeCF = await ethers.getContractFactory("GXrc20");
 
     // Contracts
     this.jUsdcDelegator = await this.JUsdcDelegator.attach(
@@ -39,9 +39,7 @@ describe("RewardDistributor", function () {
     this.jUsdc = await this.JUsdcDelegateCFOld.attach(
       JUSDC_DELEGATOR_ARTIFACT.address
     );
-    this.joetroller = await this.JoetrollerCF.attach(
-      UNITROLLER_ARTIFACT.address
-    );
+    this.gTroller = await this.GtrollerCF.attach(UNITROLLER_ARTIFACT.address);
     this.joeLens = await this.JoeLensCF.attach(JOELENS_ARTIFACT.address);
     this.joe = await this.JoeCF.attach(JOE_ADDRESS);
   });
@@ -90,7 +88,7 @@ describe("RewardDistributor", function () {
     // Get USDC lender who has accrued rewards from V1
     const rewardsBefore = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsBefore).to.be.gt("0");
 
     const jTokenBalanceBefore = await this.jUsdc.balanceOf(USDC_LENDER);
@@ -104,7 +102,7 @@ describe("RewardDistributor", function () {
 
     const rewardsAfter = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsAfter).to.be.lt(rewardsBefore);
   });
 
@@ -112,7 +110,7 @@ describe("RewardDistributor", function () {
     // Get USDC lender who has accrued rewards from V1
     const rewardsBefore = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsBefore).to.be.gt("0");
 
     // Upgrade jUSDC implementation
@@ -131,7 +129,7 @@ describe("RewardDistributor", function () {
 
     const rewardsAfter = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsAfter).to.be.gt(rewardsBefore);
   });
 

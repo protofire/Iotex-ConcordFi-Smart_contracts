@@ -1,23 +1,23 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/JAvax.sol";
-import "./JoetrollerScenario.sol";
+import "../../contracts/GIotx.sol";
+import "./GtrollerScenario.sol";
 
-contract JAvaxHarness is JAvax {
+contract GIotxHarness is GIotx {
     uint256 harnessExchangeRate;
     uint256 public blockTimestamp = 100000;
 
     mapping(address => bool) public failTransferToAddresses;
 
     constructor(
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa,
         string memory name_,
         string memory symbol_,
         uint8 decimals_,
         address payable admin_
-    ) public JAvax(joetroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
+    ) public GIotx(gTroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
 
     function doTransferOut(address payable to, uint256 amount) internal {
         require(failTransferToAddresses[to] == false, "TOKEN_TRANSFER_OUT_FAILED");
@@ -128,7 +128,7 @@ contract JAvaxHarness is JAvax {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral);
         return err;
@@ -171,7 +171,7 @@ contract JAvaxHarness is JAvax {
     }
 }
 
-contract JAvaxScenario is JAvax {
+contract GIotxScenario is GIotx {
     uint256 reserveFactor;
 
     constructor(
@@ -179,10 +179,10 @@ contract JAvaxScenario is JAvax {
         string memory symbol_,
         uint8 decimals_,
         address payable admin_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa
-    ) public JAvax(joetroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
+    ) public GIotx(gTroller_, interestRateModel_, initialExchangeRateMantissa, name_, symbol_, decimals_, admin_) {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
         totalBorrows = totalBorrows_;
@@ -197,7 +197,7 @@ contract JAvaxScenario is JAvax {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }

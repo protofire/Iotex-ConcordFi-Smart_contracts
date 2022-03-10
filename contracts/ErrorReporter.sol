@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-contract JoetrollerErrorReporter {
+contract GtrollerErrorReporter {
     enum Error {
         NO_ERROR,
         UNAUTHORIZED,

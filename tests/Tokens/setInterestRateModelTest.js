@@ -1,11 +1,11 @@
 const { both } = require("../Utils/Avalanche");
 const {
   fastForward,
-  makeJToken,
+  makeGToken,
   makeInterestRateModel,
 } = require("../Utils/BankerJoe");
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, accounts;
   let newModel;
   beforeEach(async () => {
@@ -16,7 +16,7 @@ describe("JToken", function () {
   describe("_setInterestRateModelFresh", () => {
     let jToken, oldModel;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
       oldModel = jToken.interestRateModel;
       expect(oldModel._address).not.toEqual(newModel._address);
     });
@@ -104,7 +104,7 @@ describe("JToken", function () {
   describe("_setInterestRateModel", () => {
     let jToken;
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
     });
 
     beforeEach(async () => {

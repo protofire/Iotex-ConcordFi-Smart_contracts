@@ -15,23 +15,20 @@ import {
   assertionCommands,
   processAssertionEvent,
 } from "./Event/AssertionEvent";
-import {
-  joetrollerCommands,
-  processJoetrollerEvent,
-} from "./Event/JoetrollerEvent";
+import { gTrollerCommands, processGtrollerEvent } from "./Event/GtrollerEvent";
 import {
   processUnitrollerEvent,
   unitrollerCommands,
 } from "./Event/UnitrollerEvent";
 import {
-  joetrollerImplCommands,
-  processJoetrollerImplEvent,
-} from "./Event/JoetrollerImplEvent";
-import { jTokenCommands, processJTokenEvent } from "./Event/JTokenEvent";
+  gTrollerImplCommands,
+  processGtrollerImplEvent,
+} from "./Event/GtrollerImplEvent";
+import { jTokenCommands, processGTokenEvent } from "./Event/GTokenEvent";
 import {
   jTokenDelegateCommands,
-  processJTokenDelegateEvent,
-} from "./Event/JTokenDelegateEvent";
+  processGTokenDelegateEvent,
+} from "./Event/GTokenDelegateEvent";
 import { erc20Commands, processErc20Event } from "./Event/Erc20Event";
 import {
   interestRateModelCommands,
@@ -273,7 +270,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
         #### Read
 
         * "Read ..." - Reads given value and prints result
-          * E.g. "Read JToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
+          * E.g. "Read GToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
       `,
         "Read",
         [new Arg("res", getCoreValue, { variadic: true })],
@@ -560,7 +557,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### From
 
       * "From <User> <Event>" - Runs event as the given user
-        * E.g. "From Geoff (JToken cZRX Mint 5e18)"
+        * E.g. "From Geoff (GToken cZRX Mint 5e18)"
     `,
       "From",
       [new Arg("account", getAddressV), new Arg("event", getEventV)],
@@ -573,7 +570,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### Trx
 
       * "Trx ...trxEvent" - Handles event to set details of next transaction
-        * E.g. "Trx Value 1.0e18 (JToken cEth Mint 1.0e18)"
+        * E.g. "Trx Value 1.0e18 (GToken cEth Mint 1.0e18)"
     `,
       "Trx",
       [new Arg("event", getEventV, { variadic: true })],
@@ -586,7 +583,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### Invariant
 
       * "Invariant ...invariant" - Adds a new invariant to the world which is checked after each transaction
-        * E.g. "Invariant Static (JToken cZRX TotalSupply)"
+        * E.g. "Invariant Static (GToken cZRX TotalSupply)"
     `,
       "Invariant",
       [new Arg("event", getEventV, { variadic: true })],
@@ -600,7 +597,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### Expect
 
       * "Expect ...expectation" - Adds an expectation to hold after the next transaction
-        * E.g. "Expect Changes (JToken cZRX TotalSupply) +10.0e18"
+        * E.g. "Expect Changes (GToken cZRX TotalSupply) +10.0e18"
     `,
       "Expect",
       [new Arg("event", getEventV, { variadic: true })],
@@ -715,7 +712,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### Unitroller
 
       * "Unitroller ...event" - Runs given Unitroller event
-        * E.g. "Unitroller SetPendingImpl MyJoetrollerImpl"
+        * E.g. "Unitroller SetPendingImpl MyGtrollerImpl"
     `,
       "Unitroller",
       [new Arg("event", getEventV, { variadic: true })],
@@ -726,56 +723,55 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
 
     new Command<{ event: EventV }>(
       `
-      #### Joetroller
+      #### Gtroller
 
-      * "Joetroller ...event" - Runs given Joetroller event
-        * E.g. "Joetroller _setReserveFactor 0.5"
+      * "Gtroller ...event" - Runs given Gtroller event
+        * E.g. "Gtroller _setReserveFactor 0.5"
     `,
-      "Joetroller",
+      "Gtroller",
       [new Arg("event", getEventV, { variadic: true })],
-      (world, from, { event }) =>
-        processJoetrollerEvent(world, event.val, from),
-      { subExpressions: joetrollerCommands() }
+      (world, from, { event }) => processGtrollerEvent(world, event.val, from),
+      { subExpressions: gTrollerCommands() }
     ),
 
     new Command<{ event: EventV }>(
       `
-      #### JoetrollerImpl
+      #### GtrollerImpl
 
-      * "JoetrollerImpl ...event" - Runs given JoetrollerImpl event
-        * E.g. "JoetrollerImpl MyImpl Become"
+      * "GtrollerImpl ...event" - Runs given GtrollerImpl event
+        * E.g. "GtrollerImpl MyImpl Become"
     `,
-      "JoetrollerImpl",
+      "GtrollerImpl",
       [new Arg("event", getEventV, { variadic: true })],
       (world, from, { event }) =>
-        processJoetrollerImplEvent(world, event.val, from),
-      { subExpressions: joetrollerImplCommands() }
+        processGtrollerImplEvent(world, event.val, from),
+      { subExpressions: gTrollerImplCommands() }
     ),
 
     new Command<{ event: EventV }>(
       `
-      #### JToken
+      #### GToken
 
-      * "JToken ...event" - Runs given JToken event
-        * E.g. "JToken cZRX Mint 5e18"
+      * "GToken ...event" - Runs given GToken event
+        * E.g. "GToken cZRX Mint 5e18"
     `,
-      "JToken",
+      "GToken",
       [new Arg("event", getEventV, { variadic: true })],
-      (world, from, { event }) => processJTokenEvent(world, event.val, from),
+      (world, from, { event }) => processGTokenEvent(world, event.val, from),
       { subExpressions: jTokenCommands() }
     ),
 
     new Command<{ event: EventV }>(
       `
-      #### JTokenDelegate
+      #### GTokenDelegate
 
-      * "JTokenDelegate ...event" - Runs given JTokenDelegate event
-        * E.g. "JTokenDelegate Deploy CDaiDelegate cDaiDelegate"
+      * "GTokenDelegate ...event" - Runs given GTokenDelegate event
+        * E.g. "GTokenDelegate Deploy CDaiDelegate cDaiDelegate"
     `,
-      "JTokenDelegate",
+      "GTokenDelegate",
       [new Arg("event", getEventV, { variadic: true })],
       (world, from, { event }) =>
-        processJTokenDelegateEvent(world, event.val, from),
+        processGTokenDelegateEvent(world, event.val, from),
       { subExpressions: jTokenDelegateCommands() }
     ),
 
@@ -825,7 +821,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       #### PriceOracleProxy
 
       * "PriceOracleProxy ...event" - Runs given Price Oracle event
-      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (JToken cETH Address)"
+      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (GToken cETH Address)"
     `,
       "PriceOracleProxy",
       [new Arg("event", getEventV, { variadic: true })],

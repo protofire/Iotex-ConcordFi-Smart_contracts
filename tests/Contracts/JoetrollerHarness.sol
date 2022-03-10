@@ -1,27 +1,27 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/Joetroller.sol";
-import "../../contracts/JoetrollerStorage.sol";
-import "../../contracts/JToken.sol";
+import "../../contracts/Gtroller.sol";
+import "../../contracts/GtrollerStorage.sol";
+import "../../contracts/GToken.sol";
 import "../../contracts/PriceOracle/PriceOracle.sol";
 
-contract JoetrollerKovan is Joetroller {
-    function getJoeAddress() public view returns (address) {
+contract GtrollerKovan is Gtroller {
+    function getGAddress() public view returns (address) {
         return 0x61460874a7196d6a22D1eE4922473664b3E95270;
     }
 }
 
-contract JoetrollerRopsten is Joetroller {
-    function getJoeAddress() public view returns (address) {
+contract GtrollerRopsten is Gtroller {
+    function getGAddress() public view returns (address) {
         return 0x1Fe16De955718CFAb7A44605458AB023838C2793;
     }
 }
 
-contract JoetrollerHarness is Joetroller {
+contract GtrollerHarness is Gtroller {
     uint256 public blockTimestamp;
 
-    constructor() public Joetroller() {}
+    constructor() public Gtroller() {}
 
     function setPauseGuardian(address harnessedPauseGuardian) public {
         pauseGuardian = harnessedPauseGuardian;
@@ -41,23 +41,23 @@ contract JoetrollerHarness is Joetroller {
     }
 }
 
-// BankerJoeJoetrollerHarness is only used for CJTokenHarness
-contract BankerJoeJoetrollerHarness is JoetrollerHarness {
+// BankerJoeGtrollerHarness is only used for CGTokenHarness
+contract BankerJoeGtrollerHarness is GtrollerHarness {
     address joeAddress;
 
-    constructor() public JoetrollerHarness() {}
+    constructor() public GtrollerHarness() {}
 
     function setJoeAddress(address joeAddress_) public {
         joeAddress = joeAddress_;
     }
 
-    function getJoeAddress() public view returns (address) {
+    function getGAddress() public view returns (address) {
         return joeAddress;
     }
 
-    function claimJoe(
+    function claimG(
         address[] memory holders,
-        JToken[] memory jTokens,
+        GToken[] memory jTokens,
         bool borrowers,
         bool suppliers
     ) public {
@@ -69,7 +69,7 @@ contract BankerJoeJoetrollerHarness is JoetrollerHarness {
     }
 }
 
-contract JoetrollerBorked {
+contract GtrollerBorked {
     function _become(
         Unitroller unitroller,
         PriceOracle _oracle,
@@ -87,7 +87,7 @@ contract JoetrollerBorked {
     }
 }
 
-contract BoolJoetroller is JoetrollerInterface, Joetroller {
+contract BoolGtroller is GtrollerInterface, Gtroller {
     bool allowMint = true;
     bool allowRedeem = true;
     bool allowBorrow = true;
@@ -123,7 +123,7 @@ contract BoolJoetroller is JoetrollerInterface, Joetroller {
         return noError;
     }
 
-    function checkMembership(address _account, JToken _jToken) external view returns (bool) {
+    function checkMembership(address _account, GToken _jToken) external view returns (bool) {
         _account;
         _jToken;
         return true;
@@ -330,7 +330,7 @@ contract BoolJoetroller is JoetrollerInterface, Joetroller {
         return failCalculateSeizeTokens ? (opaqueError, 0) : (noError, calculatedSeizeTokens);
     }
 
-    function updateJTokenVersion(address _jToken, JoetrollerV1Storage.Version _version) external {
+    function updateGTokenVersion(address _jToken, GtrollerV1Storage.Version _version) external {
         _jToken;
         _version;
     }
@@ -406,7 +406,7 @@ contract BoolJoetroller is JoetrollerInterface, Joetroller {
     }
 }
 
-contract EchoTypesJoetroller is UnitrollerAdminStorage {
+contract EchoTypesGtroller is UnitrollerAdminStorage {
     function stringy(string memory s) public pure returns (string memory) {
         return s;
     }

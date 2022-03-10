@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "./JToken.sol";
+import "./GToken.sol";
 import "./PriceOracle/PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
@@ -27,7 +27,7 @@ contract UnitrollerAdminStorage {
     address public pendingImplementation;
 }
 
-contract JoetrollerV1Storage is UnitrollerAdminStorage {
+contract GtrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Oracle which gives the price of any given asset
      */
@@ -46,7 +46,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in"
      */
-    mapping(address => JToken[]) public accountAssets;
+    mapping(address => GToken[]) public accountAssets;
 
     enum Version {
         VANILLA,
@@ -65,7 +65,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
         uint256 collateralFactorMantissa;
         /// @notice Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
-        /// @notice JToken version
+        /// @notice GToken version
         Version version;
     }
 
@@ -89,7 +89,7 @@ contract JoetrollerV1Storage is UnitrollerAdminStorage {
     mapping(address => bool) public borrowGuardianPaused;
 
     /// @notice A list of all markets
-    JToken[] public allMarkets;
+    GToken[] public allMarkets;
 
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;

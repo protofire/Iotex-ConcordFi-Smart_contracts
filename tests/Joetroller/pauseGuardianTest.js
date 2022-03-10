@@ -1,8 +1,8 @@
 const { address, both, avaxMantissa } = require("../Utils/Avalanche");
-const { makeJoetroller, makeJToken } = require("../Utils/BankerJoe");
+const { makeGtroller, makeGToken } = require("../Utils/BankerJoe");
 
-describe("Joetroller", () => {
-  let joetroller, jToken;
+describe("Gtroller", () => {
+  let gTroller, jToken;
   let root, accounts;
 
   beforeEach(async () => {
@@ -11,12 +11,12 @@ describe("Joetroller", () => {
 
   describe("_setPauseGuardian", () => {
     beforeEach(async () => {
-      joetroller = await makeJoetroller();
+      gTroller = await makeGtroller();
     });
 
     describe("failing", () => {
       it("emits a failure log if not sent by admin", async () => {
-        let result = await send(joetroller, "_setPauseGuardian", [root], {
+        let result = await send(gTroller, "_setPauseGuardian", [root], {
           from: accounts[1],
         });
         expect(result).toHaveTrollFailure(
@@ -26,13 +26,13 @@ describe("Joetroller", () => {
       });
 
       it("does not change the pause guardian", async () => {
-        let pauseGuardian = await call(joetroller, "pauseGuardian");
+        let pauseGuardian = await call(gTroller, "pauseGuardian");
         expect(pauseGuardian).toEqual(address(0));
-        await send(joetroller, "_setPauseGuardian", [root], {
+        await send(gTroller, "_setPauseGuardian", [root], {
           from: accounts[1],
         });
 
-        pauseGuardian = await call(joetroller, "pauseGuardian");
+        pauseGuardian = await call(gTroller, "pauseGuardian");
         expect(pauseGuardian).toEqual(address(0));
       });
     });
@@ -41,9 +41,9 @@ describe("Joetroller", () => {
       let result;
 
       beforeEach(async () => {
-        joetroller = await makeJoetroller();
+        gTroller = await makeGtroller();
 
-        result = await send(joetroller, "_setPauseGuardian", [accounts[1]]);
+        result = await send(gTroller, "_setPauseGuardian", [accounts[1]]);
       });
 
       it("emits new pause guardian event", async () => {
@@ -54,7 +54,7 @@ describe("Joetroller", () => {
       });
 
       it("changes pending pause guardian", async () => {
-        let pauseGuardian = await call(joetroller, "pauseGuardian");
+        let pauseGuardian = await call(gTroller, "pauseGuardian");
         expect(pauseGuardian).toEqual(accounts[1]);
       });
     });
@@ -62,8 +62,8 @@ describe("Joetroller", () => {
 
   describe("setting paused", () => {
     beforeEach(async () => {
-      jToken = await makeJToken({ supportMarket: true });
-      joetroller = jToken.joetroller;
+      jToken = await makeGToken({ supportMarket: true });
+      gTroller = jToken.gTroller;
     });
 
     let globalMethods = ["Transfer", "Seize"];
@@ -71,7 +71,7 @@ describe("Joetroller", () => {
       let pauseGuardian;
       beforeEach(async () => {
         pauseGuardian = accounts[1];
-        await send(joetroller, "_setPauseGuardian", [accounts[1]], {
+        await send(gTroller, "_setPauseGuardian", [accounts[1]], {
           from: root,
         });
       });
@@ -79,19 +79,19 @@ describe("Joetroller", () => {
       globalMethods.forEach(async (method) => {
         it(`only pause guardian or admin can pause ${method}`, async () => {
           await expect(
-            send(joetroller, `_set${method}Paused`, [true], {
+            send(gTroller, `_set${method}Paused`, [true], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
           await expect(
-            send(joetroller, `_set${method}Paused`, [false], {
+            send(gTroller, `_set${method}Paused`, [false], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
         });
 
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
-          result = await send(joetroller, `_set${method}Paused`, [true], {
+          result = await send(gTroller, `_set${method}Paused`, [true], {
             from: pauseGuardian,
           });
           expect(result).toHaveLog(`ActionPaused`, {
@@ -101,33 +101,33 @@ describe("Joetroller", () => {
 
           let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
-          state = await call(joetroller, `${camelCase}GuardianPaused`);
+          state = await call(gTroller, `${camelCase}GuardianPaused`);
           expect(state).toEqual(true);
 
           await expect(
-            send(joetroller, `_set${method}Paused`, [false], {
+            send(gTroller, `_set${method}Paused`, [false], {
               from: pauseGuardian,
             })
           ).rejects.toRevert("revert only admin can unpause");
-          result = await send(joetroller, `_set${method}Paused`, [false]);
+          result = await send(gTroller, `_set${method}Paused`, [false]);
 
           expect(result).toHaveLog(`ActionPaused`, {
             action: method,
             pauseState: false,
           });
 
-          state = await call(joetroller, `${camelCase}GuardianPaused`);
+          state = await call(gTroller, `${camelCase}GuardianPaused`);
           expect(state).toEqual(false);
         });
 
         it(`pauses ${method}`, async () => {
-          await send(joetroller, `_set${method}Paused`, [true], {
+          await send(gTroller, `_set${method}Paused`, [true], {
             from: pauseGuardian,
           });
           switch (method) {
             case "Transfer":
               await expect(
-                send(joetroller, "transferAllowed", [
+                send(gTroller, "transferAllowed", [
                   address(1),
                   address(2),
                   address(3),
@@ -138,7 +138,7 @@ describe("Joetroller", () => {
 
             case "Seize":
               await expect(
-                send(joetroller, "seizeAllowed", [
+                send(gTroller, "seizeAllowed", [
                   address(1),
                   address(2),
                   address(3),
@@ -160,7 +160,7 @@ describe("Joetroller", () => {
       let pauseGuardian;
       beforeEach(async () => {
         pauseGuardian = accounts[1];
-        await send(joetroller, "_setPauseGuardian", [accounts[1]], {
+        await send(gTroller, "_setPauseGuardian", [accounts[1]], {
           from: root,
         });
       });
@@ -168,12 +168,12 @@ describe("Joetroller", () => {
       marketMethods.forEach(async (method) => {
         it(`only pause guardian or admin can pause ${method}`, async () => {
           await expect(
-            send(joetroller, `_set${method}Paused`, [jToken._address, true], {
+            send(gTroller, `_set${method}Paused`, [jToken._address, true], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
           await expect(
-            send(joetroller, `_set${method}Paused`, [jToken._address, false], {
+            send(gTroller, `_set${method}Paused`, [jToken._address, false], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
@@ -181,7 +181,7 @@ describe("Joetroller", () => {
 
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
           result = await send(
-            joetroller,
+            gTroller,
             `_set${method}Paused`,
             [jToken._address, true],
             { from: pauseGuardian }
@@ -194,17 +194,17 @@ describe("Joetroller", () => {
 
           let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
-          state = await call(joetroller, `${camelCase}GuardianPaused`, [
+          state = await call(gTroller, `${camelCase}GuardianPaused`, [
             jToken._address,
           ]);
           expect(state).toEqual(true);
 
           await expect(
-            send(joetroller, `_set${method}Paused`, [jToken._address, false], {
+            send(gTroller, `_set${method}Paused`, [jToken._address, false], {
               from: pauseGuardian,
             })
           ).rejects.toRevert("revert only admin can unpause");
-          result = await send(joetroller, `_set${method}Paused`, [
+          result = await send(gTroller, `_set${method}Paused`, [
             jToken._address,
             false,
           ]);
@@ -215,47 +215,36 @@ describe("Joetroller", () => {
             pauseState: false,
           });
 
-          state = await call(joetroller, `${camelCase}GuardianPaused`, [
+          state = await call(gTroller, `${camelCase}GuardianPaused`, [
             jToken._address,
           ]);
           expect(state).toEqual(false);
         });
 
         it(`pauses ${method}`, async () => {
-          await send(
-            joetroller,
-            `_set${method}Paused`,
-            [jToken._address, true],
-            { from: pauseGuardian }
-          );
+          await send(gTroller, `_set${method}Paused`, [jToken._address, true], {
+            from: pauseGuardian,
+          });
           switch (method) {
             case "Mint":
               expect(
-                await call(joetroller, "mintAllowed", [
-                  address(1),
-                  address(2),
-                  1,
-                ])
+                await call(gTroller, "mintAllowed", [address(1), address(2), 1])
               ).toHaveTrollError("MARKET_NOT_LISTED");
               await expect(
-                send(joetroller, "mintAllowed", [
-                  jToken._address,
-                  address(2),
-                  1,
-                ])
+                send(gTroller, "mintAllowed", [jToken._address, address(2), 1])
               ).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
               break;
 
             case "Borrow":
               expect(
-                await call(joetroller, "borrowAllowed", [
+                await call(gTroller, "borrowAllowed", [
                   address(1),
                   address(2),
                   1,
                 ])
               ).toHaveTrollError("MARKET_NOT_LISTED");
               await expect(
-                send(joetroller, "borrowAllowed", [
+                send(gTroller, "borrowAllowed", [
                   jToken._address,
                   address(2),
                   1,

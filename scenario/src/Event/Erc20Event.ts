@@ -14,7 +14,7 @@ import { AddressV, BoolV, EventV, NumberV, StringV } from "../Value";
 import { getErc20V } from "../Value/Erc20Value";
 import { verify } from "../Verify";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { JTokenErrorReporter } from "../ErrorReporter";
+import { GTokenErrorReporter } from "../ErrorReporter";
 import { getErc20Data } from "../ContractLookup";
 
 function showTrxValue(world: World): string {
@@ -71,7 +71,7 @@ async function approve(
     world,
     erc20.methods.approve(address, amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -94,7 +94,7 @@ async function faucet(
     world,
     erc20.methods.allocateTo(address, amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -117,7 +117,7 @@ async function transfer(
     world,
     erc20.methods.transfer(address, amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -141,7 +141,7 @@ async function transferFrom(
     world,
     erc20.methods.transferFrom(owner, spender, amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -163,7 +163,7 @@ async function setFail(
     world,
     erc20.methods.setFail(fail),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(world, `Set fail for ${erc20.name} to ${fail}`, invokation);

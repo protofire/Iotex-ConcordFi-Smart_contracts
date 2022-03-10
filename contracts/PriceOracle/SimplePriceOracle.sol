@@ -3,7 +3,7 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
-import "../JErc20.sol";
+import "../GXrc20.sol";
 
 contract SimplePriceOracle is PriceOracle {
     mapping(address => uint256) prices;
@@ -14,16 +14,16 @@ contract SimplePriceOracle is PriceOracle {
         uint256 newPriceMantissa
     );
 
-    function getUnderlyingPrice(JToken jToken) public view returns (uint256) {
+    function getUnderlyingPrice(GToken jToken) public view returns (uint256) {
         if (compareStrings(jToken.symbol(), "jAVAX")) {
             return 1e18;
         } else {
-            return prices[address(JErc20(address(jToken)).underlying())];
+            return prices[address(GXrc20(address(jToken)).underlying())];
         }
     }
 
-    function setUnderlyingPrice(JToken jToken, uint256 underlyingPriceMantissa) public {
-        address asset = address(JErc20(address(jToken)).underlying());
+    function setUnderlyingPrice(GToken jToken, uint256 underlyingPriceMantissa) public {
+        address asset = address(GXrc20(address(jToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }

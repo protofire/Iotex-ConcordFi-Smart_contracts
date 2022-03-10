@@ -10,7 +10,7 @@ interface ErrorTypes {
   FailureInfoInv: { [code: number]: string };
 }
 
-const JoetrollerErrorReporter = {
+const GtrollerErrorReporter = {
   Error: [
     "NO_ERROR",
     "UNAUTHORIZED",
@@ -154,5 +154,5 @@ function parseEnum(reporterEnum: ErrorReporterEnum): ErrorTypes {
   return { Error, ErrorInv, FailureInfo, FailureInfoInv };
 }
 
-export const JoetrollerErr = parseEnum(JoetrollerErrorReporter);
+export const GtrollerErr = parseEnum(GtrollerErrorReporter);
 export const TokenErr = parseEnum(TokenErrorReporter);

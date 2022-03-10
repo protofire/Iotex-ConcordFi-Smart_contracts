@@ -28,7 +28,7 @@ export async function buildUnitroller(
       `
         #### Unitroller
 
-        * "" - The Upgradable Joetroller
+        * "" - The Upgradable Gtroller
           * E.g. "Unitroller Deploy"
       `,
       "Unitroller",

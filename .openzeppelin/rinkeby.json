@@ -113,160 +113,160 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/JTokenInterfaces.sol:13"
+            "src": "contracts/GTokenInterfaces.sol:13"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/JTokenInterfaces.sol:18"
+            "src": "contracts/GTokenInterfaces.sol:18"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/JTokenInterfaces.sol:23"
+            "src": "contracts/GTokenInterfaces.sol:23"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/JTokenInterfaces.sol:28"
+            "src": "contracts/GTokenInterfaces.sol:28"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/JTokenInterfaces.sol:44"
+            "src": "contracts/GTokenInterfaces.sol:44"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/JTokenInterfaces.sol:49"
+            "src": "contracts/GTokenInterfaces.sol:49"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)21241",
-            "src": "contracts/JTokenInterfaces.sol:54"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)21241",
+            "src": "contracts/GTokenInterfaces.sol:54"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)2453",
-            "src": "contracts/JTokenInterfaces.sol:59"
+            "src": "contracts/GTokenInterfaces.sol:59"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:64"
+            "src": "contracts/GTokenInterfaces.sol:64"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:69"
+            "src": "contracts/GTokenInterfaces.sol:69"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:74"
+            "src": "contracts/GTokenInterfaces.sol:74"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:79"
+            "src": "contracts/GTokenInterfaces.sol:79"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:84"
+            "src": "contracts/GTokenInterfaces.sol:84"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:89"
+            "src": "contracts/GTokenInterfaces.sol:89"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:94"
+            "src": "contracts/GTokenInterfaces.sol:94"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/JTokenInterfaces.sol:99"
+            "src": "contracts/GTokenInterfaces.sol:99"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/JTokenInterfaces.sol:104"
+            "src": "contracts/GTokenInterfaces.sol:104"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)14950_storage)",
-            "src": "contracts/JTokenInterfaces.sol:119"
+            "src": "contracts/GTokenInterfaces.sol:119"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "protocolSeizeShareMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:124"
+            "src": "contracts/GTokenInterfaces.sol:124"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/JTokenInterfaces.sol:136"
+            "src": "contracts/GTokenInterfaces.sol:136"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/JTokenInterfaces.sol:141"
+            "src": "contracts/GTokenInterfaces.sol:141"
           },
           {
             "contract": "JSupplyCapStorage",
             "label": "internalCash",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:148"
+            "src": "contracts/GTokenInterfaces.sol:148"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "totalCollateralTokens",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:155"
+            "src": "contracts/GTokenInterfaces.sol:155"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "accountCollateralTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/JTokenInterfaces.sol:161"
+            "src": "contracts/GTokenInterfaces.sol:161"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "isCollateralTokenInit",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts/JTokenInterfaces.sol:166"
+            "src": "contracts/GTokenInterfaces.sol:166"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "collateralCap",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:171"
+            "src": "contracts/GTokenInterfaces.sol:171"
           }
         ],
         "types": {
@@ -294,8 +294,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)21241": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)21241": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)2453": {
             "label": "contract InterestRateModel"
@@ -304,10 +304,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)14950_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)14950_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",
@@ -328,160 +328,160 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/JTokenInterfaces.sol:13"
+            "src": "contracts/GTokenInterfaces.sol:13"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/JTokenInterfaces.sol:18"
+            "src": "contracts/GTokenInterfaces.sol:18"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/JTokenInterfaces.sol:23"
+            "src": "contracts/GTokenInterfaces.sol:23"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/JTokenInterfaces.sol:28"
+            "src": "contracts/GTokenInterfaces.sol:28"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/JTokenInterfaces.sol:44"
+            "src": "contracts/GTokenInterfaces.sol:44"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/JTokenInterfaces.sol:49"
+            "src": "contracts/GTokenInterfaces.sol:49"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)21358",
-            "src": "contracts/JTokenInterfaces.sol:54"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)21358",
+            "src": "contracts/GTokenInterfaces.sol:54"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)2453",
-            "src": "contracts/JTokenInterfaces.sol:59"
+            "src": "contracts/GTokenInterfaces.sol:59"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:64"
+            "src": "contracts/GTokenInterfaces.sol:64"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:69"
+            "src": "contracts/GTokenInterfaces.sol:69"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:74"
+            "src": "contracts/GTokenInterfaces.sol:74"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:79"
+            "src": "contracts/GTokenInterfaces.sol:79"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:84"
+            "src": "contracts/GTokenInterfaces.sol:84"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:89"
+            "src": "contracts/GTokenInterfaces.sol:89"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:94"
+            "src": "contracts/GTokenInterfaces.sol:94"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/JTokenInterfaces.sol:99"
+            "src": "contracts/GTokenInterfaces.sol:99"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/JTokenInterfaces.sol:104"
+            "src": "contracts/GTokenInterfaces.sol:104"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)15067_storage)",
-            "src": "contracts/JTokenInterfaces.sol:119"
+            "src": "contracts/GTokenInterfaces.sol:119"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "protocolSeizeShareMantissa",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:124"
+            "src": "contracts/GTokenInterfaces.sol:124"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/JTokenInterfaces.sol:136"
+            "src": "contracts/GTokenInterfaces.sol:136"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/JTokenInterfaces.sol:141"
+            "src": "contracts/GTokenInterfaces.sol:141"
           },
           {
             "contract": "JSupplyCapStorage",
             "label": "internalCash",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:148"
+            "src": "contracts/GTokenInterfaces.sol:148"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "totalCollateralTokens",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:155"
+            "src": "contracts/GTokenInterfaces.sol:155"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "accountCollateralTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/JTokenInterfaces.sol:161"
+            "src": "contracts/GTokenInterfaces.sol:161"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "isCollateralTokenInit",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts/JTokenInterfaces.sol:166"
+            "src": "contracts/GTokenInterfaces.sol:166"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "collateralCap",
             "type": "t_uint256",
-            "src": "contracts/JTokenInterfaces.sol:171"
+            "src": "contracts/GTokenInterfaces.sol:171"
           }
         ],
         "types": {
@@ -509,8 +509,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)21358": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)21358": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)2453": {
             "label": "contract InterestRateModel"
@@ -519,10 +519,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)15067_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)15067_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",
@@ -543,154 +543,154 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:348"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:348"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:353"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:353"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:358"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:358"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:363"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:363"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:379"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:379"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:384"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:384"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)373",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:389"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)373",
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:389"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)45",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:394"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:394"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:399"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:399"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:404"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:404"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:409"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:409"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:414"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:414"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:419"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:419"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:424"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:424"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:429"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:429"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:434"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:434"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:439"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:439"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:454"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:454"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:461"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:461"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:466"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:466"
           },
           {
             "contract": "JSupplyCapStorage",
             "label": "internalCash",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:473"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:473"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "totalCollateralTokens",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:480"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:480"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "accountCollateralTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:486"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:486"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "isCollateralTokenInit",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:491"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:491"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "collateralCap",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV1_flat.sol:496"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV1_flat.sol:496"
           }
         ],
         "types": {
@@ -718,8 +718,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)373": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)373": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)45": {
             "label": "contract InterestRateModel"
@@ -728,10 +728,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)454_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",
@@ -752,160 +752,160 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:348"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:348"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:353"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:353"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:358"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:358"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:363"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:363"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:379"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:379"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:384"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:384"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)373",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:389"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)373",
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:389"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)45",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:394"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:394"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:399"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:399"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:404"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:404"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:409"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:409"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:414"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:414"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:419"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:419"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:424"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:424"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:429"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:429"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:434"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:434"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:439"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:439"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:454"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:454"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:461"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:461"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:466"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:466"
           },
           {
             "contract": "JSupplyCapStorage",
             "label": "internalCash",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:473"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:473"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "totalCollateralTokens",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:480"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:480"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "accountCollateralTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:486"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:486"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "isCollateralTokenInit",
             "type": "t_mapping(t_address,t_bool)",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:491"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:491"
           },
           {
             "contract": "JCollateralCapStorage",
             "label": "collateralCap",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:496"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:496"
           },
           {
-            "contract": "JProtocolSeizeShareStorage",
+            "contract": "GProtocolSeizeShareStorage",
             "label": "protocolSeizeShareMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JCollateralCapErc20DelegateV2_flat.sol:842"
+            "src": "contracts/versions/GCollateralCapXrc20DelegateV2_flat.sol:842"
           }
         ],
         "types": {
@@ -933,8 +933,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)373": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)373": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)45": {
             "label": "contract InterestRateModel"
@@ -943,10 +943,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)454_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",
@@ -967,124 +967,124 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:348"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:348"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:353"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:353"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:358"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:358"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:363"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:363"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:379"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:379"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:384"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:384"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)373",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:389"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)373",
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:389"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)29",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:394"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:394"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:399"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:399"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:404"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:404"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:409"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:409"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:414"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:414"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:419"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:419"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:424"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:424"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:429"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:429"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:434"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:434"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:439"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:439"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:454"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:454"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:461"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:461"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/versions/JWrappedNativeDelegateV1_flat.sol:466"
+            "src": "contracts/versions/GWrappedNativeDelegateV1_flat.sol:466"
           }
         ],
         "types": {
@@ -1103,8 +1103,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)373": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)373": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)29": {
             "label": "contract InterestRateModel"
@@ -1119,10 +1119,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)454_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",
@@ -1143,130 +1143,130 @@
       "layout": {
         "storage": [
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "_notEntered",
             "type": "t_bool",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:348"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:348"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "name",
             "type": "t_string_storage",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:353"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:353"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "symbol",
             "type": "t_string_storage",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:358"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:358"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "decimals",
             "type": "t_uint8",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:363"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:363"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "admin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:379"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:379"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "pendingAdmin",
             "type": "t_address_payable",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:384"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:384"
           },
           {
-            "contract": "JTokenStorage",
-            "label": "joetroller",
-            "type": "t_contract(JoetrollerInterface)373",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:389"
+            "contract": "GTokenStorage",
+            "label": "gTroller",
+            "type": "t_contract(GtrollerInterface)373",
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:389"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "interestRateModel",
             "type": "t_contract(InterestRateModel)29",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:394"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:394"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "initialExchangeRateMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:399"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:399"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "reserveFactorMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:404"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:404"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accrualBlockTimestamp",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:409"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:409"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "borrowIndex",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:414"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:414"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalBorrows",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:419"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:419"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalReserves",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:424"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:424"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "totalSupply",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:429"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:429"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountTokens",
             "type": "t_mapping(t_address,t_uint256)",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:434"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:434"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "transferAllowances",
             "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:439"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:439"
           },
           {
-            "contract": "JTokenStorage",
+            "contract": "GTokenStorage",
             "label": "accountBorrows",
             "type": "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:454"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:454"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "underlying",
             "type": "t_address",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:461"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:461"
           },
           {
-            "contract": "JErc20Storage",
+            "contract": "GXrc20Storage",
             "label": "implementation",
             "type": "t_address",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:466"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:466"
           },
           {
-            "contract": "JProtocolSeizeShareStorage",
+            "contract": "GProtocolSeizeShareStorage",
             "label": "protocolSeizeShareMantissa",
             "type": "t_uint256",
-            "src": "contracts/versions/JWrappedNativeDelegateV2_flat.sol:842"
+            "src": "contracts/versions/GWrappedNativeDelegateV2_flat.sol:842"
           }
         ],
         "types": {
@@ -1288,8 +1288,8 @@
           "t_address_payable": {
             "label": "address payable"
           },
-          "t_contract(JoetrollerInterface)373": {
-            "label": "contract JoetrollerInterface"
+          "t_contract(GtrollerInterface)373": {
+            "label": "contract GtrollerInterface"
           },
           "t_contract(InterestRateModel)29": {
             "label": "contract InterestRateModel"
@@ -1301,10 +1301,10 @@
             "label": "mapping(address => mapping(address => uint256))"
           },
           "t_mapping(t_address,t_struct(BorrowSnapshot)454_storage)": {
-            "label": "mapping(address => struct JTokenStorage.BorrowSnapshot)"
+            "label": "mapping(address => struct GTokenStorage.BorrowSnapshot)"
           },
           "t_struct(BorrowSnapshot)454_storage": {
-            "label": "struct JTokenStorage.BorrowSnapshot",
+            "label": "struct GTokenStorage.BorrowSnapshot",
             "members": [
               {
                 "label": "principal",

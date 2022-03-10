@@ -5,9 +5,9 @@ const {
   avaxGasCost,
 } = require("../Utils/Avalanche");
 const {
-  makeJToken,
-  makeJTokenAdmin,
-  makeJoetroller,
+  makeGToken,
+  makeGTokenAdmin,
+  makeGtroller,
   makeInterestRateModel,
   makeToken,
   setAvaxBalance,
@@ -15,7 +15,7 @@ const {
   adjustBalances,
 } = require("../Utils/BankerJoe");
 
-describe("JTokenAdmin", () => {
+describe("GTokenAdmin", () => {
   let jTokenAdmin, jToken, root, accounts, admin, reserveManager;
 
   beforeEach(async () => {
@@ -23,28 +23,28 @@ describe("JTokenAdmin", () => {
     admin = accounts[1];
     reserveManager = accounts[2];
     others = accounts[3];
-    jTokenAdmin = await makeJTokenAdmin({ admin: admin });
+    jTokenAdmin = await makeGTokenAdmin({ admin: admin });
   });
 
-  describe("getJTokenAdmin", () => {
+  describe("getGTokenAdmin", () => {
     it("it is normal admin", async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
       expect(
-        await call(jTokenAdmin, "getJTokenAdmin", [jToken._address])
+        await call(jTokenAdmin, "getGTokenAdmin", [jToken._address])
       ).toEqual(root);
     });
 
     it("it is jToken admin contract", async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
       expect(
-        await call(jTokenAdmin, "getJTokenAdmin", [jToken._address])
+        await call(jTokenAdmin, "getGTokenAdmin", [jToken._address])
       ).toEqual(jTokenAdmin._address);
     });
   });
 
   describe("_setPendingAdmin()", () => {
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
     });
 
     it("should only be callable by admin", async () => {
@@ -74,7 +74,7 @@ describe("JTokenAdmin", () => {
 
   describe("_acceptAdmin()", () => {
     beforeEach(async () => {
-      jToken = await makeJToken();
+      jToken = await makeGToken();
       expect(
         await send(jToken, "_setPendingAdmin", [jTokenAdmin._address])
       ).toSucceed();
@@ -102,39 +102,39 @@ describe("JTokenAdmin", () => {
     });
   });
 
-  describe("_setJoetroller()", () => {
-    let oldJoetroller, newJoetroller;
+  describe("_setGtroller()", () => {
+    let oldGtroller, newGtroller;
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
-      oldJoetroller = jToken.joetroller;
-      newJoetroller = await makeJoetroller();
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
+      oldGtroller = jToken.gTroller;
+      newGtroller = await makeGtroller();
     });
 
     it("should only be callable by admin", async () => {
       await expect(
         send(
           jTokenAdmin,
-          "_setJoetroller",
-          [jToken._address, newJoetroller._address],
+          "_setGtroller",
+          [jToken._address, newGtroller._address],
           { from: others }
         )
       ).rejects.toRevert("revert only the admin may call this function");
 
-      expect(await call(jToken, "joetroller")).toEqual(oldJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(oldGtroller._address);
     });
 
-    it("should succeed and set new joetroller", async () => {
+    it("should succeed and set new gTroller", async () => {
       expect(
         await send(
           jTokenAdmin,
-          "_setJoetroller",
-          [jToken._address, newJoetroller._address],
+          "_setGtroller",
+          [jToken._address, newGtroller._address],
           { from: admin }
         )
       ).toSucceed();
 
-      expect(await call(jToken, "joetroller")).toEqual(newJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(newGtroller._address);
     });
   });
 
@@ -142,7 +142,7 @@ describe("JTokenAdmin", () => {
     const factor = avaxMantissa(0.02);
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
     });
 
     it("should only be callable by admin", async () => {
@@ -175,7 +175,7 @@ describe("JTokenAdmin", () => {
     const reduction = avaxUnsigned(2e12);
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
       await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
       expect(
         await send(jToken, "harnessSetTotalReserves", [reserves])
@@ -220,7 +220,7 @@ describe("JTokenAdmin", () => {
     let oldModel, newModel;
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
       oldModel = jToken.interestRateModel;
       newModel = await makeInterestRateModel();
     });
@@ -262,11 +262,11 @@ describe("JTokenAdmin", () => {
     let jCollateralCapErc20;
 
     beforeEach(async () => {
-      jCollateralCapErc20 = await makeJToken({
+      jCollateralCapErc20 = await makeGToken({
         kind: "jcollateralcap",
         admin: jTokenAdmin._address,
       });
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
     });
 
     it("should only be callable by admin", async () => {
@@ -282,7 +282,7 @@ describe("JTokenAdmin", () => {
       expect(await call(jCollateralCapErc20, "collateralCap")).toEqualNumber(0);
     });
 
-    it("should fail for not JCollateralCapErc20 token", async () => {
+    it("should fail for not GCollateralCapXrc20 token", async () => {
       await expect(
         send(jTokenAdmin, "_setCollateralCap", [jToken._address, cap], {
           from: admin,
@@ -310,8 +310,8 @@ describe("JTokenAdmin", () => {
     let jCapableDelegate;
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
-      jCapableDelegate = await deploy("JCapableErc20Delegate");
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
+      jCapableDelegate = await deploy("GCapableXrc20Delegate");
     });
 
     it("should only be callable by admin", async () => {
@@ -347,7 +347,7 @@ describe("JTokenAdmin", () => {
     const reduction = avaxUnsigned(2e12);
 
     beforeEach(async () => {
-      jToken = await makeJToken({ admin: jTokenAdmin._address });
+      jToken = await makeGToken({ admin: jTokenAdmin._address });
       await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
       expect(
         await send(jToken, "harnessSetTotalReserves", [reserves])

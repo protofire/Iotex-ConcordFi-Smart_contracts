@@ -6,7 +6,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   makeFlashloanReceiver,
   balanceOf,
 } = require("../Utils/BankerJoe");
@@ -25,10 +25,10 @@ describe("Flashloan test", function () {
   beforeEach(async () => {
     admin = saddle.accounts[0];
     nonAdmin = saddle.accounts[1];
-    jToken = await makeJToken({ kind: "jcollateralcap", supportMarket: true });
+    jToken = await makeGToken({ kind: "jcollateralcap", supportMarket: true });
     flashloanReceiver = await makeFlashloanReceiver();
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.joetroller._address,
+      jToken.gTroller._address,
       admin,
     ]);
 
@@ -53,21 +53,21 @@ describe("Flashloan test", function () {
   });
 
   describe("test FlashLoanLender interface", () => {
-    let unsupportedJToken;
+    let unsupportedGToken;
     beforeEach(async () => {
-      unsupportedJToken = await makeJToken({
+      unsupportedGToken = await makeGToken({
         kind: "jcollateralcap",
         supportMarket: true,
       });
     });
-    it("test deployment of flashLoanLender with a joetroller containging jAvax market", async () => {
-      let jAvax = await makeJToken({ kind: "javax" });
-      await deploy("FlashloanLender", [jAvax.joetroller._address, admin]);
+    it("test deployment of flashLoanLender with a gTroller containging jAvax market", async () => {
+      let jAvax = await makeGToken({ kind: "javax" });
+      await deploy("FlashloanLender", [jAvax.gTroller._address, admin]);
     });
     it("test maxFlashLoan return 0 for unsupported token", async () => {
       expect(
         await call(flashloanLender, "maxFlashLoan", [
-          unsupportedJToken.underlying._address,
+          unsupportedGToken.underlying._address,
         ])
       ).toEqualNumber(0);
       expect(
@@ -81,7 +81,7 @@ describe("Flashloan test", function () {
       const totalFee = 8;
       await expect(
         call(flashloanLender, "flashFee", [
-          unsupportedJToken.underlying._address,
+          unsupportedGToken.underlying._address,
           borrowAmount,
         ])
       ).rejects.toRevert(
@@ -98,7 +98,7 @@ describe("Flashloan test", function () {
       const borrowAmount = 10_000;
       const totalFee = 8;
       await send(flashloanLender, "updateUnderlyingMapping", [
-        [unsupportedJToken._address],
+        [unsupportedGToken._address],
       ]);
       expect(
         await call(flashloanLender, "flashFee", [
@@ -126,7 +126,7 @@ describe("Flashloan test", function () {
         send(
           flashloanLender,
           "updateUnderlyingMapping",
-          [[unsupportedJToken._address]],
+          [[unsupportedGToken._address]],
           { from: nonAdmin }
         )
       ).rejects.toRevert("revert not owner");
@@ -354,7 +354,7 @@ describe("Flashloan test", function () {
     });
   });
 
-  it("reject by joetroller", async () => {
+  it("reject by gTroller", async () => {
     const borrowAmount = 10_000;
     const totalFee = 8;
     expect(
@@ -366,7 +366,7 @@ describe("Flashloan test", function () {
       ])
     ).toSucceed();
 
-    await send(jToken.joetroller, "_setFlashloanPaused", [
+    await send(jToken.gTroller, "_setFlashloanPaused", [
       jToken._address,
       true,
     ]);
@@ -380,7 +380,7 @@ describe("Flashloan test", function () {
       ])
     ).rejects.toRevert("revert flashloan is paused");
 
-    await send(jToken.joetroller, "_setFlashloanPaused", [
+    await send(jToken.gTroller, "_setFlashloanPaused", [
       jToken._address,
       false,
     ]);
@@ -404,9 +404,9 @@ describe("Flashloan re-entry test", () => {
 
   beforeEach(async () => {
     admin = saddle.accounts[0];
-    jToken = await makeJToken({ kind: "jcollateralcap", supportMarket: true });
+    jToken = await makeGToken({ kind: "jcollateralcap", supportMarket: true });
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.joetroller._address,
+      jToken.gTroller._address,
       admin,
     ]);
     await send(jToken.underlying, "harnessSetBalance", [jToken._address, cash]);

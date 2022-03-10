@@ -195,19 +195,19 @@ contract ERC20Harness is StandardToken {
     }
 }
 
-contract JTokenHarness is ERC20Harness {
-    bool public constant isJToken = true;
+contract GTokenHarness is ERC20Harness {
+    bool public constant isGToken = true;
 
-    address public joetroller;
+    address public gTroller;
 
     constructor(
         uint256 _initialAmount,
         string memory _tokenName,
         uint8 _decimalUnits,
         string memory _tokenSymbol,
-        address _joetroller
+        address _gTroller
     ) public ERC20Harness(_initialAmount, _tokenName, _decimalUnits, _tokenSymbol) {
-        joetroller = _joetroller;
+        gTroller = _gTroller;
     }
 }
 

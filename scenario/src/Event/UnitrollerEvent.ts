@@ -1,14 +1,14 @@
 import { Event } from "../Event";
 import { addAction, describeUser, World } from "../World";
 import { Unitroller } from "../Contract/Unitroller";
-import { JoetrollerImpl } from "../Contract/JoetrollerImpl";
+import { GtrollerImpl } from "../Contract/GtrollerImpl";
 import { invoke } from "../Invokation";
 import { getEventV, getStringV, getAddressV } from "../CoreValue";
 import { EventV, StringV, AddressV } from "../Value";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { JoetrollerErrorReporter } from "../ErrorReporter";
+import { GtrollerErrorReporter } from "../ErrorReporter";
 import { buildUnitroller } from "../Builder/UnitrollerBuilder";
-import { getJoetrollerImpl, getUnitroller } from "../ContractLookup";
+import { getGtrollerImpl, getUnitroller } from "../ContractLookup";
 import { verify } from "../Verify";
 
 async function genUnitroller(
@@ -63,7 +63,7 @@ async function acceptAdmin(
     world,
     unitroller.methods._acceptAdmin(),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(world, `Accept admin as ${from}`, invokation);
@@ -81,7 +81,7 @@ async function setPendingAdmin(
     world,
     unitroller.methods._setPendingAdmin(pendingAdmin),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(world, `Set pending admin to ${pendingAdmin}`, invokation);
@@ -93,18 +93,18 @@ async function setPendingImpl(
   world: World,
   from: string,
   unitroller: Unitroller,
-  joetrollerImpl: JoetrollerImpl
+  gTrollerImpl: GtrollerImpl
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    unitroller.methods._setPendingImplementation(joetrollerImpl._address),
+    unitroller.methods._setPendingImplementation(gTrollerImpl._address),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Set pending joetroller impl to ${joetrollerImpl.name}`,
+    `Set pending gTroller impl to ${gTrollerImpl.name}`,
     invokation
   );
 
@@ -166,20 +166,20 @@ export function unitrollerCommands() {
       (world, from, { unitroller, pendingAdmin }) =>
         setPendingAdmin(world, from, unitroller, pendingAdmin.val)
     ),
-    new Command<{ unitroller: Unitroller; joetrollerImpl: JoetrollerImpl }>(
+    new Command<{ unitroller: Unitroller; gTrollerImpl: GtrollerImpl }>(
       `
         #### SetPendingImpl
 
-        * "SetPendingImpl impl:<Impl>" - Sets the pending joetroller implementation for this unitroller
-          * E.g. "Unitroller SetPendingImpl MyScenImpl" - Sets the current joetroller implementation to MyScenImpl
+        * "SetPendingImpl impl:<Impl>" - Sets the pending gTroller implementation for this unitroller
+          * E.g. "Unitroller SetPendingImpl MyScenImpl" - Sets the current gTroller implementation to MyScenImpl
       `,
       "SetPendingImpl",
       [
         new Arg("unitroller", getUnitroller, { implicit: true }),
-        new Arg("joetrollerImpl", getJoetrollerImpl),
+        new Arg("gTrollerImpl", getGtrollerImpl),
       ],
-      (world, from, { unitroller, joetrollerImpl }) =>
-        setPendingImpl(world, from, unitroller, joetrollerImpl)
+      (world, from, { unitroller, gTrollerImpl }) =>
+        setPendingImpl(world, from, unitroller, gTrollerImpl)
     ),
   ];
 }

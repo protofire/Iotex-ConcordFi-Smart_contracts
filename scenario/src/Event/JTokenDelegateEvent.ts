@@ -1,8 +1,8 @@
 import { Event } from "../Event";
 import { addAction, describeUser, World } from "../World";
 import { decodeCall, getPastEvents } from "../Contract";
-import { JToken, JTokenScenario } from "../Contract/JToken";
-import { JErc20Delegate } from "../Contract/JErc20Delegate";
+import { GToken, GTokenScenario } from "../Contract/GToken";
+import { GXrc20Delegate } from "../Contract/GXrc20Delegate";
 import { invoke, Sendable } from "../Invokation";
 import {
   getAddressV,
@@ -14,11 +14,11 @@ import {
 } from "../CoreValue";
 import { AddressV, BoolV, EventV, NothingV, NumberV, StringV } from "../Value";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { getJTokenDelegateData } from "../ContractLookup";
-import { buildJTokenDelegate } from "../Builder/JTokenDelegateBuilder";
+import { getGTokenDelegateData } from "../ContractLookup";
+import { buildGTokenDelegate } from "../Builder/GTokenDelegateBuilder";
 import { verify } from "../Verify";
 
-async function genJTokenDelegate(
+async function genGTokenDelegate(
   world: World,
   from: string,
   event: Event
@@ -27,7 +27,7 @@ async function genJTokenDelegate(
     world: nextWorld,
     jTokenDelegate,
     delegateData,
-  } = await buildJTokenDelegate(world, from, event);
+  } = await buildGTokenDelegate(world, from, event);
   world = nextWorld;
 
   world = addAction(
@@ -39,9 +39,9 @@ async function genJTokenDelegate(
   return world;
 }
 
-async function verifyJTokenDelegate(
+async function verifyGTokenDelegate(
   world: World,
-  jTokenDelegate: JErc20Delegate,
+  jTokenDelegate: GXrc20Delegate,
   name: string,
   contract: string,
   apiKey: string
@@ -63,30 +63,30 @@ export function jTokenDelegateCommands() {
       `
         #### Deploy
 
-        * "JTokenDelegate Deploy ...jTokenDelegateParams" - Generates a new JTokenDelegate
-          * E.g. "JTokenDelegate Deploy CDaiDelegate cDAIDelegate"
+        * "GTokenDelegate Deploy ...jTokenDelegateParams" - Generates a new GTokenDelegate
+          * E.g. "GTokenDelegate Deploy CDaiDelegate cDAIDelegate"
       `,
       "Deploy",
       [new Arg("jTokenDelegateParams", getEventV, { variadic: true })],
       (world, from, { jTokenDelegateParams }) =>
-        genJTokenDelegate(world, from, jTokenDelegateParams.val)
+        genGTokenDelegate(world, from, jTokenDelegateParams.val)
     ),
     new View<{ jTokenDelegateArg: StringV; apiKey: StringV }>(
       `
         #### Verify
 
-        * "JTokenDelegate <jTokenDelegate> Verify apiKey:<String>" - Verifies JTokenDelegate in Etherscan
-          * E.g. "JTokenDelegate cDaiDelegate Verify "myApiKey"
+        * "GTokenDelegate <jTokenDelegate> Verify apiKey:<String>" - Verifies GTokenDelegate in Etherscan
+          * E.g. "GTokenDelegate cDaiDelegate Verify "myApiKey"
       `,
       "Verify",
       [new Arg("jTokenDelegateArg", getStringV), new Arg("apiKey", getStringV)],
       async (world, { jTokenDelegateArg, apiKey }) => {
-        let [jToken, name, data] = await getJTokenDelegateData(
+        let [jToken, name, data] = await getGTokenDelegateData(
           world,
           jTokenDelegateArg.val
         );
 
-        return await verifyJTokenDelegate(
+        return await verifyGTokenDelegate(
           world,
           jToken,
           name,
@@ -99,13 +99,13 @@ export function jTokenDelegateCommands() {
   ];
 }
 
-export async function processJTokenDelegateEvent(
+export async function processGTokenDelegateEvent(
   world: World,
   event: Event,
   from: string | null
 ): Promise<World> {
   return await processCommandEvent<any>(
-    "JTokenDelegate",
+    "GTokenDelegate",
     jTokenDelegateCommands(),
     world,
     event,

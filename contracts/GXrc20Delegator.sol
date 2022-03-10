@@ -2,18 +2,18 @@
 
 pragma solidity ^0.5.16;
 
-import "./JTokenInterfaces.sol";
+import "./GTokenInterfaces.sol";
 
 /**
- * @title Compound's JErc20Delegator Contract
- * @notice JTokens which wrap an EIP-20 underlying and delegate to an implementation
+ * @title Compound's GXrc20Delegator Contract
+ * @notice GTokens which wrap an EIP-20 underlying and delegate to an implementation
  * @author Compound
  */
-contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterface {
+contract GXrc20Delegator is GTokenInterface, GXrc20Interface, JDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -25,7 +25,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
      */
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -44,7 +44,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
             abi.encodeWithSignature(
                 "initialize(address,address,address,uint256,string,string,uint8)",
                 underlying_,
-                joetroller_,
+                gTroller_,
                 interestRateModel_,
                 initialExchangeRateMantissa_,
                 name_,
@@ -71,7 +71,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
         bool allowResign,
         bytes memory becomeImplementationData
     ) public {
-        require(msg.sender == admin, "JErc20Delegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "GXrc20Delegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -161,7 +161,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256) {
         borrower;
         repayAmount;
@@ -248,7 +248,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
 
     /**
      * @notice Get a snapshot of the account's balances, and the cached exchange rate
-     * @dev This is used by joetroller to more efficiently perform liquidity checks.
+     * @dev This is used by gTroller to more efficiently perform liquidity checks.
      * @param account Address of the account to snapshot
      * @return (possible error, token balance, borrow balance, exchange rate mantissa)
      */
@@ -319,7 +319,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -378,12 +378,12 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
     }
 
     /**
-     * @notice Sets a new joetroller for the market
-     * @dev Admin function to set a new joetroller
+     * @notice Sets a new gTroller for the market
+     * @dev Admin function to set a new gTroller
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256) {
-        newJoetroller; // Shh
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256) {
+        newGtroller; // Shh
         delegateAndReturn();
     }
 
@@ -524,7 +524,7 @@ contract JErc20Delegator is JTokenInterface, JErc20Interface, JDelegatorInterfac
      * @dev It returns to the external caller whatever the implementation returns or forwards reverts
      */
     function() external payable {
-        require(msg.value == 0, "JErc20Delegator:fallback: cannot send value to fallback");
+        require(msg.value == 0, "GXrc20Delegator:fallback: cannot send value to fallback");
 
         // delegate all other functions to current implementation
         delegateAndReturn();

@@ -1,47 +1,47 @@
 import { Event } from "../Event";
 import { World } from "../World";
-import { JErc20Delegate } from "../Contract/JErc20Delegate";
+import { GXrc20Delegate } from "../Contract/GXrc20Delegate";
 import { getCoreValue, mapValue } from "../CoreValue";
 import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { AddressV, Value } from "../Value";
 import {
   getWorldContractByAddress,
-  getJTokenDelegateAddress,
+  getGTokenDelegateAddress,
 } from "../ContractLookup";
 
-export async function getJTokenDelegateV(
+export async function getGTokenDelegateV(
   world: World,
   event: Event
-): Promise<JErc20Delegate> {
+): Promise<GXrc20Delegate> {
   const address = await mapValue<AddressV>(
     world,
     event,
-    (str) => new AddressV(getJTokenDelegateAddress(world, str)),
+    (str) => new AddressV(getGTokenDelegateAddress(world, str)),
     getCoreValue,
     AddressV
   );
 
-  return getWorldContractByAddress<JErc20Delegate>(world, address.val);
+  return getWorldContractByAddress<GXrc20Delegate>(world, address.val);
 }
 
 async function jTokenDelegateAddress(
   world: World,
-  jTokenDelegate: JErc20Delegate
+  jTokenDelegate: GXrc20Delegate
 ): Promise<AddressV> {
   return new AddressV(jTokenDelegate._address);
 }
 
 export function jTokenDelegateFetchers() {
   return [
-    new Fetcher<{ jTokenDelegate: JErc20Delegate }, AddressV>(
+    new Fetcher<{ jTokenDelegate: GXrc20Delegate }, AddressV>(
       `
         #### Address
 
-        * "JTokenDelegate <JTokenDelegate> Address" - Returns address of JTokenDelegate contract
-          * E.g. "JTokenDelegate cDaiDelegate Address" - Returns cDaiDelegate's address
+        * "GTokenDelegate <GTokenDelegate> Address" - Returns address of GTokenDelegate contract
+          * E.g. "GTokenDelegate cDaiDelegate Address" - Returns cDaiDelegate's address
       `,
       "Address",
-      [new Arg("jTokenDelegate", getJTokenDelegateV)],
+      [new Arg("jTokenDelegate", getGTokenDelegateV)],
       (world, { jTokenDelegate }) =>
         jTokenDelegateAddress(world, jTokenDelegate),
       { namePos: 1 }
@@ -49,12 +49,12 @@ export function jTokenDelegateFetchers() {
   ];
 }
 
-export async function getJTokenDelegateValue(
+export async function getGTokenDelegateValue(
   world: World,
   event: Event
 ): Promise<Value> {
   return await getFetcherValue<any, any>(
-    "JTokenDelegate",
+    "GTokenDelegate",
     jTokenDelegateFetchers(),
     world,
     event

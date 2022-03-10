@@ -2,7 +2,7 @@ import { Contract } from "../Contract";
 import { Callable, Sendable } from "../Invokation";
 import { encodedNumber } from "../Encoding";
 
-interface JoetrollerMethods {
+interface GtrollerMethods {
   getAccountLiquidity(string): Callable<{ 0: number; 1: number; 2: number }>;
   getHypotheticalAccountLiquidity(
     account: string,
@@ -30,10 +30,10 @@ interface JoetrollerMethods {
   _setCloseFactor(encodedNumber): Sendable<number>;
   enterMarkets(markets: string[]): Sendable<number>;
   exitMarket(market: string): Sendable<number>;
-  updateJTokenVersion(jToken: string, version: encodedNumber): Sendable<void>;
+  updateGTokenVersion(jToken: string, version: encodedNumber): Sendable<void>;
   fastForward(encodedNumber): Sendable<number>;
   _setPendingImplementation(string): Sendable<number>;
-  joetrollerImplementation(): Callable<string>;
+  gTrollerImplementation(): Callable<string>;
   unlist(string): Sendable<void>;
   admin(): Callable<string>;
   pendingAdmin(): Callable<string>;
@@ -68,6 +68,6 @@ interface JoetrollerMethods {
   _setCreditLimit(protocol: string, creditLimit: encodedNumber): Sendable<void>;
 }
 
-export interface Joetroller extends Contract {
-  methods: JoetrollerMethods;
+export interface Gtroller extends Contract {
+  methods: GtrollerMethods;
 }

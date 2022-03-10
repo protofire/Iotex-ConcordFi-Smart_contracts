@@ -5,40 +5,40 @@ const { ethers, upgrades } = require("hardhat");
  * We put flattened versions in contracts/versions/.
  */
 async function main() {
-  // JCollateralCapErc20Delegate
-  const JCollateralCapErc20DelegateV1 = await ethers.getContractFactory(
-    "JCollateralCapErc20DelegateV1"
+  // GCollateralCapXrc20Delegate
+  const GCollateralCapXrc20DelegateV1 = await ethers.getContractFactory(
+    "GCollateralCapXrc20DelegateV1"
   );
   const jCollateralCapErc20DelegateV1 = await upgrades.deployProxy(
-    JCollateralCapErc20DelegateV1,
+    GCollateralCapXrc20DelegateV1,
     { initializer: false }
   );
   await jCollateralCapErc20DelegateV1.deployed();
 
-  const JCollateralCapErc20DelegateV2 = await ethers.getContractFactory(
-    "JCollateralCapErc20DelegateV2"
+  const GCollateralCapXrc20DelegateV2 = await ethers.getContractFactory(
+    "GCollateralCapXrc20DelegateV2"
   );
   await upgrades.prepareUpgrade(
     jCollateralCapErc20DelegateV1.address,
-    JCollateralCapErc20DelegateV2
+    GCollateralCapXrc20DelegateV2
   );
 
-  // JWrappedNativeDelegate
-  const JWrappedNativeDelegateV1 = await ethers.getContractFactory(
-    "JWrappedNativeDelegateV1"
+  // GWrappedNativeDelegate
+  const GWrappedNativeDelegateV1 = await ethers.getContractFactory(
+    "GWrappedNativeDelegateV1"
   );
   const jWrappedNativeDelegateV1 = await upgrades.deployProxy(
-    JWrappedNativeDelegateV1,
+    GWrappedNativeDelegateV1,
     { initializer: false }
   );
   await jWrappedNativeDelegateV1.deployed();
 
-  const JWrappedNativeDelegateV2 = await ethers.getContractFactory(
-    "JWrappedNativeDelegateV2"
+  const GWrappedNativeDelegateV2 = await ethers.getContractFactory(
+    "GWrappedNativeDelegateV2"
   );
   await upgrades.prepareUpgrade(
     jWrappedNativeDelegateV1.address,
-    JWrappedNativeDelegateV2
+    GWrappedNativeDelegateV2
   );
 }
 

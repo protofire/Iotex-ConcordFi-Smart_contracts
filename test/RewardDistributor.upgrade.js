@@ -24,7 +24,7 @@ describe("RewardDistributor", function () {
       JUSDC_DELEGATE_ARTIFACT.abi,
       JUSDC_DELEGATE_ARTIFACT.bytecode
     );
-    this.JoetrollerCF = await ethers.getContractFactory("Joetroller");
+    this.GtrollerCF = await ethers.getContractFactory("Gtroller");
     this.JoeLensCF = await ethers.getContractFactory("JoeLens");
     this.RewardDistributorCFOld = await ethers.getContractFactory(
       REWARD_DISTRIBUTOR_ARTIFACT_V1.abi,
@@ -34,15 +34,13 @@ describe("RewardDistributor", function () {
       "RewardDistributor",
       this.dev
     );
-    this.JoeCF = await ethers.getContractFactory("JErc20");
+    this.JoeCF = await ethers.getContractFactory("GXrc20");
 
     // Contracts
     this.jUsdc = await this.JUsdcDelegateCF.attach(
       JUSDC_DELEGATOR_ARTIFACT.address
     );
-    this.joetroller = await this.JoetrollerCF.attach(
-      UNITROLLER_ARTIFACT.address
-    );
+    this.gTroller = await this.GtrollerCF.attach(UNITROLLER_ARTIFACT.address);
     this.joeLens = await this.JoeLensCF.attach(JOELENS_ARTIFACT.address);
     this.rewardDistributorOld = await this.RewardDistributorCFOld.attach(
       REWARD_DISTRIBUTOR_ARTIFACT_V1.address
@@ -104,11 +102,11 @@ describe("RewardDistributor", function () {
     // Get USDC lender who has accrued rewards from V1
     const rewardsBefore = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsBefore).to.be.gt("0");
 
     // Upgrade RewardDistributor from V1 to V2 and set reward speeds for JOE
-    await this.joetroller
+    await this.gTroller
       .connect(this.admin)
       ._setRewardDistributor(this.rewardDistributorNew.address);
     await this.rewardDistributorNew
@@ -121,7 +119,7 @@ describe("RewardDistributor", function () {
     // Expect rewards to be zeroed out since new rewarder resets state
     const rewardsAtT0 = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsAtT0).to.equal("0");
 
     // Fast forward 10 seconds
@@ -130,7 +128,7 @@ describe("RewardDistributor", function () {
     // Assert USDC lender has accrued rewards for supplying for 10 seconds
     const rewardsAtT10 = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsAtT10).to.be.gt("0");
 
     // Fast forward 10 days
@@ -139,7 +137,7 @@ describe("RewardDistributor", function () {
     // Assert USDC lender has accrued rewards for supplying for 10 days
     const rewardsAtD10 = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsAtD10).to.be.gt(rewardsAtT10);
   });
 
@@ -147,7 +145,7 @@ describe("RewardDistributor", function () {
     // Get USDC lender who has accrued rewards from V1
     const rewardsBefore = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsBefore).to.be.gt("0");
 
     // Zero out reward rate on old rewarder
@@ -156,7 +154,7 @@ describe("RewardDistributor", function () {
       ._setRewardSpeed(0, this.jUsdc.address, "0");
 
     // Upgrade RewardDistributor from V1 to V2 and set reward speeds for JOE
-    await this.joetroller
+    await this.gTroller
       .connect(this.admin)
       ._setRewardDistributor(this.rewardDistributorNew.address);
     await this.rewardDistributorNew
@@ -169,7 +167,7 @@ describe("RewardDistributor", function () {
     // Expect new rewards to be zeroed out since new rewarder resets state
     const newRewardsAtT0 = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
-    ](0, this.joetroller.address, this.joe.address, USDC_LENDER);
+    ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(newRewardsAtT0).to.equal("0");
 
     // Expect old rewards to still be claimable

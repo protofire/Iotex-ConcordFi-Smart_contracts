@@ -3,7 +3,7 @@ const {
   avaxUnsigned,
   UInt256Max,
 } = require("../Utils/Avalanche");
-const { makeJToken, setBorrowRate } = require("../Utils/BankerJoe");
+const { makeGToken, setBorrowRate } = require("../Utils/BankerJoe");
 
 const blockTimestamp = 2e7;
 const borrowIndex = 1e18;
@@ -29,12 +29,12 @@ async function preAccrue(jToken) {
   await send(jToken, "harnessExchangeRateDetails", [0, 0, 0]);
 }
 
-describe("JToken", () => {
+describe("GToken", () => {
   let root, accounts;
   let jToken;
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({ joetrollerOpts: { kind: "bool" } });
+    jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
   });
 
   beforeEach(async () => {

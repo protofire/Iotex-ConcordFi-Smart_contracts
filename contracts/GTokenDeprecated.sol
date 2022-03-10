@@ -2,8 +2,8 @@
 
 pragma solidity ^0.5.16;
 
-import "./JoetrollerInterface.sol";
-import "./JTokenInterfaces.sol";
+import "./GtrollerInterface.sol";
+import "./GTokenInterfaces.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./EIP20Interface.sol";
@@ -11,14 +11,14 @@ import "./EIP20NonStandardInterface.sol";
 import "./InterestRateModel.sol";
 
 /**
- * @title Compound's JToken Contract
- * @notice Abstract base for JTokens
- * @author Compound
+ * @title Deprecated GToken Contract only for GIotx.
+ * @dev GIotx will not be used anymore and existing GIotx can't be upgraded.
+ * @author Cream
  */
-contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
+contract GTokenDeprecated is GTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Initialize the money market
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ EIP-20 name of this token
@@ -26,7 +26,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @param decimals_ EIP-20 decimal precision of this token
      */
     function initialize(
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -40,11 +40,11 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         initialExchangeRateMantissa = initialExchangeRateMantissa_;
         require(initialExchangeRateMantissa > 0, "initial exchange rate must be greater than zero.");
 
-        // Set the joetroller
-        uint256 err = _setJoetroller(joetroller_);
-        require(err == uint256(Error.NO_ERROR), "setting joetroller failed");
+        // Set the gTroller
+        uint256 err = _setGtroller(gTroller_);
+        require(err == uint256(Error.NO_ERROR), "setting gTroller failed");
 
-        // Initialize block timestamp and borrow index (block timestamp mocks depend on joetroller being set)
+        // Initialize block timestamp and borrow index (block timestamp mocks depend on gTroller being set)
         accrualBlockTimestamp = getBlockTimestamp();
         borrowIndex = mantissaOne;
 
@@ -58,6 +58,65 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
         // The counter starts true to prevent changing it from zero to non-zero (i.e. smaller cost/refund)
         _notEntered = true;
+    }
+
+    /**
+     * @notice Transfer `tokens` tokens from `src` to `dst` by `spender`
+     * @dev Called by both `transfer` and `transferFrom` internally
+     * @param spender The address of the account performing the transfer
+     * @param src The address of the source account
+     * @param dst The address of the destination account
+     * @param tokens The number of tokens to transfer
+     * @return Whether or not the transfer succeeded
+     */
+    function transferTokens(
+        address spender,
+        address src,
+        address dst,
+        uint256 tokens
+    ) internal returns (uint256) {
+        /* Fail if transfer not allowed */
+        uint256 allowed = gTroller.transferAllowed(address(this), src, dst, tokens);
+        if (allowed != 0) {
+            return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.TRANSFER_JOETROLLER_REJECTION, allowed);
+        }
+
+        /* Do not allow self-transfers */
+        if (src == dst) {
+            return fail(Error.BAD_INPUT, FailureInfo.TRANSFER_NOT_ALLOWED);
+        }
+
+        /* Get the allowance, infinite for the account owner */
+        uint256 startingAllowance = 0;
+        if (spender == src) {
+            startingAllowance = uint256(-1);
+        } else {
+            startingAllowance = transferAllowances[src][spender];
+        }
+
+        /* Do the calculations, checking for {under,over}flow */
+        uint256 allowanceNew = sub_(startingAllowance, tokens);
+        uint256 srjTokensNew = sub_(accountTokens[src], tokens);
+        uint256 dstTokensNew = add_(accountTokens[dst], tokens);
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        accountTokens[src] = srjTokensNew;
+        accountTokens[dst] = dstTokensNew;
+
+        /* Eat some of the allowance (if necessary) */
+        if (startingAllowance != uint256(-1)) {
+            transferAllowances[src][spender] = allowanceNew;
+        }
+
+        /* We emit a Transfer event */
+        emit Transfer(src, dst, tokens);
+
+        gTroller.transferVerify(address(this), src, dst, tokens);
+
+        return uint256(Error.NO_ERROR);
     }
 
     /**
@@ -132,7 +191,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
 
     /**
      * @notice Get a snapshot of the account's balances, and the cached exchange rate
-     * @dev This is used by joetroller to more efficiently perform liquidity checks.
+     * @dev This is used by gTroller to more efficiently perform liquidity checks.
      * @param account Address of the account to snapshot
      * @return (possible error, token balance, borrow balance, exchange rate mantissa)
      */
@@ -146,7 +205,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
             uint256
         )
     {
-        uint256 jTokenBalance = getJTokenBalanceInternal(account);
+        uint256 jTokenBalance = accountTokens[account];
         uint256 borrowBalance = borrowBalanceStoredInternal(account);
         uint256 exchangeRateMantissa = exchangeRateStoredInternal();
 
@@ -175,43 +234,6 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      */
     function supplyRatePerSecond() external view returns (uint256) {
         return interestRateModel.getSupplyRate(getCashPrior(), totalBorrows, totalReserves, reserveFactorMantissa);
-    }
-
-    /**
-     * @notice Returns the estimated per-sec borrow interest rate for this jToken after some change
-     * @return The borrow interest rate per sec, scaled by 1e18
-     */
-    function estimateBorrowRatePerSecondAfterChange(uint256 change, bool repay) external view returns (uint256) {
-        uint256 cashPriorNew;
-        uint256 totalBorrowsNew;
-
-        if (repay) {
-            cashPriorNew = add_(getCashPrior(), change);
-            totalBorrowsNew = sub_(totalBorrows, change);
-        } else {
-            cashPriorNew = sub_(getCashPrior(), change);
-            totalBorrowsNew = add_(totalBorrows, change);
-        }
-        return interestRateModel.getBorrowRate(cashPriorNew, totalBorrowsNew, totalReserves);
-    }
-
-    /**
-     * @notice Returns the estimated per-sec supply interest rate for this jToken after some change
-     * @return The supply interest rate per sec, scaled by 1e18
-     */
-    function estimateSupplyRatePerSecondAfterChange(uint256 change, bool repay) external view returns (uint256) {
-        uint256 cashPriorNew;
-        uint256 totalBorrowsNew;
-
-        if (repay) {
-            cashPriorNew = add_(getCashPrior(), change);
-            totalBorrowsNew = sub_(totalBorrows, change);
-        } else {
-            cashPriorNew = sub_(getCashPrior(), change);
-            totalBorrowsNew = add_(totalBorrows, change);
-        }
-
-        return interestRateModel.getSupplyRate(cashPriorNew, totalBorrowsNew, totalReserves, reserveFactorMantissa);
     }
 
     /**
@@ -276,7 +298,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
@@ -285,7 +307,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the JToken
+     * @notice Calculates the exchange rate from the underlying to the GToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return calculated exchange rate scaled by 1e18
      */
@@ -384,67 +406,238 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @notice Sender supplies assets into the market and receives jTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
-     * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual mint amount.
      */
-    function mintInternal(uint256 mintAmount, bool isNative) internal nonReentrant returns (uint256, uint256) {
+    function mintInternal(uint256 mintAmount) internal nonReentrant returns (uint256, uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return (fail(Error(error), FailureInfo.MINT_ACCRUE_INTEREST_FAILED), 0);
         }
         // mintFresh emits the actual Mint event if successful and logs on errors, so we don't need to
-        return mintFresh(msg.sender, mintAmount, isNative);
+        return mintFresh(msg.sender, mintAmount);
+    }
+
+    struct MintLocalVars {
+        Error err;
+        MathError mathErr;
+        uint256 exchangeRateMantissa;
+        uint256 mintTokens;
+        uint256 totalSupplyNew;
+        uint256 accountTokensNew;
+        uint256 actualMintAmount;
+    }
+
+    /**
+     * @notice User supplies assets into the market and receives jTokens in exchange
+     * @dev Assumes interest has already been accrued up to the current timestamp
+     * @param minter The address of the account which is supplying the assets
+     * @param mintAmount The amount of the underlying asset to supply
+     * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual mint amount.
+     */
+    function mintFresh(address minter, uint256 mintAmount) internal returns (uint256, uint256) {
+        /* Fail if mint not allowed */
+        uint256 allowed = gTroller.mintAllowed(address(this), minter, mintAmount);
+        if (allowed != 0) {
+            return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.MINT_JOETROLLER_REJECTION, allowed), 0);
+        }
+
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
+            return (fail(Error.MARKET_NOT_FRESH, FailureInfo.MINT_FRESHNESS_CHECK), 0);
+        }
+
+        MintLocalVars memory vars;
+
+        vars.exchangeRateMantissa = exchangeRateStoredInternal();
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /*
+         *  We call `doTransferIn` for the minter and the mintAmount.
+         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
+         *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
+         *  side-effects occurred. The function returns the amount actually transferred,
+         *  in case of a fee. On success, the jToken holds an additional `actualMintAmount`
+         *  of cash.
+         */
+        vars.actualMintAmount = doTransferIn(minter, mintAmount);
+
+        /*
+         * We get the current exchange rate and calculate the number of jTokens to be minted:
+         *  mintTokens = actualMintAmount / exchangeRate
+         */
+
+        vars.mintTokens = div_ScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
+
+        /*
+         * We calculate the new total supply of jTokens and minter token balance, checking for overflow:
+         *  totalSupplyNew = totalSupply + mintTokens
+         *  accountTokensNew = accountTokens[minter] + mintTokens
+         */
+        vars.totalSupplyNew = add_(totalSupply, vars.mintTokens);
+        vars.accountTokensNew = add_(accountTokens[minter], vars.mintTokens);
+
+        /* We write previously calculated values into storage */
+        totalSupply = vars.totalSupplyNew;
+        accountTokens[minter] = vars.accountTokensNew;
+
+        /* We emit a Mint event, and a Transfer event */
+        emit Mint(minter, vars.actualMintAmount, vars.mintTokens);
+        emit Transfer(address(this), minter, vars.mintTokens);
+
+        /* We call the defense hook */
+        gTroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
+
+        return (uint256(Error.NO_ERROR), vars.actualMintAmount);
     }
 
     /**
      * @notice Sender redeems jTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemTokens The number of jTokens to redeem into underlying
-     * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemInternal(uint256 redeemTokens, bool isNative) internal nonReentrant returns (uint256) {
+    function redeemInternal(uint256 redeemTokens) internal nonReentrant returns (uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
             return fail(Error(error), FailureInfo.REDEEM_ACCRUE_INTEREST_FAILED);
         }
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
-        return redeemFresh(msg.sender, redeemTokens, 0, isNative);
+        return redeemFresh(msg.sender, redeemTokens, 0);
     }
 
     /**
      * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to receive from redeeming jTokens
-     * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function redeemUnderlyingInternal(uint256 redeemAmount, bool isNative) internal nonReentrant returns (uint256) {
+    function redeemUnderlyingInternal(uint256 redeemAmount) internal nonReentrant returns (uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted redeem failed
             return fail(Error(error), FailureInfo.REDEEM_ACCRUE_INTEREST_FAILED);
         }
         // redeemFresh emits redeem-specific logs on errors, so we don't need to
-        return redeemFresh(msg.sender, 0, redeemAmount, isNative);
+        return redeemFresh(msg.sender, 0, redeemAmount);
+    }
+
+    struct RedeemLocalVars {
+        Error err;
+        MathError mathErr;
+        uint256 exchangeRateMantissa;
+        uint256 redeemTokens;
+        uint256 redeemAmount;
+        uint256 totalSupplyNew;
+        uint256 accountTokensNew;
+    }
+
+    /**
+     * @notice User redeems jTokens in exchange for the underlying asset
+     * @dev Assumes interest has already been accrued up to the current timestamp
+     * @param redeemer The address of the account which is redeeming the tokens
+     * @param redeemTokensIn The number of jTokens to redeem into underlying (only one of redeemTokensIn or redeemAmountIn may be non-zero)
+     * @param redeemAmountIn The number of underlying tokens to receive from redeeming jTokens (only one of redeemTokensIn or redeemAmountIn may be non-zero)
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function redeemFresh(
+        address payable redeemer,
+        uint256 redeemTokensIn,
+        uint256 redeemAmountIn
+    ) internal returns (uint256) {
+        require(redeemTokensIn == 0 || redeemAmountIn == 0, "one of redeemTokensIn or redeemAmountIn must be zero");
+
+        RedeemLocalVars memory vars;
+
+        /* exchangeRate = invoke Exchange Rate Stored() */
+        vars.exchangeRateMantissa = exchangeRateStoredInternal();
+
+        /* If redeemTokensIn > 0: */
+        if (redeemTokensIn > 0) {
+            /*
+             * We calculate the exchange rate and the amount of underlying to be redeemed:
+             *  redeemTokens = redeemTokensIn
+             *  redeemAmount = redeemTokensIn x exchangeRateCurrent
+             */
+            vars.redeemTokens = redeemTokensIn;
+            vars.redeemAmount = mul_ScalarTruncate(Exp({mantissa: vars.exchangeRateMantissa}), redeemTokensIn);
+        } else {
+            /*
+             * We get the current exchange rate and calculate the amount to be redeemed:
+             *  redeemTokens = redeemAmountIn / exchangeRate
+             *  redeemAmount = redeemAmountIn
+             */
+            vars.redeemTokens = div_ScalarByExpTruncate(redeemAmountIn, Exp({mantissa: vars.exchangeRateMantissa}));
+            vars.redeemAmount = redeemAmountIn;
+        }
+
+        /* Fail if redeem not allowed */
+        uint256 allowed = gTroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
+        if (allowed != 0) {
+            return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REDEEM_JOETROLLER_REJECTION, allowed);
+        }
+
+        /* Verify market's block timestamp equals current block timestamp */
+        if (accrualBlockTimestamp != getBlockTimestamp()) {
+            return fail(Error.MARKET_NOT_FRESH, FailureInfo.REDEEM_FRESHNESS_CHECK);
+        }
+
+        /*
+         * We calculate the new total supply and redeemer balance, checking for underflow:
+         *  totalSupplyNew = totalSupply - redeemTokens
+         *  accountTokensNew = accountTokens[redeemer] - redeemTokens
+         */
+        vars.totalSupplyNew = sub_(totalSupply, vars.redeemTokens);
+        vars.accountTokensNew = sub_(accountTokens[redeemer], vars.redeemTokens);
+
+        /* Fail gracefully if protocol has insufficient cash */
+        if (getCashPrior() < vars.redeemAmount) {
+            return fail(Error.TOKEN_INSUFFICIENT_CASH, FailureInfo.REDEEM_TRANSFER_OUT_NOT_POSSIBLE);
+        }
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /*
+         * We invoke doTransferOut for the redeemer and the redeemAmount.
+         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the jToken has redeemAmount less of cash.
+         *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
+         */
+        doTransferOut(redeemer, vars.redeemAmount);
+
+        /* We write previously calculated values into storage */
+        totalSupply = vars.totalSupplyNew;
+        accountTokens[redeemer] = vars.accountTokensNew;
+
+        /* We emit a Transfer event, and a Redeem event */
+        emit Transfer(redeemer, address(this), vars.redeemTokens);
+        emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
+
+        /* We call the defense hook */
+        gTroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+
+        return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Sender borrows assets from the protocol to their own address
      * @param borrowAmount The amount of the underlying asset to borrow
-     * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function borrowInternal(uint256 borrowAmount, bool isNative) internal nonReentrant returns (uint256) {
+    function borrowInternal(uint256 borrowAmount) internal nonReentrant returns (uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return fail(Error(error), FailureInfo.BORROW_ACCRUE_INTEREST_FAILED);
         }
         // borrowFresh emits borrow-specific logs on errors, so we don't need to
-        return borrowFresh(msg.sender, borrowAmount, isNative);
+        return borrowFresh(msg.sender, borrowAmount);
     }
 
     struct BorrowLocalVars {
@@ -457,28 +650,13 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Users borrow assets from the protocol to their own address
      * @param borrowAmount The amount of the underlying asset to borrow
-     * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function borrowFresh(
-        address payable borrower,
-        uint256 borrowAmount,
-        bool isNative
-    ) internal returns (uint256) {
+    function borrowFresh(address payable borrower, uint256 borrowAmount) internal returns (uint256) {
         /* Fail if borrow not allowed */
-        uint256 allowed = joetroller.borrowAllowed(address(this), borrower, borrowAmount);
+        uint256 allowed = gTroller.borrowAllowed(address(this), borrower, borrowAmount);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.BORROW_JOETROLLER_REJECTION, allowed);
-        }
-
-        /*
-         * Return if borrowAmount is zero.
-         * Put behind `borrowAllowed` for accuring potential JOE rewards.
-         */
-        if (borrowAmount == 0) {
-            accountBorrows[borrower].principal = borrowBalanceStoredInternal(borrower);
-            accountBorrows[borrower].interestIndex = borrowIndex;
-            return uint256(Error.NO_ERROR);
         }
 
         /* Verify market's block timestamp equals current block timestamp */
@@ -512,7 +690,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
          *  On success, the jToken borrowAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
-        doTransferOut(borrower, borrowAmount, isNative);
+        doTransferOut(borrower, borrowAmount);
 
         /* We write the previously calculated values into storage */
         accountBorrows[borrower].principal = vars.accountBorrowsNew;
@@ -523,8 +701,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
 
         /* We call the defense hook */
-        // unused function
-        // joetroller.borrowVerify(address(this), borrower, borrowAmount);
+        gTroller.borrowVerify(address(this), borrower, borrowAmount);
 
         return uint256(Error.NO_ERROR);
     }
@@ -532,38 +709,16 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Sender repays their own borrow
      * @param repayAmount The amount to repay
-     * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
-    function repayBorrowInternal(uint256 repayAmount, bool isNative) internal nonReentrant returns (uint256, uint256) {
+    function repayBorrowInternal(uint256 repayAmount) internal nonReentrant returns (uint256, uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
             return (fail(Error(error), FailureInfo.REPAY_BORROW_ACCRUE_INTEREST_FAILED), 0);
         }
         // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
-        return repayBorrowFresh(msg.sender, msg.sender, repayAmount, isNative);
-    }
-
-    /**
-     * @notice Sender repays a borrow belonging to borrower
-     * @param borrower the account with the debt being payed off
-     * @param repayAmount The amount to repay
-     * @param isNative The amount is in native or not
-     * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
-     */
-    function repayBorrowBehalfInternal(
-        address borrower,
-        uint256 repayAmount,
-        bool isNative
-    ) internal nonReentrant returns (uint256, uint256) {
-        uint256 error = accrueInterest();
-        if (error != uint256(Error.NO_ERROR)) {
-            // accrueInterest emits logs on errors, but we still want to log the fact that an attempted borrow failed
-            return (fail(Error(error), FailureInfo.REPAY_BEHALF_ACCRUE_INTEREST_FAILED), 0);
-        }
-        // repayBorrowFresh emits repay-borrow-specific logs on errors, so we don't need to
-        return repayBorrowFresh(msg.sender, borrower, repayAmount, isNative);
+        return repayBorrowFresh(msg.sender, msg.sender, repayAmount);
     }
 
     struct RepayBorrowLocalVars {
@@ -582,29 +737,17 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @param payer the account paying off the borrow
      * @param borrower the account with the debt being payed off
      * @param repayAmount the amount of undelrying tokens being returned
-     * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function repayBorrowFresh(
         address payer,
         address borrower,
-        uint256 repayAmount,
-        bool isNative
+        uint256 repayAmount
     ) internal returns (uint256, uint256) {
         /* Fail if repayBorrow not allowed */
-        uint256 allowed = joetroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
+        uint256 allowed = gTroller.repayBorrowAllowed(address(this), payer, borrower, repayAmount);
         if (allowed != 0) {
             return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REPAY_BORROW_JOETROLLER_REJECTION, allowed), 0);
-        }
-
-        /*
-         * Return if repayAmount is zero.
-         * Put behind `repayBorrowAllowed` for accuring potential JOE rewards.
-         */
-        if (repayAmount == 0) {
-            accountBorrows[borrower].principal = borrowBalanceStoredInternal(borrower);
-            accountBorrows[borrower].interestIndex = borrowIndex;
-            return (uint256(Error.NO_ERROR), 0);
         }
 
         /* Verify market's block timestamp equals current block timestamp */
@@ -638,7 +781,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
          *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
          *   it returns the amount actually transferred, in case of a fee.
          */
-        vars.actualRepayAmount = doTransferIn(payer, vars.repayAmount, isNative);
+        vars.actualRepayAmount = doTransferIn(payer, vars.repayAmount);
 
         /*
          * We calculate the new borrower and total borrow balances, failing on underflow:
@@ -657,8 +800,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
 
         /* We call the defense hook */
-        // unused function
-        // joetroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
+        gTroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);
 
         return (uint256(Error.NO_ERROR), vars.actualRepayAmount);
     }
@@ -667,16 +809,14 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @param borrower The borrower of this jToken to be liquidated
-     * @param repayAmount The amount of the underlying borrowed asset to repay
      * @param jTokenCollateral The market in which to seize collateral from the borrower
-     * @param isNative The amount is in native or not
+     * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function liquidateBorrowInternal(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral,
-        bool isNative
+        GTokenInterface jTokenCollateral
     ) internal nonReentrant returns (uint256, uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
@@ -691,7 +831,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // liquidateBorrowFresh emits borrow-specific logs on errors, so we don't need to
-        return liquidateBorrowFresh(msg.sender, borrower, repayAmount, jTokenCollateral, isNative);
+        return liquidateBorrowFresh(msg.sender, borrower, repayAmount, jTokenCollateral);
     }
 
     /**
@@ -701,18 +841,16 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @param liquidator The address repaying the borrow and seizing collateral
      * @param jTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function liquidateBorrowFresh(
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral,
-        bool isNative
+        GTokenInterface jTokenCollateral
     ) internal returns (uint256, uint256) {
         /* Fail if liquidate not allowed */
-        uint256 allowed = joetroller.liquidateBorrowAllowed(
+        uint256 allowed = gTroller.liquidateBorrowAllowed(
             address(this),
             address(jTokenCollateral),
             liquidator,
@@ -749,12 +887,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         }
 
         /* Fail if repayBorrow fails */
-        (uint256 repayBorrowError, uint256 actualRepayAmount) = repayBorrowFresh(
-            liquidator,
-            borrower,
-            repayAmount,
-            isNative
-        );
+        (uint256 repayBorrowError, uint256 actualRepayAmount) = repayBorrowFresh(liquidator, borrower, repayAmount);
         if (repayBorrowError != uint256(Error.NO_ERROR)) {
             return (fail(Error(repayBorrowError), FailureInfo.LIQUIDATE_REPAY_BORROW_FRESH_FAILED), 0);
         }
@@ -764,7 +897,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         // (No safe failures beyond this point)
 
         /* We calculate the number of collateral tokens that will be seized */
-        (uint256 amountSeizeError, uint256 seizeTokens) = joetroller.liquidateCalculateSeizeTokens(
+        (uint256 amountSeizeError, uint256 seizeTokens) = gTroller.liquidateCalculateSeizeTokens(
             address(this),
             address(jTokenCollateral),
             actualRepayAmount
@@ -789,8 +922,14 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         emit LiquidateBorrow(liquidator, borrower, actualRepayAmount, address(jTokenCollateral), seizeTokens);
 
         /* We call the defense hook */
-        // unused function
-        // joetroller.liquidateBorrowVerify(address(this), address(jTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
+        gTroller.liquidateBorrowVerify(
+            address(this),
+            address(jTokenCollateral),
+            liquidator,
+            borrower,
+            actualRepayAmount,
+            seizeTokens
+        );
 
         return (uint256(Error.NO_ERROR), actualRepayAmount);
     }
@@ -810,6 +949,58 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         uint256 seizeTokens
     ) external nonReentrant returns (uint256) {
         return seizeInternal(msg.sender, liquidator, borrower, seizeTokens);
+    }
+
+    /**
+     * @notice Transfers collateral tokens (this market) to the liquidator.
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
+     *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
+     * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
+     * @param liquidator The account receiving seized collateral
+     * @param borrower The account having collateral seized
+     * @param seizeTokens The number of jTokens to seize
+     * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
+     */
+    function seizeInternal(
+        address seizerToken,
+        address liquidator,
+        address borrower,
+        uint256 seizeTokens
+    ) internal returns (uint256) {
+        /* Fail if seize not allowed */
+        uint256 allowed = gTroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        if (allowed != 0) {
+            return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.LIQUIDATE_SEIZE_JOETROLLER_REJECTION, allowed);
+        }
+
+        /* Fail if borrower = liquidator */
+        if (borrower == liquidator) {
+            return fail(Error.INVALID_ACCOUNT_PAIR, FailureInfo.LIQUIDATE_SEIZE_LIQUIDATOR_IS_BORROWER);
+        }
+
+        /*
+         * We calculate the new borrower and liquidator token balances, failing on underflow/overflow:
+         *  borrowerTokensNew = accountTokens[borrower] - seizeTokens
+         *  liquidatorTokensNew = accountTokens[liquidator] + seizeTokens
+         */
+        uint256 borrowerTokensNew = sub_(accountTokens[borrower], seizeTokens);
+        uint256 liquidatorTokensNew = add_(accountTokens[liquidator], seizeTokens);
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /* We write the previously calculated values into storage */
+        accountTokens[borrower] = borrowerTokensNew;
+        accountTokens[liquidator] = liquidatorTokensNew;
+
+        /* Emit a Transfer event */
+        emit Transfer(borrower, liquidator, seizeTokens);
+
+        /* We call the defense hook */
+        gTroller.seizeVerify(address(this), seizerToken, liquidator, borrower, seizeTokens);
+
+        return uint256(Error.NO_ERROR);
     }
 
     /*** Admin Functions ***/
@@ -866,31 +1057,31 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Sets a new joetroller for the market
-     * @dev Admin function to set a new joetroller
+     * @notice Sets a new gTroller for the market
+     * @dev Admin function to set a new gTroller
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _setJoetroller(JoetrollerInterface newJoetroller) public returns (uint256) {
+    function _setGtroller(GtrollerInterface newGtroller) public returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_JOETROLLER_OWNER_CHECK);
         }
 
-        JoetrollerInterface oldJoetroller = joetroller;
-        // Ensure invoke joetroller.isJoetroller() returns true
-        require(newJoetroller.isJoetroller(), "marker method returned false");
+        GtrollerInterface oldGtroller = gTroller;
+        // Ensure invoke gTroller.isGtroller() returns true
+        require(newGtroller.isGtroller(), "marker method returned false");
 
-        // Set market's joetroller to newJoetroller
-        joetroller = newJoetroller;
+        // Set market's gTroller to newGtroller
+        gTroller = newGtroller;
 
-        // Emit NewJoetroller(oldJoetroller, newJoetroller)
-        emit NewJoetroller(oldJoetroller, newJoetroller);
+        // Emit NewGtroller(oldGtroller, newGtroller)
+        emit NewGtroller(oldGtroller, newGtroller);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
-     * @notice Accrues interest and sets a new reserve factor for the protocol using _setReserveFactorFresh
+     * @notice accrues interest and sets a new reserve factor for the protocol using _setReserveFactorFresh
      * @dev Admin function to accrue interest and set a new reserve factor
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -936,10 +1127,9 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Accrues interest and reduces reserves by transferring from msg.sender
      * @param addAmount Amount of addition to reserves
-     * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function _addReservesInternal(uint256 addAmount, bool isNative) internal nonReentrant returns (uint256) {
+    function _addReservesInternal(uint256 addAmount) internal nonReentrant returns (uint256) {
         uint256 error = accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but on top of that we want to log the fact that an attempted reduce reserves failed.
@@ -947,7 +1137,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // _addReservesFresh emits reserve-addition-specific logs on errors, so we don't need to.
-        (error, ) = _addReservesFresh(addAmount, isNative);
+        (error, ) = _addReservesFresh(addAmount);
         return error;
     }
 
@@ -955,10 +1145,9 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @notice Add reserves by transferring from caller
      * @dev Requires fresh interest accrual
      * @param addAmount Amount of addition to reserves
-     * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure (see ErrorReporter.sol for details)) and the actual amount added, net token fees
      */
-    function _addReservesFresh(uint256 addAmount, bool isNative) internal returns (uint256, uint256) {
+    function _addReservesFresh(uint256 addAmount) internal returns (uint256, uint256) {
         // totalReserves + actualAddAmount
         uint256 totalReservesNew;
         uint256 actualAddAmount;
@@ -980,7 +1169,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
          *  it returns the amount actually transferred, in case of a fee.
          */
 
-        actualAddAmount = doTransferIn(msg.sender, addAmount, isNative);
+        actualAddAmount = doTransferIn(msg.sender, addAmount);
 
         totalReservesNew = add_(totalReserves, actualAddAmount);
 
@@ -1049,8 +1238,7 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
         totalReserves = totalReservesNew;
 
         // doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
-        // Restrict reducing reserves in native token. Implementations except `JWrappedNative` won't use parameter `isNative`.
-        doTransferOut(admin, reduceAmount, true);
+        doTransferOut(admin, reduceAmount);
 
         emit ReservesReduced(admin, reduceAmount, totalReservesNew);
 
@@ -1121,71 +1309,14 @@ contract JToken is JTokenInterface, Exponential, TokenErrorReporter {
      * @dev Performs a transfer in, reverting upon failure. Returns the amount actually transferred to the protocol, in case of a fee.
      *  This may revert due to insufficient balance or insufficient allowance.
      */
-    function doTransferIn(
-        address from,
-        uint256 amount,
-        bool isNative
-    ) internal returns (uint256);
+    function doTransferIn(address from, uint256 amount) internal returns (uint256);
 
     /**
      * @dev Performs a transfer out, ideally returning an explanatory error code upon failure tather than reverting.
      *  If caller has not called checked protocol's balance, may revert due to insufficient cash held in the contract.
      *  If caller has checked protocol's balance, and verified it is >= amount, this should not revert in normal conditions.
      */
-    function doTransferOut(
-        address payable to,
-        uint256 amount,
-        bool isNative
-    ) internal;
-
-    /**
-     * @notice Transfer `tokens` tokens from `src` to `dst` by `spender`
-     * @dev Called by both `transfer` and `transferFrom` internally
-     */
-    function transferTokens(
-        address spender,
-        address src,
-        address dst,
-        uint256 tokens
-    ) internal returns (uint256);
-
-    /**
-     * @notice Get the account's jToken balances
-     */
-    function getJTokenBalanceInternal(address account) internal view returns (uint256);
-
-    /**
-     * @notice User supplies assets into the market and receives jTokens in exchange
-     * @dev Assumes interest has already been accrued up to the current timestamp
-     */
-    function mintFresh(
-        address minter,
-        uint256 mintAmount,
-        bool isNative
-    ) internal returns (uint256, uint256);
-
-    /**
-     * @notice User redeems jTokens in exchange for the underlying asset
-     * @dev Assumes interest has already been accrued up to the current timestamp
-     */
-    function redeemFresh(
-        address payable redeemer,
-        uint256 redeemTokensIn,
-        uint256 redeemAmountIn,
-        bool isNative
-    ) internal returns (uint256);
-
-    /**
-     * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another JToken.
-     *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
-     */
-    function seizeInternal(
-        address seizerToken,
-        address liquidator,
-        address borrower,
-        uint256 seizeTokens
-    ) internal returns (uint256);
+    function doTransferOut(address payable to, uint256 amount) internal;
 
     /*** Reentrancy Guard ***/
 

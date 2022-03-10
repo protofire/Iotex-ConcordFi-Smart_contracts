@@ -3,7 +3,7 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "./JCapableErc20Delegate.sol";
+import "./GCapableXrc20Delegate.sol";
 import "./EIP20Interface.sol";
 
 // Ref: https://etherscan.io/address/0xc2edad668740f1aa35e4d8f227fb8e17dca888cd#code
@@ -38,10 +38,10 @@ interface IJoeBar {
 
 /**
  * @title Cream's JJoeLP's Contract
- * @notice JToken which wraps Joe's LP token
+ * @notice GToken which wraps Joe's LP token
  * @author Cream
  */
-contract JJLPDelegate is JCapableErc20Delegate {
+contract JJLPDelegate is GCapableXrc20Delegate {
     /**
      * @notice MasterChef address
      */
@@ -117,7 +117,7 @@ contract JJLPDelegate is JCapableErc20Delegate {
      * @notice Manually claim joe rewards by user
      * @return The amount of joe rewards user claims
      */
-    function claimJoe(address account) public returns (uint256) {
+    function claimG(address account) public returns (uint256) {
         claimAndStakeJoe();
 
         updateJLPSupplyIndex();
@@ -141,7 +141,7 @@ contract JJLPDelegate is JCapableErc20Delegate {
         return 0;
     }
 
-    /*** JToken Overrides ***/
+    /*** GToken Overrides ***/
 
     /**
      * @notice Transfer `tokens` tokens from `src` to `dst` by `spender`
@@ -252,7 +252,7 @@ contract JJLPDelegate is JCapableErc20Delegate {
     function updateJLPSupplyIndex() internal {
         uint256 xJoeBalance = xJoeBalance();
         uint256 xJoeAccrued = sub_(xJoeBalance, jlpSupplyState.balance);
-        uint256 supplyTokens = JToken(address(this)).totalSupply();
+        uint256 supplyTokens = GToken(address(this)).totalSupply();
         Double memory ratio = supplyTokens > 0 ? fraction(xJoeAccrued, supplyTokens) : Double({mantissa: 0});
         Double memory index = add_(Double({mantissa: jlpSupplyState.index}), ratio);
 
@@ -266,7 +266,7 @@ contract JJLPDelegate is JCapableErc20Delegate {
         Double memory supplierIndex = Double({mantissa: jlpSupplierIndex[supplier]});
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
         if (deltaIndex.mantissa > 0) {
-            uint256 supplierTokens = JToken(address(this)).balanceOf(supplier);
+            uint256 supplierTokens = GToken(address(this)).balanceOf(supplier);
             uint256 supplierDelta = mul_(supplierTokens, deltaIndex);
             xJoeUserAccrued[supplier] = add_(xJoeUserAccrued[supplier], supplierDelta);
             jlpSupplierIndex[supplier] = supplyIndex.mantissa;

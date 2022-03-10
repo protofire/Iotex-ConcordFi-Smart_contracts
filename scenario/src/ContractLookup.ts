@@ -6,11 +6,11 @@ import { accountMap } from "./Accounts";
 import { Contract } from "./Contract";
 import { mustString } from "./Utils";
 
-import { JErc20Delegate } from "./Contract/JErc20Delegate";
+import { GXrc20Delegate } from "./Contract/GXrc20Delegate";
 import { Joe } from "./Contract/Joe";
-import { Joetroller } from "./Contract/Joetroller";
-import { JoetrollerImpl } from "./Contract/JoetrollerImpl";
-import { JToken } from "./Contract/JToken";
+import { Gtroller } from "./Contract/Gtroller";
+import { GtrollerImpl } from "./Contract/GtrollerImpl";
+import { GToken } from "./Contract/GToken";
 import { Erc20 } from "./Contract/Erc20";
 import { InterestRateModel } from "./Contract/InterestRateModel";
 import { PriceOracle } from "./Contract/PriceOracle";
@@ -73,33 +73,33 @@ export function getWorldContractByAddress<T>(world: World, address: string): T {
   return <T>(<unknown>contract);
 }
 
-export async function getUnitroller(world: World): Promise<Joetroller> {
+export async function getUnitroller(world: World): Promise<Gtroller> {
   return getWorldContract(world, [["Contracts", "Unitroller"]]);
 }
 
-export async function getJoetroller(world: World): Promise<Joetroller> {
-  return getWorldContract(world, [["Contracts", "Joetroller"]]);
+export async function getGtroller(world: World): Promise<Gtroller> {
+  return getWorldContract(world, [["Contracts", "Gtroller"]]);
 }
 
-export async function getJoetrollerImpl(
+export async function getGtrollerImpl(
   world: World,
   comptrollerImplArg: Event
-): Promise<JoetrollerImpl> {
+): Promise<GtrollerImpl> {
   return getWorldContract(world, [
-    ["Joetroller", mustString(comptrollerImplArg), "address"],
+    ["Gtroller", mustString(comptrollerImplArg), "address"],
   ]);
 }
 
-export function getJTokenAddress(world: World, jTokenArg: string): string {
+export function getGTokenAddress(world: World, jTokenArg: string): string {
   return getContractDataString(world, [["jTokens", jTokenArg, "address"]]);
 }
 
-export function getJTokenDelegateAddress(
+export function getGTokenDelegateAddress(
   world: World,
   jTokenDelegateArg: string
 ): string {
   return getContractDataString(world, [
-    ["JTokenDelegate", jTokenDelegateArg, "address"],
+    ["GTokenDelegate", jTokenDelegateArg, "address"],
   ]);
 }
 
@@ -165,39 +165,36 @@ export async function getErc20Data(
   return [contract, erc20Arg, <Map<string, string>>(<any>data)];
 }
 
-export async function getJTokenData(
+export async function getGTokenData(
   world: World,
   jTokenArg: string
-): Promise<[JToken, string, Map<string, string>]> {
-  let contract = getWorldContract<JToken>(world, [
+): Promise<[GToken, string, Map<string, string>]> {
+  let contract = getWorldContract<GToken>(world, [
     ["jTokens", jTokenArg, "address"],
   ]);
-  let data = getContractData(world, [["JTokens", jTokenArg]]);
+  let data = getContractData(world, [["GTokens", jTokenArg]]);
 
   return [contract, jTokenArg, <Map<string, string>>(<any>data)];
 }
 
-export async function getJTokenDelegateData(
+export async function getGTokenDelegateData(
   world: World,
   jTokenDelegateArg: string
-): Promise<[JErc20Delegate, string, Map<string, string>]> {
-  let contract = getWorldContract<JErc20Delegate>(world, [
-    ["JTokenDelegate", jTokenDelegateArg, "address"],
+): Promise<[GXrc20Delegate, string, Map<string, string>]> {
+  let contract = getWorldContract<GXrc20Delegate>(world, [
+    ["GTokenDelegate", jTokenDelegateArg, "address"],
   ]);
-  let data = getContractData(world, [["JTokenDelegate", jTokenDelegateArg]]);
+  let data = getContractData(world, [["GTokenDelegate", jTokenDelegateArg]]);
 
   return [contract, jTokenDelegateArg, <Map<string, string>>(<any>data)];
 }
 
-export async function getJoetrollerImplData(
+export async function getGtrollerImplData(
   world: World,
   comptrollerImplArg: string
-): Promise<[JoetrollerImpl, string, Map<string, string>]> {
-  let contract = await getJoetrollerImpl(
-    world,
-    <Event>(<any>comptrollerImplArg)
-  );
-  let data = getContractData(world, [["Joetroller", comptrollerImplArg]]);
+): Promise<[GtrollerImpl, string, Map<string, string>]> {
+  let contract = await getGtrollerImpl(world, <Event>(<any>comptrollerImplArg));
+  let data = getContractData(world, [["Gtroller", comptrollerImplArg]]);
 
   return [contract, comptrollerImplArg, <Map<string, string>>(<any>data)];
 }
@@ -228,9 +225,9 @@ export function getAddress(world: World, addressArg: string): string {
   return getContractDataString(world, [
     ["Contracts", addressArg],
     ["jTokens", addressArg, "address"],
-    ["JTokenDelegate", addressArg, "address"],
+    ["GTokenDelegate", addressArg, "address"],
     ["Tokens", addressArg, "address"],
-    ["Joetroller", addressArg, "address"],
+    ["Gtroller", addressArg, "address"],
   ]);
 }
 

@@ -2,12 +2,12 @@
 
 pragma solidity ^0.5.16;
 
-import "./JToken.sol";
-import "./JoetrollerStorage.sol";
+import "./GToken.sol";
+import "./GtrollerStorage.sol";
 
-contract JoetrollerInterface {
-    /// @notice Indicator that this is a Joetroller contract (for inspection)
-    bool public constant isJoetroller = true;
+contract GtrollerInterface {
+    /// @notice Indicator that this is a Gtroller contract (for inspection)
+    bool public constant isGtroller = true;
 
     /*** Assets You Are In ***/
 
@@ -126,10 +126,10 @@ contract JoetrollerInterface {
     ) external view returns (uint256, uint256);
 }
 
-interface JoetrollerInterfaceExtension {
-    function checkMembership(address account, JToken jToken) external view returns (bool);
+interface GtrollerInterfaceExtension {
+    function checkMembership(address account, GToken jToken) external view returns (bool);
 
-    function updateJTokenVersion(address jToken, JoetrollerV1Storage.Version version) external;
+    function updateGTokenVersion(address jToken, GtrollerV1Storage.Version version) external;
 
     function flashloanAllowed(
         address jToken,

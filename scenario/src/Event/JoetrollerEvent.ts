@@ -1,8 +1,8 @@
 import { Event } from "../Event";
 import { addAction, describeUser, World } from "../World";
 import { decodeCall, getPastEvents } from "../Contract";
-import { Joetroller } from "../Contract/Joetroller";
-import { JToken } from "../Contract/JToken";
+import { Gtroller } from "../Contract/Gtroller";
+import { GToken } from "../Contract/GToken";
 import { invoke } from "../Invokation";
 import {
   getAddressV,
@@ -16,29 +16,29 @@ import {
 } from "../CoreValue";
 import { AddressV, BoolV, EventV, NumberV, StringV } from "../Value";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { buildJoetrollerImpl } from "../Builder/JoetrollerImplBuilder";
-import { JoetrollerErrorReporter } from "../ErrorReporter";
-import { getJoetroller, getJoetrollerImpl } from "../ContractLookup";
-import { getLiquidity } from "../Value/JoetrollerValue";
-import { getJTokenV } from "../Value/JTokenValue";
+import { buildGtrollerImpl } from "../Builder/GtrollerImplBuilder";
+import { GtrollerErrorReporter } from "../ErrorReporter";
+import { getGtroller, getGtrollerImpl } from "../ContractLookup";
+import { getLiquidity } from "../Value/GtrollerValue";
+import { getGTokenV } from "../Value/GTokenValue";
 import { encodeABI, rawValues } from "../Utils";
 
-async function genJoetroller(
+async function genGtroller(
   world: World,
   from: string,
   params: Event
 ): Promise<World> {
   let {
     world: nextWorld,
-    joetrollerImpl: joetroller,
-    joetrollerImplData: joetrollerData,
-  } = await buildJoetrollerImpl(world, from, params);
+    gTrollerImpl: gTroller,
+    gTrollerImplData: gTrollerData,
+  } = await buildGtrollerImpl(world, from, params);
   world = nextWorld;
 
   world = addAction(
     world,
-    `Added Joetroller (${joetrollerData.description}) at address ${joetroller._address}`,
-    joetrollerData.invokation
+    `Added Gtroller (${gTrollerData.description}) at address ${gTroller._address}`,
+    gTrollerData.invokation
   );
 
   return world;
@@ -47,12 +47,12 @@ async function genJoetroller(
 async function setPaused(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   actionName: string,
   isPaused: boolean
 ): Promise<World> {
   const pauseMap = {
-    Mint: joetroller.methods._setMintPaused,
+    Mint: gTroller.methods._setMintPaused,
   };
 
   if (!pauseMap[actionName]) {
@@ -61,14 +61,14 @@ async function setPaused(
 
   let invokation = await invoke(
     world,
-    joetroller[actionName]([isPaused]),
+    gTroller[actionName]([isPaused]),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: set paused for ${actionName} to ${isPaused}`,
+    `Gtroller: set paused for ${actionName} to ${isPaused}`,
     invokation
   );
 
@@ -78,14 +78,14 @@ async function setPaused(
 async function setLiquidationIncentive(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   liquidationIncentive: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setLiquidationIncentive(liquidationIncentive.encode()),
+    gTroller.methods._setLiquidationIncentive(liquidationIncentive.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -100,8 +100,8 @@ async function setLiquidationIncentive(
 async function oldSupportMarket(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken
+  gTroller: Gtroller,
+  jToken: GToken
 ): Promise<World> {
   if (world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
@@ -113,9 +113,9 @@ async function oldSupportMarket(
 
   let invokation = await invoke(
     world,
-    joetroller.methods._supportMarket(jToken._address),
+    gTroller.methods._supportMarket(jToken._address),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(world, `Supported market ${jToken.name}`, invokation);
@@ -126,8 +126,8 @@ async function oldSupportMarket(
 async function supportMarket(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken,
+  gTroller: Gtroller,
+  jToken: GToken,
   version: NumberV
 ): Promise<World> {
   if (world.dryRun) {
@@ -140,9 +140,9 @@ async function supportMarket(
 
   let invokation = await invoke(
     world,
-    joetroller.methods._supportMarket(jToken._address, version.encode()),
+    gTroller.methods._supportMarket(jToken._address, version.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(world, `Supported market ${jToken.name}`, invokation);
@@ -153,14 +153,14 @@ async function supportMarket(
 async function unlistMarket(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken
+  gTroller: Gtroller,
+  jToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.unlist(jToken._address),
+    gTroller.methods.unlist(jToken._address),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(world, `Unlisted market ${jToken.name}`, invokation);
@@ -171,14 +171,14 @@ async function unlistMarket(
 async function enterMarkets(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   assets: string[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.enterMarkets(assets),
+    gTroller.methods.enterMarkets(assets),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -193,14 +193,14 @@ async function enterMarkets(
 async function exitMarket(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   asset: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.exitMarket(asset),
+    gTroller.methods.exitMarket(asset),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -212,18 +212,18 @@ async function exitMarket(
   return world;
 }
 
-async function updateJTokenVersion(
+async function updateGTokenVersion(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken,
+  gTroller: Gtroller,
+  jToken: GToken,
   version: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.updateJTokenVersion(jToken._address, version.encode()),
+    gTroller.methods.updateGTokenVersion(jToken._address, version.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -238,14 +238,14 @@ async function updateJTokenVersion(
 async function setPriceOracle(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   priceOracleAddr: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setPriceOracle(priceOracleAddr),
+    gTroller.methods._setPriceOracle(priceOracleAddr),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -263,18 +263,18 @@ async function setPriceOracle(
 async function setCollateralFactor(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken,
+  gTroller: Gtroller,
+  jToken: GToken,
   collateralFactor: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setCollateralFactor(
+    gTroller.methods._setCollateralFactor(
       jToken._address,
       collateralFactor.encode()
     ),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -289,14 +289,14 @@ async function setCollateralFactor(
 async function setCloseFactor(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   closeFactor: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setCloseFactor(closeFactor.encode()),
+    gTroller.methods._setCloseFactor(closeFactor.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -311,14 +311,14 @@ async function setCloseFactor(
 async function fastForward(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   blocks: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.fastForward(blocks.encode()),
+    gTroller.methods.fastForward(blocks.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -332,12 +332,12 @@ async function fastForward(
 
 async function printLiquidity(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<World> {
   let enterEvents = await getPastEvents(
     world,
-    joetroller,
-    "StdJoetroller",
+    gTroller,
+    "StdGtroller",
     "MarketEntered"
   );
   let addresses = enterEvents.map((event) => event.returnValues["account"]);
@@ -347,7 +347,7 @@ async function printLiquidity(
 
   const liquidityMap = await Promise.all(
     uniq.map(async (address) => {
-      let userLiquidity = await getLiquidity(world, joetroller, address);
+      let userLiquidity = await getLiquidity(world, gTroller, address);
 
       return [address, userLiquidity.val];
     })
@@ -365,19 +365,19 @@ async function printLiquidity(
 async function setPendingAdmin(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   newPendingAdmin: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setPendingAdmin(newPendingAdmin),
+    gTroller.methods._setPendingAdmin(newPendingAdmin),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(
+    `Gtroller: ${describeUser(
       world,
       from
     )} sets pending admin to ${newPendingAdmin}`,
@@ -390,18 +390,18 @@ async function setPendingAdmin(
 async function acceptAdmin(
   world: World,
   from: string,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._acceptAdmin(),
+    gTroller.methods._acceptAdmin(),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(world, from)} accepts admin`,
+    `Gtroller: ${describeUser(world, from)} accepts admin`,
     invokation
   );
 
@@ -411,19 +411,19 @@ async function acceptAdmin(
 async function setPauseGuardian(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   newPauseGuardian: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setPauseGuardian(newPauseGuardian),
+    gTroller.methods._setPauseGuardian(newPauseGuardian),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(
+    `Gtroller: ${describeUser(
       world,
       from
     )} sets pause guardian to ${newPauseGuardian}`,
@@ -436,29 +436,24 @@ async function setPauseGuardian(
 async function setGuardianPaused(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   action: string,
   state: boolean
 ): Promise<World> {
   let fun;
   switch (action) {
     case "Transfer":
-      fun = joetroller.methods._setTransferPaused;
+      fun = gTroller.methods._setTransferPaused;
       break;
     case "Seize":
-      fun = joetroller.methods._setSeizePaused;
+      fun = gTroller.methods._setSeizePaused;
       break;
   }
-  let invokation = await invoke(
-    world,
-    fun(state),
-    from,
-    JoetrollerErrorReporter
-  );
+  let invokation = await invoke(world, fun(state), from, GtrollerErrorReporter);
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(world, from)} sets ${action} paused`,
+    `Gtroller: ${describeUser(world, from)} sets ${action} paused`,
     invokation
   );
 
@@ -468,30 +463,30 @@ async function setGuardianPaused(
 async function setGuardianMarketPaused(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jToken: JToken,
+  gTroller: Gtroller,
+  jToken: GToken,
   action: string,
   state: boolean
 ): Promise<World> {
   let fun;
   switch (action) {
     case "Mint":
-      fun = joetroller.methods._setMintPaused;
+      fun = gTroller.methods._setMintPaused;
       break;
     case "Borrow":
-      fun = joetroller.methods._setBorrowPaused;
+      fun = gTroller.methods._setBorrowPaused;
       break;
   }
   let invokation = await invoke(
     world,
     fun(jToken._address, state),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(world, from)} sets ${action} paused`,
+    `Gtroller: ${describeUser(world, from)} sets ${action} paused`,
     invokation
   );
 
@@ -501,18 +496,18 @@ async function setGuardianMarketPaused(
 async function setMarketSupplyCaps(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jTokens: JToken[],
+  gTroller: Gtroller,
+  jTokens: GToken[],
   supplyCaps: NumberV[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setMarketSupplyCaps(
+    gTroller.methods._setMarketSupplyCaps(
       jTokens.map((c) => c._address),
       supplyCaps.map((c) => c.encode())
     ),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -527,19 +522,19 @@ async function setMarketSupplyCaps(
 async function setSupplyCapGuardian(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   newSupplyCapGuardian: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setSupplyCapGuardian(newSupplyCapGuardian),
+    gTroller.methods._setSupplyCapGuardian(newSupplyCapGuardian),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(
+    `Gtroller: ${describeUser(
       world,
       from
     )} sets supply cap guardian to ${newSupplyCapGuardian}`,
@@ -552,18 +547,18 @@ async function setSupplyCapGuardian(
 async function setMarketBorrowCaps(
   world: World,
   from: string,
-  joetroller: Joetroller,
-  jTokens: JToken[],
+  gTroller: Gtroller,
+  jTokens: GToken[],
   borrowCaps: NumberV[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setMarketBorrowCaps(
+    gTroller.methods._setMarketBorrowCaps(
       jTokens.map((c) => c._address),
       borrowCaps.map((c) => c.encode())
     ),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
@@ -578,19 +573,19 @@ async function setMarketBorrowCaps(
 async function setBorrowCapGuardian(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   newBorrowCapGuardian: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setBorrowCapGuardian(newBorrowCapGuardian),
+    gTroller.methods._setBorrowCapGuardian(newBorrowCapGuardian),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Joetroller: ${describeUser(
+    `Gtroller: ${describeUser(
       world,
       from
     )} sets borrow cap guardian to ${newBorrowCapGuardian}`,
@@ -603,14 +598,14 @@ async function setBorrowCapGuardian(
 async function setBlockTimestamp(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   blockTimestamp: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods.setBlockTimestamp(blockTimestamp.encode()),
+    gTroller.methods.setBlockTimestamp(blockTimestamp.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   return addAction(
@@ -625,15 +620,15 @@ async function setBlockTimestamp(
 async function setCreditLimit(
   world: World,
   from: string,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   protocol: string,
   creditLimit: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetroller.methods._setCreditLimit(protocol, creditLimit.encode()),
+    gTroller.methods._setCreditLimit(protocol, creditLimit.encode()),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   return addAction(
@@ -643,442 +638,442 @@ async function setCreditLimit(
   );
 }
 
-export function joetrollerCommands() {
+export function gTrollerCommands() {
   return [
-    new Command<{ joetrollerParams: EventV }>(
+    new Command<{ gTrollerParams: EventV }>(
       `
         #### Deploy
 
-        * "Joetroller Deploy ...joetrollerParams" - Generates a new Joetroller (not as Impl)
-          * E.g. "Joetroller Deploy YesNo"
+        * "Gtroller Deploy ...gTrollerParams" - Generates a new Gtroller (not as Impl)
+          * E.g. "Gtroller Deploy YesNo"
       `,
       "Deploy",
-      [new Arg("joetrollerParams", getEventV, { variadic: true })],
-      (world, from, { joetrollerParams }) =>
-        genJoetroller(world, from, joetrollerParams.val)
+      [new Arg("gTrollerParams", getEventV, { variadic: true })],
+      (world, from, { gTrollerParams }) =>
+        genGtroller(world, from, gTrollerParams.val)
     ),
-    new Command<{ joetroller: Joetroller; action: StringV; isPaused: BoolV }>(
+    new Command<{ gTroller: Gtroller; action: StringV; isPaused: BoolV }>(
       `
         #### SetPaused
 
-        * "Joetroller SetPaused <Action> <Bool>" - Pauses or unpaused given jToken function
-          * E.g. "Joetroller SetPaused "Mint" True"
+        * "Gtroller SetPaused <Action> <Bool>" - Pauses or unpaused given jToken function
+          * E.g. "Gtroller SetPaused "Mint" True"
       `,
       "SetPaused",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("action", getStringV),
         new Arg("isPaused", getBoolV),
       ],
-      (world, from, { joetroller, action, isPaused }) =>
-        setPaused(world, from, joetroller, action.val, isPaused.val)
+      (world, from, { gTroller, action, isPaused }) =>
+        setPaused(world, from, gTroller, action.val, isPaused.val)
     ),
-    new Command<{ joetroller: Joetroller; jToken: JToken }>(
+    new Command<{ gTroller: Gtroller; jToken: GToken }>(
       `
         #### OldSupportMarket
 
-        * "Joetroller OldSupportMarket <JToken>" - Adds support in the Joetroller for the given jToken
-          * E.g. "Joetroller OldSupportMarket cZRX"
+        * "Gtroller OldSupportMarket <GToken>" - Adds support in the Gtroller for the given jToken
+          * E.g. "Gtroller OldSupportMarket cZRX"
       `,
       "OldSupportMarket",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, from, { joetroller, jToken }) =>
-        oldSupportMarket(world, from, joetroller, jToken)
+      (world, from, { gTroller, jToken }) =>
+        oldSupportMarket(world, from, gTroller, jToken)
     ),
-    new Command<{ joetroller: Joetroller; jToken: JToken; version: NumberV }>(
+    new Command<{ gTroller: Gtroller; jToken: GToken; version: NumberV }>(
       `
         #### SupportMarket
 
-        * "Joetroller SupportMarket <JToken> <Number>" - Adds support in the Joetroller for the given jToken
-          * E.g. "Joetroller SupportMarket cZRX 0"
+        * "Gtroller SupportMarket <GToken> <Number>" - Adds support in the Gtroller for the given jToken
+          * E.g. "Gtroller SupportMarket cZRX 0"
       `,
       "SupportMarket",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
         new Arg("version", getNumberV),
       ],
-      (world, from, { joetroller, jToken, version }) =>
-        supportMarket(world, from, joetroller, jToken, version)
+      (world, from, { gTroller, jToken, version }) =>
+        supportMarket(world, from, gTroller, jToken, version)
     ),
-    new Command<{ joetroller: Joetroller; jToken: JToken }>(
+    new Command<{ gTroller: Gtroller; jToken: GToken }>(
       `
         #### UnList
 
-        * "Joetroller UnList <JToken>" - Mock unlists a given market in tests
-          * E.g. "Joetroller UnList cZRX"
+        * "Gtroller UnList <GToken>" - Mock unlists a given market in tests
+          * E.g. "Gtroller UnList cZRX"
       `,
       "UnList",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, from, { joetroller, jToken }) =>
-        unlistMarket(world, from, joetroller, jToken)
+      (world, from, { gTroller, jToken }) =>
+        unlistMarket(world, from, gTroller, jToken)
     ),
-    new Command<{ joetroller: Joetroller; jTokens: JToken[] }>(
+    new Command<{ gTroller: Gtroller; jTokens: GToken[] }>(
       `
         #### EnterMarkets
 
-        * "Joetroller EnterMarkets (<JToken> ...)" - User enters the given markets
-          * E.g. "Joetroller EnterMarkets (cZRX cETH)"
+        * "Gtroller EnterMarkets (<GToken> ...)" - User enters the given markets
+          * E.g. "Gtroller EnterMarkets (cZRX cETH)"
       `,
       "EnterMarkets",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jTokens", getJTokenV, { mapped: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jTokens", getGTokenV, { mapped: true }),
       ],
-      (world, from, { joetroller, jTokens }) =>
+      (world, from, { gTroller, jTokens }) =>
         enterMarkets(
           world,
           from,
-          joetroller,
+          gTroller,
           jTokens.map((c) => c._address)
         )
     ),
-    new Command<{ joetroller: Joetroller; jToken: JToken }>(
+    new Command<{ gTroller: Gtroller; jToken: GToken }>(
       `
         #### ExitMarket
 
-        * "Joetroller ExitMarket <JToken>" - User exits the given markets
-          * E.g. "Joetroller ExitMarket cZRX"
+        * "Gtroller ExitMarket <GToken>" - User exits the given markets
+          * E.g. "Gtroller ExitMarket cZRX"
       `,
       "ExitMarket",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, from, { joetroller, jToken }) =>
-        exitMarket(world, from, joetroller, jToken._address)
+      (world, from, { gTroller, jToken }) =>
+        exitMarket(world, from, gTroller, jToken._address)
     ),
-    new Command<{ joetroller: Joetroller; jToken: JToken; version: NumberV }>(
+    new Command<{ gTroller: Gtroller; jToken: GToken; version: NumberV }>(
       `
-        #### UpdateJTokenVersion
+        #### UpdateGTokenVersion
 
-        * "Joetroller UpdateJTokenVersion <JToken> <Number>" - Update a JToken's version
-          * E.g. "Joetroller UpdateJTokenVersion cZRX 1"
+        * "Gtroller UpdateGTokenVersion <GToken> <Number>" - Update a GToken's version
+          * E.g. "Gtroller UpdateGTokenVersion cZRX 1"
       `,
-      "UpdateJTokenVersion",
+      "UpdateGTokenVersion",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
         new Arg("version", getNumberV),
       ],
-      (world, from, { joetroller, jToken, version }) =>
-        updateJTokenVersion(world, from, joetroller, jToken, version)
+      (world, from, { gTroller, jToken, version }) =>
+        updateGTokenVersion(world, from, gTroller, jToken, version)
     ),
-    new Command<{ joetroller: Joetroller; liquidationIncentive: NumberV }>(
+    new Command<{ gTroller: Gtroller; liquidationIncentive: NumberV }>(
       `
         #### LiquidationIncentive
 
-        * "Joetroller LiquidationIncentive <Number>" - Sets the liquidation incentive
-          * E.g. "Joetroller LiquidationIncentive 1.1"
+        * "Gtroller LiquidationIncentive <Number>" - Sets the liquidation incentive
+          * E.g. "Gtroller LiquidationIncentive 1.1"
       `,
       "LiquidationIncentive",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("liquidationIncentive", getExpNumberV),
       ],
-      (world, from, { joetroller, liquidationIncentive }) =>
-        setLiquidationIncentive(world, from, joetroller, liquidationIncentive)
+      (world, from, { gTroller, liquidationIncentive }) =>
+        setLiquidationIncentive(world, from, gTroller, liquidationIncentive)
     ),
-    new Command<{ joetroller: Joetroller; priceOracle: AddressV }>(
+    new Command<{ gTroller: Gtroller; priceOracle: AddressV }>(
       `
         #### SetPriceOracle
 
-        * "Joetroller SetPriceOracle oracle:<Address>" - Sets the price oracle address
-          * E.g. "Joetroller SetPriceOracle 0x..."
+        * "Gtroller SetPriceOracle oracle:<Address>" - Sets the price oracle address
+          * E.g. "Gtroller SetPriceOracle 0x..."
       `,
       "SetPriceOracle",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("priceOracle", getAddressV),
       ],
-      (world, from, { joetroller, priceOracle }) =>
-        setPriceOracle(world, from, joetroller, priceOracle.val)
+      (world, from, { gTroller, priceOracle }) =>
+        setPriceOracle(world, from, gTroller, priceOracle.val)
     ),
     new Command<{
-      joetroller: Joetroller;
-      jToken: JToken;
+      gTroller: Gtroller;
+      jToken: GToken;
       collateralFactor: NumberV;
     }>(
       `
         #### SetCollateralFactor
 
-        * "Joetroller SetCollateralFactor <JToken> <Number>" - Sets the collateral factor for given jToken to number
-          * E.g. "Joetroller SetCollateralFactor cZRX 0.1"
+        * "Gtroller SetCollateralFactor <GToken> <Number>" - Sets the collateral factor for given jToken to number
+          * E.g. "Gtroller SetCollateralFactor cZRX 0.1"
       `,
       "SetCollateralFactor",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
         new Arg("collateralFactor", getExpNumberV),
       ],
-      (world, from, { joetroller, jToken, collateralFactor }) =>
-        setCollateralFactor(world, from, joetroller, jToken, collateralFactor)
+      (world, from, { gTroller, jToken, collateralFactor }) =>
+        setCollateralFactor(world, from, gTroller, jToken, collateralFactor)
     ),
-    new Command<{ joetroller: Joetroller; closeFactor: NumberV }>(
+    new Command<{ gTroller: Gtroller; closeFactor: NumberV }>(
       `
         #### SetCloseFactor
 
-        * "Joetroller SetCloseFactor <Number>" - Sets the close factor to given percentage
-          * E.g. "Joetroller SetCloseFactor 0.2"
+        * "Gtroller SetCloseFactor <Number>" - Sets the close factor to given percentage
+          * E.g. "Gtroller SetCloseFactor 0.2"
       `,
       "SetCloseFactor",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("closeFactor", getPercentV),
       ],
-      (world, from, { joetroller, closeFactor }) =>
-        setCloseFactor(world, from, joetroller, closeFactor)
+      (world, from, { gTroller, closeFactor }) =>
+        setCloseFactor(world, from, gTroller, closeFactor)
     ),
-    new Command<{ joetroller: Joetroller; newPendingAdmin: AddressV }>(
+    new Command<{ gTroller: Gtroller; newPendingAdmin: AddressV }>(
       `
         #### SetPendingAdmin
 
-        * "Joetroller SetPendingAdmin newPendingAdmin:<Address>" - Sets the pending admin for the Joetroller
-          * E.g. "Joetroller SetPendingAdmin Geoff"
+        * "Gtroller SetPendingAdmin newPendingAdmin:<Address>" - Sets the pending admin for the Gtroller
+          * E.g. "Gtroller SetPendingAdmin Geoff"
       `,
       "SetPendingAdmin",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("newPendingAdmin", getAddressV),
       ],
-      (world, from, { joetroller, newPendingAdmin }) =>
-        setPendingAdmin(world, from, joetroller, newPendingAdmin.val)
+      (world, from, { gTroller, newPendingAdmin }) =>
+        setPendingAdmin(world, from, gTroller, newPendingAdmin.val)
     ),
-    new Command<{ joetroller: Joetroller }>(
+    new Command<{ gTroller: Gtroller }>(
       `
         #### AcceptAdmin
 
-        * "Joetroller AcceptAdmin" - Accepts admin for the Joetroller
-          * E.g. "From Geoff (Joetroller AcceptAdmin)"
+        * "Gtroller AcceptAdmin" - Accepts admin for the Gtroller
+          * E.g. "From Geoff (Gtroller AcceptAdmin)"
       `,
       "AcceptAdmin",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, from, { joetroller }) => acceptAdmin(world, from, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, from, { gTroller }) => acceptAdmin(world, from, gTroller)
     ),
-    new Command<{ joetroller: Joetroller; newPauseGuardian: AddressV }>(
+    new Command<{ gTroller: Gtroller; newPauseGuardian: AddressV }>(
       `
         #### SetPauseGuardian
 
-        * "Joetroller SetPauseGuardian newPauseGuardian:<Address>" - Sets the PauseGuardian for the Joetroller
-          * E.g. "Joetroller SetPauseGuardian Geoff"
+        * "Gtroller SetPauseGuardian newPauseGuardian:<Address>" - Sets the PauseGuardian for the Gtroller
+          * E.g. "Gtroller SetPauseGuardian Geoff"
       `,
       "SetPauseGuardian",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("newPauseGuardian", getAddressV),
       ],
-      (world, from, { joetroller, newPauseGuardian }) =>
-        setPauseGuardian(world, from, joetroller, newPauseGuardian.val)
+      (world, from, { gTroller, newPauseGuardian }) =>
+        setPauseGuardian(world, from, gTroller, newPauseGuardian.val)
     ),
 
-    new Command<{ joetroller: Joetroller; action: StringV; isPaused: BoolV }>(
+    new Command<{ gTroller: Gtroller; action: StringV; isPaused: BoolV }>(
       `
         #### SetGuardianPaused
 
-        * "Joetroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given jToken function
-        * E.g. "Joetroller SetGuardianPaused "Transfer" True"
+        * "Gtroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given jToken function
+        * E.g. "Gtroller SetGuardianPaused "Transfer" True"
         `,
       "SetGuardianPaused",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("action", getStringV),
         new Arg("isPaused", getBoolV),
       ],
-      (world, from, { joetroller, action, isPaused }) =>
-        setGuardianPaused(world, from, joetroller, action.val, isPaused.val)
+      (world, from, { gTroller, action, isPaused }) =>
+        setGuardianPaused(world, from, gTroller, action.val, isPaused.val)
     ),
 
     new Command<{
-      joetroller: Joetroller;
-      jToken: JToken;
+      gTroller: Gtroller;
+      jToken: GToken;
       action: StringV;
       isPaused: BoolV;
     }>(
       `
         #### SetGuardianMarketPaused
 
-        * "Joetroller SetGuardianMarketPaused <JToken> <Action> <Bool>" - Pauses or unpaused given jToken function
-        * E.g. "Joetroller SetGuardianMarketPaused cREP "Mint" True"
+        * "Gtroller SetGuardianMarketPaused <GToken> <Action> <Bool>" - Pauses or unpaused given jToken function
+        * E.g. "Gtroller SetGuardianMarketPaused cREP "Mint" True"
         `,
       "SetGuardianMarketPaused",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
         new Arg("action", getStringV),
         new Arg("isPaused", getBoolV),
       ],
-      (world, from, { joetroller, jToken, action, isPaused }) =>
+      (world, from, { gTroller, jToken, action, isPaused }) =>
         setGuardianMarketPaused(
           world,
           from,
-          joetroller,
+          gTroller,
           jToken,
           action.val,
           isPaused.val
         )
     ),
 
-    new Command<{ joetroller: Joetroller; blocks: NumberV; _keyword: StringV }>(
+    new Command<{ gTroller: Gtroller; blocks: NumberV; _keyword: StringV }>(
       `
         #### FastForward
 
-        * "FastForward n:<Number> Blocks" - Moves the block number forward "n" blocks. Note: in "JTokenScenario" and "JoetrollerScenario" the current block number is mocked (starting at 100000). This is the only way for the protocol to see a higher block number (for accruing interest).
-          * E.g. "Joetroller FastForward 5 Blocks" - Move block number forward 5 blocks.
+        * "FastForward n:<Number> Blocks" - Moves the block number forward "n" blocks. Note: in "GTokenScenario" and "GtrollerScenario" the current block number is mocked (starting at 100000). This is the only way for the protocol to see a higher block number (for accruing interest).
+          * E.g. "Gtroller FastForward 5 Blocks" - Move block number forward 5 blocks.
       `,
       "FastForward",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("blocks", getNumberV),
         new Arg("_keyword", getStringV),
       ],
-      (world, from, { joetroller, blocks }) =>
-        fastForward(world, from, joetroller, blocks)
+      (world, from, { gTroller, blocks }) =>
+        fastForward(world, from, gTroller, blocks)
     ),
-    new View<{ joetroller: Joetroller }>(
+    new View<{ gTroller: Gtroller }>(
       `
         #### Liquidity
 
-        * "Joetroller Liquidity" - Prints liquidity of all minters or borrowers
+        * "Gtroller Liquidity" - Prints liquidity of all minters or borrowers
       `,
       "Liquidity",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => printLiquidity(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => printLiquidity(world, gTroller)
     ),
-    new View<{ joetroller: Joetroller; input: StringV }>(
+    new View<{ gTroller: Gtroller; input: StringV }>(
       `
         #### Decode
 
-        * "Decode input:<String>" - Prints information about a call to a Joetroller contract
+        * "Decode input:<String>" - Prints information about a call to a Gtroller contract
       `,
       "Decode",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("input", getStringV),
       ],
-      (world, { joetroller, input }) => decodeCall(world, joetroller, input.val)
+      (world, { gTroller, input }) => decodeCall(world, gTroller, input.val)
     ),
     new Command<{
-      joetroller: Joetroller;
-      jTokens: JToken[];
+      gTroller: Gtroller;
+      jTokens: GToken[];
       supplyCaps: NumberV[];
     }>(
       `
       #### SetMarketSupplyCaps
 
-      * "Joetroller SetMarketSupplyCaps (<JToken> ...) (<supplyCap> ...)" - Sets Market Supply Caps
-      * E.g. "Joetroller SetMarketSupplyCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
+      * "Gtroller SetMarketSupplyCaps (<GToken> ...) (<supplyCap> ...)" - Sets Market Supply Caps
+      * E.g. "Gtroller SetMarketSupplyCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
       `,
       "SetMarketSupplyCaps",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jTokens", getJTokenV, { mapped: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jTokens", getGTokenV, { mapped: true }),
         new Arg("supplyCaps", getNumberV, { mapped: true }),
       ],
-      (world, from, { joetroller, jTokens, supplyCaps }) =>
-        setMarketSupplyCaps(world, from, joetroller, jTokens, supplyCaps)
+      (world, from, { gTroller, jTokens, supplyCaps }) =>
+        setMarketSupplyCaps(world, from, gTroller, jTokens, supplyCaps)
     ),
-    new Command<{ joetroller: Joetroller; newSupplyCapGuardian: AddressV }>(
+    new Command<{ gTroller: Gtroller; newSupplyCapGuardian: AddressV }>(
       `
       #### SetSupplyCapGuardian
 
-        * "Joetroller SetSupplyCapGuardian newSupplyCapGuardian:<Address>" - Sets the Supply Cap Guardian for the Joetroller
-          * E.g. "Joetroller SetSupplyCapGuardian Geoff"
+        * "Gtroller SetSupplyCapGuardian newSupplyCapGuardian:<Address>" - Sets the Supply Cap Guardian for the Gtroller
+          * E.g. "Gtroller SetSupplyCapGuardian Geoff"
       `,
       "SetSupplyCapGuardian",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("newSupplyCapGuardian", getAddressV),
       ],
-      (world, from, { joetroller, newSupplyCapGuardian }) =>
-        setSupplyCapGuardian(world, from, joetroller, newSupplyCapGuardian.val)
+      (world, from, { gTroller, newSupplyCapGuardian }) =>
+        setSupplyCapGuardian(world, from, gTroller, newSupplyCapGuardian.val)
     ),
     new Command<{
-      joetroller: Joetroller;
-      jTokens: JToken[];
+      gTroller: Gtroller;
+      jTokens: GToken[];
       borrowCaps: NumberV[];
     }>(
       `
       #### SetMarketBorrowCaps
 
-      * "Joetroller SetMarketBorrowCaps (<JToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
-      * E.g "Joetroller SetMarketBorrowCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
+      * "Gtroller SetMarketBorrowCaps (<GToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
+      * E.g "Gtroller SetMarketBorrowCaps (cZRX cUSDC) (10000.0e18, 1000.0e6)
       `,
       "SetMarketBorrowCaps",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jTokens", getJTokenV, { mapped: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jTokens", getGTokenV, { mapped: true }),
         new Arg("borrowCaps", getNumberV, { mapped: true }),
       ],
-      (world, from, { joetroller, jTokens, borrowCaps }) =>
-        setMarketBorrowCaps(world, from, joetroller, jTokens, borrowCaps)
+      (world, from, { gTroller, jTokens, borrowCaps }) =>
+        setMarketBorrowCaps(world, from, gTroller, jTokens, borrowCaps)
     ),
-    new Command<{ joetroller: Joetroller; newBorrowCapGuardian: AddressV }>(
+    new Command<{ gTroller: Gtroller; newBorrowCapGuardian: AddressV }>(
       `
         #### SetBorrowCapGuardian
 
-        * "Joetroller SetBorrowCapGuardian newBorrowCapGuardian:<Address>" - Sets the Borrow Cap Guardian for the Joetroller
-          * E.g. "Joetroller SetBorrowCapGuardian Geoff"
+        * "Gtroller SetBorrowCapGuardian newBorrowCapGuardian:<Address>" - Sets the Borrow Cap Guardian for the Gtroller
+          * E.g. "Gtroller SetBorrowCapGuardian Geoff"
       `,
       "SetBorrowCapGuardian",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("newBorrowCapGuardian", getAddressV),
       ],
-      (world, from, { joetroller, newBorrowCapGuardian }) =>
-        setBorrowCapGuardian(world, from, joetroller, newBorrowCapGuardian.val)
+      (world, from, { gTroller, newBorrowCapGuardian }) =>
+        setBorrowCapGuardian(world, from, gTroller, newBorrowCapGuardian.val)
     ),
-    new Command<{ joetroller: Joetroller; blockTimestamp: NumberV }>(
+    new Command<{ gTroller: Gtroller; blockTimestamp: NumberV }>(
       `
         #### SetBlockTimestamp
 
-        * "Joetroller SetBlockTimestamp <BlockTimestamp>" - Sets the blockTimestamp of the Joetroller
-        * E.g. "Joetroller SetBlockTimestamp 500"
+        * "Gtroller SetBlockTimestamp <BlockTimestamp>" - Sets the blockTimestamp of the Gtroller
+        * E.g. "Gtroller SetBlockTimestamp 500"
       `,
       "SetBlockTimestamp",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("blockTimestamp", getNumberV),
       ],
-      (world, from, { joetroller, blockTimestamp }) =>
-        setBlockTimestamp(world, from, joetroller, blockTimestamp)
+      (world, from, { gTroller, blockTimestamp }) =>
+        setBlockTimestamp(world, from, gTroller, blockTimestamp)
     ),
     new Command<{
-      joetroller: Joetroller;
+      gTroller: Gtroller;
       protocol: AddressV;
       creditLimit: NumberV;
     }>(
       `
         #### SetCreditLimit
 
-        * "Joetroller SetCreditLimit <Protocol> <CreditLimit>" - Sets the credit limit of a protocol
-        * E.g. "Joetroller SetCreditLimit Geoff 100"
+        * "Gtroller SetCreditLimit <Protocol> <CreditLimit>" - Sets the credit limit of a protocol
+        * E.g. "Gtroller SetCreditLimit Geoff 100"
       `,
       "SetCreditLimit",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("protocol", getAddressV),
         new Arg("creditLimit", getNumberV),
       ],
-      (world, from, { joetroller, protocol, creditLimit }) =>
-        setCreditLimit(world, from, joetroller, protocol.val, creditLimit)
+      (world, from, { gTroller, protocol, creditLimit }) =>
+        setCreditLimit(world, from, gTroller, protocol.val, creditLimit)
     ),
   ];
 }
 
-export async function processJoetrollerEvent(
+export async function processGtrollerEvent(
   world: World,
   event: Event,
   from: string | null
 ): Promise<World> {
   return await processCommandEvent<any>(
-    "Joetroller",
-    joetrollerCommands(),
+    "Gtroller",
+    gTrollerCommands(),
     world,
     event,
     from

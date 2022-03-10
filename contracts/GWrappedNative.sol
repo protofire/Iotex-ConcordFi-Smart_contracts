@@ -2,7 +2,7 @@
 
 pragma solidity ^0.5.16;
 
-import "./JToken.sol";
+import "./GToken.sol";
 import "./ERC3156FlashBorrowerInterface.sol";
 import "./ERC3156FlashLenderInterface.sol";
 
@@ -16,15 +16,15 @@ interface WrappedNativeInterface {
 }
 
 /**
- * @title Cream's JWrappedNative Contract
- * @notice JTokens which wrap the native token
+ * @title Cream's GWrappedNative Contract
+ * @notice GTokens which wrap the native token
  * @author Cream
  */
-contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareStorage {
+contract GWrappedNative is GToken, GWrappedNativeInterface, GProtocolSeizeShareStorage {
     /**
      * @notice Initialize the new money market
      * @param underlying_ The address of the underlying asset
-     * @param joetroller_ The address of the Joetroller
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -33,15 +33,15 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
      */
     function initialize(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
         string memory symbol_,
         uint8 decimals_
     ) public {
-        // JToken initialize does the bulk of the work
-        super.initialize(joetroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        // GToken initialize does the bulk of the work
+        super.initialize(gTroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
         underlying = underlying_;
@@ -197,7 +197,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        JTokenInterface jTokenCollateral
+        GTokenInterface jTokenCollateral
     ) external returns (uint256) {
         (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, jTokenCollateral, false);
         require(err == 0, "liquidate borrow failed");
@@ -212,7 +212,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
      * @param jTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrowNative(address borrower, JTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
         external
         payable
         returns (uint256)
@@ -226,7 +226,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
      */
     function maxFlashLoan() external view returns (uint256) {
         uint256 amount = 0;
-        if (JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(address(this), address(0), amount, "")) {
+        if (GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(address(this), address(0), amount, "")) {
             amount = getCashPrior();
         }
         return amount;
@@ -238,7 +238,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
      */
     function flashFee(uint256 amount) external view returns (uint256) {
         require(
-            JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(address(this), address(0), amount, ""),
+            GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(address(this), address(0), amount, ""),
             "flashloan is paused"
         );
         return div_(mul_(amount, flashFeeBips), 10000);
@@ -261,7 +261,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         require(amount > 0, "flashLoan amount should be greater than zero");
         require(accrueInterest() == uint256(Error.NO_ERROR), "accrue interest failed");
         require(
-            JoetrollerInterfaceExtension(address(joetroller)).flashloanAllowed(
+            GtrollerInterfaceExtension(address(gTroller)).flashloanAllowed(
                 address(this),
                 address(receiver),
                 amount,
@@ -454,7 +454,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         uint256 tokens
     ) internal returns (uint256) {
         /* Fail if transfer not allowed */
-        uint256 allowed = joetroller.transferAllowed(address(this), src, dst, tokens);
+        uint256 allowed = gTroller.transferAllowed(address(this), src, dst, tokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.TRANSFER_JOETROLLER_REJECTION, allowed);
         }
@@ -491,7 +491,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
      * @notice Get the account's jToken balances
      * @param account The address of the account
      */
-    function getJTokenBalanceInternal(address account) internal view returns (uint256) {
+    function getGTokenBalanceInternal(address account) internal view returns (uint256) {
         return accountTokens[account];
     }
 
@@ -515,7 +515,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         bool isNative
     ) internal returns (uint256, uint256) {
         /* Fail if mint not allowed */
-        uint256 allowed = joetroller.mintAllowed(address(this), minter, mintAmount);
+        uint256 allowed = gTroller.mintAllowed(address(this), minter, mintAmount);
         if (allowed != 0) {
             return (failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.MINT_JOETROLLER_REJECTION, allowed), 0);
         }
@@ -622,7 +622,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         }
 
         /* Fail if redeem not allowed */
-        uint256 allowed = joetroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
+        uint256 allowed = gTroller.redeemAllowed(address(this), redeemer, vars.redeemTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.REDEEM_JOETROLLER_REJECTION, allowed);
         }
@@ -674,14 +674,14 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         emit Redeem(redeemer, vars.redeemAmount, vars.redeemTokens);
 
         /* We call the defense hook */
-        joetroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
+        gTroller.redeemVerify(address(this), redeemer, vars.redeemAmount, vars.redeemTokens);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another JToken.
+     * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
      *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
      * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
      * @param liquidator The account receiving seized collateral
@@ -696,7 +696,7 @@ contract JWrappedNative is JToken, JWrappedNativeInterface, JProtocolSeizeShareS
         uint256 seizeTokens
     ) internal returns (uint256) {
         /* Fail if seize not allowed */
-        uint256 allowed = joetroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
+        uint256 allowed = gTroller.seizeAllowed(address(this), seizerToken, liquidator, borrower, seizeTokens);
         if (allowed != 0) {
             return failOpaque(Error.JOETROLLER_REJECTION, FailureInfo.LIQUIDATE_SEIZE_JOETROLLER_REJECTION, allowed);
         }

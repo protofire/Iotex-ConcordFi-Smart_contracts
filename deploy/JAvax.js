@@ -15,25 +15,25 @@ module.exports = async function ({
 
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
-  const Joetroller = await ethers.getContract("Joetroller");
+  const Gtroller = await ethers.getContract("Gtroller");
   const unitroller = await ethers.getContract("Unitroller");
-  const joetroller = Joetroller.attach(unitroller.address);
+  const gTroller = Gtroller.attach(unitroller.address);
 
   const interestRateModel = await ethers.getContract("MajorInterestRateModel");
 
-  await deploy("JAvaxDelegate", {
+  await deploy("GIotxDelegate", {
     from: deployer,
     log: true,
     deterministicDeployment: false,
-    contract: "JWrappedNativeDelegate",
+    contract: "GWrappedNativeDelegate",
   });
-  const jAvaxDelegate = await ethers.getContract("JAvaxDelegate");
+  const jAvaxDelegate = await ethers.getContract("GIotxDelegate");
 
-  const deployment = await deploy("JAvaxDelegator", {
+  const deployment = await deploy("GIotxDelegator", {
     from: deployer,
     args: [
       WAVAX.get(chainId),
-      joetroller.address,
+      gTroller.address,
       interestRateModel.address,
       ethers.utils.parseUnits("2", 26).toString(),
       "Banker Joe AVAX",
@@ -45,13 +45,13 @@ module.exports = async function ({
     ],
     log: true,
     deterministicDeployment: false,
-    contract: "JWrappedNativeDelegator",
+    contract: "GWrappedNativeDelegator",
   });
   await deployment.receipt;
-  const jAvaxDelegator = await ethers.getContract("JAvaxDelegator");
+  const jAvaxDelegator = await ethers.getContract("GIotxDelegator");
 
   console.log("Supporting jAVAX market...");
-  await joetroller._supportMarket(jAvaxDelegator.address, 2, {
+  await gTroller._supportMarket(jAvaxDelegator.address, 2, {
     gasLimit: 2000000,
   });
 
@@ -64,7 +64,7 @@ module.exports = async function ({
 
   const collateralFactor = "0.75";
   console.log("Setting collateral factor ", collateralFactor);
-  await joetroller._setCollateralFactor(
+  await gTroller._setCollateralFactor(
     jAvaxDelegator.address,
     ethers.utils.parseEther(collateralFactor)
   );
@@ -78,7 +78,7 @@ module.exports = async function ({
 
 module.exports.tags = ["jAVAX"];
 module.exports.dependencies = [
-  "Joetroller",
+  "Gtroller",
   "TripleSlopeRateModel",
   "PriceOracle",
 ];

@@ -1,7 +1,7 @@
 const { avaxUnsigned, UInt256Max } = require("../Utils/Avalanche");
 const {
-  makeJoetroller,
-  makeJToken,
+  makeGtroller,
+  makeGToken,
   setOraclePrice,
 } = require("../Utils/BankerJoe");
 
@@ -10,12 +10,12 @@ const collateralPrice = 1e18;
 const repayAmount = avaxUnsigned(1e18);
 
 async function calculateSeizeTokens(
-  joetroller,
+  gTroller,
   jTokenBorrowed,
   jTokenCollateral,
   repayAmount
 ) {
-  return call(joetroller, "liquidateCalculateSeizeTokens", [
+  return call(gTroller, "liquidateCalculateSeizeTokens", [
     jTokenBorrowed._address,
     jTokenCollateral._address,
     repayAmount,
@@ -26,19 +26,19 @@ function rando(min, max) {
   return Math.floor(Math.random() * (max - min)) + min;
 }
 
-describe("Joetroller", () => {
+describe("Gtroller", () => {
   let root, accounts;
-  let joetroller, jTokenBorrowed, jTokenCollateral;
+  let gTroller, jTokenBorrowed, jTokenCollateral;
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    joetroller = await makeJoetroller();
-    jTokenBorrowed = await makeJToken({
-      joetroller: joetroller,
+    gTroller = await makeGtroller();
+    jTokenBorrowed = await makeGToken({
+      gTroller: gTroller,
       underlyingPrice: 0,
     });
-    jTokenCollateral = await makeJToken({
-      joetroller: joetroller,
+    jTokenCollateral = await makeGToken({
+      gTroller: gTroller,
       underlyingPrice: 0,
     });
   });
@@ -54,7 +54,7 @@ describe("Joetroller", () => {
       await setOraclePrice(jTokenBorrowed, 0);
       expect(
         await calculateSeizeTokens(
-          joetroller,
+          gTroller,
           jTokenBorrowed,
           jTokenCollateral,
           repayAmount
@@ -64,7 +64,7 @@ describe("Joetroller", () => {
       await setOraclePrice(jTokenCollateral, 0);
       expect(
         await calculateSeizeTokens(
-          joetroller,
+          gTroller,
           jTokenBorrowed,
           jTokenCollateral,
           repayAmount
@@ -75,7 +75,7 @@ describe("Joetroller", () => {
     it("fails if the repayAmount causes overflow ", async () => {
       await expect(
         calculateSeizeTokens(
-          joetroller,
+          gTroller,
           jTokenBorrowed,
           jTokenCollateral,
           UInt256Max()
@@ -87,7 +87,7 @@ describe("Joetroller", () => {
       await setOraclePrice(jTokenBorrowed, -1);
       await expect(
         calculateSeizeTokens(
-          joetroller,
+          gTroller,
           jTokenBorrowed,
           jTokenCollateral,
           repayAmount
@@ -98,7 +98,7 @@ describe("Joetroller", () => {
     it("reverts if it fails to calculate the exchange rate", async () => {
       await send(jTokenCollateral, "harnessExchangeRateDetails", [1, 0, 10]); // (1 - 10) -> underflow
       await expect(
-        send(joetroller, "liquidateCalculateSeizeTokens", [
+        send(gTroller, "liquidateCalculateSeizeTokens", [
           jTokenBorrowed._address,
           jTokenCollateral._address,
           repayAmount,
@@ -134,7 +134,7 @@ describe("Joetroller", () => {
 
         await setOraclePrice(jTokenCollateral, collateralPrice);
         await setOraclePrice(jTokenBorrowed, borrowedPrice);
-        await send(joetroller, "_setLiquidationIncentive", [
+        await send(gTroller, "_setLiquidationIncentive", [
           liquidationIncentive,
         ]);
         await send(jTokenCollateral, "harnessSetExchangeRate", [exchangeRate]);
@@ -147,7 +147,7 @@ describe("Joetroller", () => {
 
         expect(
           await calculateSeizeTokens(
-            joetroller,
+            gTroller,
             jTokenBorrowed,
             jTokenCollateral,
             repayAmount

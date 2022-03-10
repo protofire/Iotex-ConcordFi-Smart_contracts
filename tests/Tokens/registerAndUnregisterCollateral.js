@@ -1,29 +1,29 @@
-const { makeJToken } = require("../Utils/BankerJoe");
+const { makeGToken } = require("../Utils/BankerJoe");
 
 const exchangeRate = 50e3;
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, admin, accounts;
   let jToken;
 
   beforeEach(async () => {
     [root, admin, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
+    jToken = await makeGToken({
       kind: "jcollateralcap",
-      joetrollerOpts: { kind: "bool" },
+      gTrollerOpts: { kind: "bool" },
       exchangeRate,
     });
   });
 
-  it("fails to register collateral for non joetroller", async () => {
+  it("fails to register collateral for non gTroller", async () => {
     await expect(send(jToken, "registerCollateral", [root])).rejects.toRevert(
-      "revert only joetroller may register collateral for user"
+      "revert only gTroller may register collateral for user"
     );
   });
 
-  it("fails to unregister collateral for non joetroller", async () => {
+  it("fails to unregister collateral for non gTroller", async () => {
     await expect(send(jToken, "unregisterCollateral", [root])).rejects.toRevert(
-      "revert only joetroller may unregister collateral for user"
+      "revert only gTroller may unregister collateral for user"
     );
   });
 });

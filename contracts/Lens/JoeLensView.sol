@@ -3,19 +3,19 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../JErc20.sol";
-import "../Joetroller.sol";
-import "../JToken.sol";
+import "../GXrc20.sol";
+import "../Gtroller.sol";
+import "../GToken.sol";
 import "../PriceOracle/PriceOracle.sol";
 import "../EIP20Interface.sol";
 import "../Exponential.sol";
 
 interface JJLPInterface {
-    function claimJoe(address) external returns (uint256);
+    function claimG(address) external returns (uint256);
 }
 
-interface JJTokenInterface {
-    function claimJoe(address) external returns (uint256);
+interface JGTokenInterface {
+    function claimG(address) external returns (uint256);
 }
 
 /**
@@ -29,7 +29,7 @@ contract JoeLensView is Exponential {
     }
 
     /*** Market info functions ***/
-    struct JTokenMetadata {
+    struct GTokenMetadata {
         address jToken;
         uint256 exchangeRateStored;
         uint256 supplyRatePerSecond;
@@ -45,7 +45,7 @@ contract JoeLensView is Exponential {
         address underlyingAssetAddress;
         uint256 jTokenDecimals;
         uint256 underlyingDecimals;
-        JoetrollerV1Storage.Version version;
+        GtrollerV1Storage.Version version;
         uint256 collateralCap;
         uint256 underlyingPrice;
         bool supplyPaused;
@@ -54,32 +54,32 @@ contract JoeLensView is Exponential {
         uint256 borrowCap;
     }
 
-    function jTokenMetadataAll(JToken[] calldata jTokens) external view returns (JTokenMetadata[] memory) {
+    function jTokenMetadataAll(GToken[] calldata jTokens) external view returns (GTokenMetadata[] memory) {
         uint256 jTokenCount = jTokens.length;
         require(jTokenCount > 0, "invalid input");
-        JTokenMetadata[] memory res = new JTokenMetadata[](jTokenCount);
-        Joetroller joetroller = Joetroller(address(jTokens[0].joetroller()));
-        PriceOracle priceOracle = joetroller.oracle();
+        GTokenMetadata[] memory res = new GTokenMetadata[](jTokenCount);
+        Gtroller gTroller = Gtroller(address(jTokens[0].gTroller()));
+        PriceOracle priceOracle = gTroller.oracle();
         for (uint256 i = 0; i < jTokenCount; i++) {
-            require(address(joetroller) == address(jTokens[i].joetroller()), "mismatch joetroller");
-            res[i] = jTokenMetadataInternal(jTokens[i], joetroller, priceOracle);
+            require(address(gTroller) == address(jTokens[i].gTroller()), "mismatch gTroller");
+            res[i] = jTokenMetadataInternal(jTokens[i], gTroller, priceOracle);
         }
         return res;
     }
 
-    function jTokenMetadata(JToken jToken) public view returns (JTokenMetadata memory) {
-        Joetroller joetroller = Joetroller(address(jToken.joetroller()));
-        PriceOracle priceOracle = joetroller.oracle();
-        return jTokenMetadataInternal(jToken, joetroller, priceOracle);
+    function jTokenMetadata(GToken jToken) public view returns (GTokenMetadata memory) {
+        Gtroller gTroller = Gtroller(address(jToken.gTroller()));
+        PriceOracle priceOracle = gTroller.oracle();
+        return jTokenMetadataInternal(jToken, gTroller, priceOracle);
     }
 
     function jTokenMetadataInternal(
-        JToken jToken,
-        Joetroller joetroller,
+        GToken jToken,
+        Gtroller gTroller,
         PriceOracle priceOracle
-    ) internal view returns (JTokenMetadata memory) {
+    ) internal view returns (GTokenMetadata memory) {
         uint256 exchangeRateStored = jToken.exchangeRateStored();
-        (bool isListed, uint256 collateralFactorMantissa, JoetrollerV1Storage.Version version) = joetroller.markets(
+        (bool isListed, uint256 collateralFactorMantissa, GtrollerV1Storage.Version version) = gTroller.markets(
             address(jToken)
         );
         address underlyingAssetAddress;
@@ -91,18 +91,18 @@ contract JoeLensView is Exponential {
             underlyingAssetAddress = address(0);
             underlyingDecimals = 18;
         } else {
-            JErc20 jErc20 = JErc20(address(jToken));
+            GXrc20 jErc20 = GXrc20(address(jToken));
             underlyingAssetAddress = jErc20.underlying();
             underlyingDecimals = EIP20Interface(jErc20.underlying()).decimals();
         }
 
-        if (version == JoetrollerV1Storage.Version.COLLATERALCAP) {
-            collateralCap = JCollateralCapErc20Interface(address(jToken)).collateralCap();
-            totalCollateralTokens = JCollateralCapErc20Interface(address(jToken)).totalCollateralTokens();
+        if (version == GtrollerV1Storage.Version.COLLATERALCAP) {
+            collateralCap = GCollateralCapXrc20Interface(address(jToken)).collateralCap();
+            totalCollateralTokens = GCollateralCapXrc20Interface(address(jToken)).totalCollateralTokens();
         }
 
         return
-            JTokenMetadata({
+            GTokenMetadata({
                 jToken: address(jToken),
                 exchangeRateStored: exchangeRateStored,
                 supplyRatePerSecond: jToken.supplyRatePerSecond(),
@@ -121,16 +121,16 @@ contract JoeLensView is Exponential {
                 version: version,
                 collateralCap: collateralCap,
                 underlyingPrice: priceOracle.getUnderlyingPrice(jToken),
-                supplyPaused: joetroller.mintGuardianPaused(address(jToken)),
-                borrowPaused: joetroller.borrowGuardianPaused(address(jToken)),
-                supplyCap: joetroller.supplyCaps(address(jToken)),
-                borrowCap: joetroller.borrowCaps(address(jToken))
+                supplyPaused: gTroller.mintGuardianPaused(address(jToken)),
+                borrowPaused: gTroller.borrowGuardianPaused(address(jToken)),
+                supplyCap: gTroller.supplyCaps(address(jToken)),
+                borrowCap: gTroller.borrowCaps(address(jToken))
             });
     }
 
-    /*** Account JToken info functions ***/
+    /*** Account GToken info functions ***/
 
-    struct JTokenBalances {
+    struct GTokenBalances {
         address jToken;
         uint256 jTokenBalance; // Same as collateral balance - the number of jTokens held
         uint256 balanceOfUnderlyingStored; // Balance of underlying asset supplied by. Accrue interest is not called.
@@ -143,27 +143,27 @@ contract JoeLensView is Exponential {
         bool collateralEnabled;
     }
 
-    function jTokenBalancesAll(JToken[] memory jTokens, address account) public view returns (JTokenBalances[] memory) {
+    function jTokenBalancesAll(GToken[] memory jTokens, address account) public view returns (GTokenBalances[] memory) {
         uint256 jTokenCount = jTokens.length;
-        JTokenBalances[] memory res = new JTokenBalances[](jTokenCount);
+        GTokenBalances[] memory res = new GTokenBalances[](jTokenCount);
         for (uint256 i = 0; i < jTokenCount; i++) {
             res[i] = jTokenBalances(jTokens[i], account);
         }
         return res;
     }
 
-    function jTokenBalances(JToken jToken, address account) public view returns (JTokenBalances memory) {
-        JTokenBalances memory vars;
-        Joetroller joetroller = Joetroller(address(jToken.joetroller()));
+    function jTokenBalances(GToken jToken, address account) public view returns (GTokenBalances memory) {
+        GTokenBalances memory vars;
+        Gtroller gTroller = Gtroller(address(jToken.gTroller()));
 
         vars.jToken = address(jToken);
-        vars.collateralEnabled = joetroller.checkMembership(account, jToken);
+        vars.collateralEnabled = gTroller.checkMembership(account, jToken);
 
         if (compareStrings(jToken.symbol(), nativeSymbol)) {
             vars.underlyingTokenBalance = account.balance;
             vars.underlyingTokenAllowance = account.balance;
         } else {
-            JErc20 jErc20 = JErc20(address(jToken));
+            GXrc20 jErc20 = GXrc20(address(jToken));
             EIP20Interface underlying = EIP20Interface(jErc20.underlying());
             vars.underlyingTokenBalance = underlying.balanceOf(account);
             vars.underlyingTokenAllowance = underlying.allowance(account, address(jToken));
@@ -174,10 +174,10 @@ contract JoeLensView is Exponential {
 
         Exp memory exchangeRate = Exp({mantissa: exchangeRateStored});
         vars.balanceOfUnderlyingStored = mul_ScalarTruncate(exchangeRate, vars.jTokenBalance);
-        PriceOracle priceOracle = joetroller.oracle();
+        PriceOracle priceOracle = gTroller.oracle();
         uint256 underlyingPrice = priceOracle.getUnderlyingPrice(jToken);
 
-        (, uint256 collateralFactorMantissa, ) = joetroller.markets(address(jToken));
+        (, uint256 collateralFactorMantissa, ) = gTroller.markets(address(jToken));
 
         Exp memory supplyValueInUnderlying = Exp({mantissa: vars.balanceOfUnderlyingStored});
         vars.supplyValueUSD = mul_ScalarTruncate(supplyValueInUnderlying, underlyingPrice);
@@ -192,7 +192,7 @@ contract JoeLensView is Exponential {
     }
 
     struct AccountLimits {
-        JToken[] markets;
+        GToken[] markets;
         uint256 liquidity;
         uint256 shortfall;
         uint256 totalCollateralValueUSD;
@@ -200,15 +200,15 @@ contract JoeLensView is Exponential {
         uint256 healthFactor;
     }
 
-    function getAccountLimits(Joetroller joetroller, address account) public view returns (AccountLimits memory) {
+    function getAccountLimits(Gtroller gTroller, address account) public view returns (AccountLimits memory) {
         AccountLimits memory vars;
         uint256 errorCode;
 
-        (errorCode, vars.liquidity, vars.shortfall) = joetroller.getAccountLiquidity(account);
+        (errorCode, vars.liquidity, vars.shortfall) = gTroller.getAccountLiquidity(account);
         require(errorCode == 0, "Can't get account liquidity");
 
-        vars.markets = joetroller.getAssetsIn(account);
-        JTokenBalances[] memory jTokenBalancesList = jTokenBalancesAll(vars.markets, account);
+        vars.markets = gTroller.getAssetsIn(account);
+        GTokenBalances[] memory jTokenBalancesList = jTokenBalancesAll(vars.markets, account);
         for (uint256 i = 0; i < jTokenBalancesList.length; i++) {
             vars.totalCollateralValueUSD = add_(vars.totalCollateralValueUSD, jTokenBalancesList[i].collateralValueUSD);
             vars.totalBorrowValueUSD = add_(vars.totalBorrowValueUSD, jTokenBalancesList[i].borrowValueUSD);

@@ -1,7 +1,7 @@
 const { last } = require("./Utils/JS");
 const { address, avaxUnsigned } = require("./Utils/Avalanche");
 const { default: diff } = require("jest-diff");
-const { JoetrollerErr, TokenErr, IRErr, MathErr } = require("./Errors");
+const { GtrollerErr, TokenErr, IRErr, MathErr } = require("./Errors");
 
 function opts(comment) {
   return {
@@ -390,7 +390,7 @@ expect.extend({
   },
 
   toHaveTrollError(actual, expectedErrorName) {
-    return hasError.call(this, actual, expectedErrorName, JoetrollerErr);
+    return hasError.call(this, actual, expectedErrorName, GtrollerErr);
   },
 
   toHaveTokenError(actual, expectedErrorName) {
@@ -408,7 +408,7 @@ expect.extend({
       err,
       info,
       detail,
-      JoetrollerErr,
+      GtrollerErr,
       "toHaveTrollFailure"
     );
   },
@@ -443,14 +443,14 @@ expect.extend({
       result,
       "JOETROLLER_REJECTION",
       info,
-      detail && JoetrollerErr.Error[detail],
+      detail && GtrollerErr.Error[detail],
       TokenErr,
       "toHaveTrollReject"
     );
   },
 
   toHaveTrollErrorTuple(result, tuple, cmp = undefined) {
-    return hasErrorTuple.call(this, result, tuple, JoetrollerErr, cmp);
+    return hasErrorTuple.call(this, result, tuple, GtrollerErr, cmp);
   },
 
   toEqualNumber(actual, expected) {

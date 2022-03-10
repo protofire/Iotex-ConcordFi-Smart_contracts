@@ -2,17 +2,17 @@
 
 pragma solidity ^0.5.16;
 
-import "./JTokenDeprecated.sol";
+import "./GTokenDeprecated.sol";
 
 /**
- * @title Compound's JAvax Contract
- * @notice JToken which wraps Ether
+ * @title Compound's GIotx Contract
+ * @notice GToken which wraps Ether
  * @author Compound
  */
-contract JAvax is JTokenDeprecated {
+contract GIotx is GTokenDeprecated {
     /**
-     * @notice Construct a new JAvax money market
-     * @param joetroller_ The address of the Joetroller
+     * @notice Construct a new GIotx money market
+     * @param gTroller_ The address of the Gtroller
      * @param interestRateModel_ The address of the interest rate model
      * @param initialExchangeRateMantissa_ The initial exchange rate, scaled by 1e18
      * @param name_ ERC-20 name of this token
@@ -21,7 +21,7 @@ contract JAvax is JTokenDeprecated {
      * @param admin_ Address of the administrator of this token
      */
     constructor(
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -32,7 +32,7 @@ contract JAvax is JTokenDeprecated {
         // Creator of the contract is admin during initialization
         admin = msg.sender;
 
-        initialize(joetroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
+        initialize(gTroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set the proper admin now that initialization is done
         admin = admin_;
@@ -41,7 +41,7 @@ contract JAvax is JTokenDeprecated {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Reverts upon any failure
      */
     function mint() external payable {
@@ -50,9 +50,9 @@ contract JAvax is JTokenDeprecated {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint256 redeemTokens) external returns (uint256) {
@@ -60,7 +60,7 @@ contract JAvax is JTokenDeprecated {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -91,16 +91,16 @@ contract JAvax is JTokenDeprecated {
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
      * @dev Reverts upon any failure
-     * @param borrower The borrower of this jToken to be liquidated
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this gToken to be liquidated
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      */
-    function liquidateBorrow(address borrower, JTokenDeprecated jTokenCollateral) external payable {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, jTokenCollateral);
+    function liquidateBorrow(address borrower, GTokenDeprecated gTokenCollateral) external payable {
+        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, gTokenCollateral);
         requireNoError(err, "liquidateBorrow failed");
     }
 
     /**
-     * @notice Send Ether to JAvax to mint
+     * @notice Send Ether to GIotx to mint
      */
     function() external payable {
         (uint256 err, ) = mintInternal(msg.value);

@@ -1,9 +1,9 @@
 import { Event } from "../Event";
 import { World } from "../World";
 import {
-  JErc20Delegate,
-  JErc20DelegateScenario,
-} from "../Contract/JErc20Delegate";
+  GXrc20Delegate,
+  GXrc20DelegateScenario,
+} from "../Contract/GXrc20Delegate";
 import { Invokation } from "../Invokation";
 import { getStringV } from "../CoreValue";
 import { StringV } from "../Value";
@@ -11,154 +11,154 @@ import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { storeAndSaveContract } from "../Networks";
 import { getContract, getTestContract } from "../Contract";
 
-const JErc20DelegateContract = getContract("JErc20Delegate");
-const JErc20DelegateScenarioContract = getTestContract(
-  "JErc20DelegateScenario"
+const GXrc20DelegateContract = getContract("GXrc20Delegate");
+const GXrc20DelegateScenarioContract = getTestContract(
+  "GXrc20DelegateScenario"
 );
-const JCapableErc20DelegateContract = getContract("JCapableErc20Delegate");
-const JCollateralCapErc20DelegateScenarioContract = getContract(
-  "JCollateralCapErc20DelegateScenario"
+const GCapableXrc20DelegateContract = getContract("GCapableXrc20Delegate");
+const GCollateralCapXrc20DelegateScenarioContract = getContract(
+  "GCollateralCapXrc20DelegateScenario"
 );
-const JWrappedNativeDelegateScenarioContract = getContract(
-  "JWrappedNativeDelegateScenario"
+const GWrappedNativeDelegateScenarioContract = getContract(
+  "GWrappedNativeDelegateScenario"
 );
 
-export interface JTokenDelegateData {
-  invokation: Invokation<JErc20Delegate>;
+export interface GTokenDelegateData {
+  invokation: Invokation<GXrc20Delegate>;
   name: string;
   contract: string;
   description?: string;
 }
 
-export async function buildJTokenDelegate(
+export async function buildGTokenDelegate(
   world: World,
   from: string,
   params: Event
 ): Promise<{
   world: World;
-  jTokenDelegate: JErc20Delegate;
-  delegateData: JTokenDelegateData;
+  jTokenDelegate: GXrc20Delegate;
+  delegateData: GTokenDelegateData;
 }> {
   const fetchers = [
-    new Fetcher<{ name: StringV }, JTokenDelegateData>(
+    new Fetcher<{ name: StringV }, GTokenDelegateData>(
       `
-        #### JErc20Delegate
+        #### GXrc20Delegate
 
-        * "JErc20Delegate name:<String>"
-          * E.g. "JTokenDelegate Deploy JErc20Delegate cDAIDelegate"
+        * "GXrc20Delegate name:<String>"
+          * E.g. "GTokenDelegate Deploy GXrc20Delegate cDAIDelegate"
       `,
-      "JErc20Delegate",
+      "GXrc20Delegate",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
-          invokation: await JErc20DelegateContract.deploy<JErc20Delegate>(
+          invokation: await GXrc20DelegateContract.deploy<GXrc20Delegate>(
             world,
             from,
             []
           ),
           name: name.val,
-          contract: "JErc20Delegate",
-          description: "Standard JErc20 Delegate",
+          contract: "GXrc20Delegate",
+          description: "Standard GXrc20 Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV }, JTokenDelegateData>(
+    new Fetcher<{ name: StringV }, GTokenDelegateData>(
       `
-        #### JErc20DelegateScenario
+        #### GXrc20DelegateScenario
 
-        * "JErc20DelegateScenario name:<String>" - A JErc20Delegate Scenario for local testing
-          * E.g. "JTokenDelegate Deploy JErc20DelegateScenario cDAIDelegate"
+        * "GXrc20DelegateScenario name:<String>" - A GXrc20Delegate Scenario for local testing
+          * E.g. "GTokenDelegate Deploy GXrc20DelegateScenario cDAIDelegate"
       `,
-      "JErc20DelegateScenario",
+      "GXrc20DelegateScenario",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
           invokation:
-            await JErc20DelegateScenarioContract.deploy<JErc20DelegateScenario>(
+            await GXrc20DelegateScenarioContract.deploy<GXrc20DelegateScenario>(
               world,
               from,
               []
             ),
           name: name.val,
-          contract: "JErc20DelegateScenario",
-          description: "Scenario JErc20 Delegate",
+          contract: "GXrc20DelegateScenario",
+          description: "Scenario GXrc20 Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV }, JTokenDelegateData>(
+    new Fetcher<{ name: StringV }, GTokenDelegateData>(
       `
-        #### JCapableErc20Delegate
-        * "JCapableErc20Delegate name:<String>"
-          * E.g. "JTokenDelegate Deploy JCapableErc20Delegate cLinkDelegate"
+        #### GCapableXrc20Delegate
+        * "GCapableXrc20Delegate name:<String>"
+          * E.g. "GTokenDelegate Deploy GCapableXrc20Delegate cLinkDelegate"
       `,
-      "JCapableErc20Delegate",
+      "GCapableXrc20Delegate",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
           invokation:
-            await JCapableErc20DelegateContract.deploy<JErc20Delegate>(
+            await GCapableXrc20DelegateContract.deploy<GXrc20Delegate>(
               world,
               from,
               []
             ),
           name: name.val,
-          contract: "JCapableErc20Delegate",
-          description: "Capable JErc20 Delegate",
+          contract: "GCapableXrc20Delegate",
+          description: "Capable GXrc20 Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV }, JTokenDelegateData>(
+    new Fetcher<{ name: StringV }, GTokenDelegateData>(
       `
-        #### JCollateralCapErc20DelegateScenario
-        * "JCollateralCapErc20DelegateScenario name:<String>"
-          * E.g. "JTokenDelegate Deploy JCollateralCapErc20DelegateScenario cLinkDelegate"
+        #### GCollateralCapXrc20DelegateScenario
+        * "GCollateralCapXrc20DelegateScenario name:<String>"
+          * E.g. "GTokenDelegate Deploy GCollateralCapXrc20DelegateScenario cLinkDelegate"
       `,
-      "JCollateralCapErc20DelegateScenario",
+      "GCollateralCapXrc20DelegateScenario",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
           invokation:
-            await JCollateralCapErc20DelegateScenarioContract.deploy<JErc20Delegate>(
+            await GCollateralCapXrc20DelegateScenarioContract.deploy<GXrc20Delegate>(
               world,
               from,
               []
             ),
           name: name.val,
-          contract: "JCollateralCapErc20DelegateScenario",
-          description: "Collateral Cap JErc20 Delegate",
+          contract: "GCollateralCapXrc20DelegateScenario",
+          description: "Collateral Cap GXrc20 Delegate",
         };
       }
     ),
 
-    new Fetcher<{ name: StringV }, JTokenDelegateData>(
+    new Fetcher<{ name: StringV }, GTokenDelegateData>(
       `
-        #### JWrappedNativeDelegateScenario
-        * "JWrappedNativeDelegateScenario name:<String>"
-          * E.g. "JTokenDelegate Deploy JWrappedNativeDelegateScenario cLinkDelegate"
+        #### GWrappedNativeDelegateScenario
+        * "GWrappedNativeDelegateScenario name:<String>"
+          * E.g. "GTokenDelegate Deploy GWrappedNativeDelegateScenario cLinkDelegate"
       `,
-      "JWrappedNativeDelegateScenario",
+      "GWrappedNativeDelegateScenario",
       [new Arg("name", getStringV)],
       async (world, { name }) => {
         return {
           invokation:
-            await JWrappedNativeDelegateScenarioContract.deploy<JErc20Delegate>(
+            await GWrappedNativeDelegateScenarioContract.deploy<GXrc20Delegate>(
               world,
               from,
               []
             ),
           name: name.val,
-          contract: "JWrappedNativeDelegateScenario",
-          description: "Wrapped Native JErc20 Delegate",
+          contract: "GWrappedNativeDelegateScenario",
+          description: "Wrapped Native GXrc20 Delegate",
         };
       }
     ),
   ];
 
-  let delegateData = await getFetcherValue<any, JTokenDelegateData>(
-    "DeployJToken",
+  let delegateData = await getFetcherValue<any, GTokenDelegateData>(
+    "DeployGToken",
     fetchers,
     world,
     params
@@ -179,7 +179,7 @@ export async function buildJTokenDelegate(
     invokation,
     [
       {
-        index: ["JTokenDelegate", delegateData.name],
+        index: ["GTokenDelegate", delegateData.name],
         data: {
           address: jTokenDelegate._address,
           contract: delegateData.contract,

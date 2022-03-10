@@ -1,7 +1,7 @@
 import { Event } from "../Event";
 import { World } from "../World";
-import { Joetroller } from "../Contract/Joetroller";
-import { JToken } from "../Contract/JToken";
+import { Gtroller } from "../Contract/Gtroller";
+import { GToken } from "../Contract/GToken";
 import {
   getAddressV,
   getCoreValue,
@@ -10,28 +10,28 @@ import {
 } from "../CoreValue";
 import { AddressV, BoolV, ListV, NumberV, StringV, Value } from "../Value";
 import { Arg, Fetcher, getFetcherValue } from "../Command";
-import { getJoetroller } from "../ContractLookup";
+import { getGtroller } from "../ContractLookup";
 import { encodedNumber } from "../Encoding";
-import { getJTokenV } from "../Value/JTokenValue";
+import { getGTokenV } from "../Value/GTokenValue";
 import { encodeABI } from "../Utils";
 
-export async function getJoetrollerAddress(
+export async function getGtrollerAddress(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<AddressV> {
-  return new AddressV(joetroller._address);
+  return new AddressV(gTroller._address);
 }
 
 export async function getLiquidity(
   world: World,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   user: string
 ): Promise<NumberV> {
   let {
     0: error,
     1: liquidity,
     2: shortfall,
-  } = await joetroller.methods.getAccountLiquidity(user).call();
+  } = await gTroller.methods.getAccountLiquidity(user).call();
   if (Number(error) != 0) {
     throw new Error(
       `Failed to joeute account liquidity: error code = ${error}`
@@ -42,7 +42,7 @@ export async function getLiquidity(
 
 export async function getHypotheticalLiquidity(
   world: World,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   account: string,
   asset: string,
   redeemTokens: encodedNumber,
@@ -52,7 +52,7 @@ export async function getHypotheticalLiquidity(
     0: error,
     1: liquidity,
     2: shortfall,
-  } = await joetroller.methods
+  } = await gTroller.methods
     .getHypotheticalAccountLiquidity(account, asset, redeemTokens, borrowAmount)
     .call();
   if (Number(error) != 0) {
@@ -65,67 +65,59 @@ export async function getHypotheticalLiquidity(
 
 async function getPriceOracle(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<AddressV> {
-  return new AddressV(await joetroller.methods.oracle().call());
+  return new AddressV(await gTroller.methods.oracle().call());
 }
 
 async function getCloseFactor(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<NumberV> {
-  return new NumberV(
-    await joetroller.methods.closeFactorMantissa().call(),
-    1e18
-  );
+  return new NumberV(await gTroller.methods.closeFactorMantissa().call(), 1e18);
 }
 
 async function getLiquidationIncentive(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<NumberV> {
   return new NumberV(
-    await joetroller.methods.liquidationIncentiveMantissa().call(),
+    await gTroller.methods.liquidationIncentiveMantissa().call(),
     1e18
   );
 }
 
 async function getImplementation(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<AddressV> {
-  return new AddressV(
-    await joetroller.methods.joetrollerImplementation().call()
-  );
+  return new AddressV(await gTroller.methods.gTrollerImplementation().call());
 }
 
 async function getBlockTimestamp(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<NumberV> {
-  return new NumberV(await joetroller.methods.getBlockTimestamp().call());
+  return new NumberV(await gTroller.methods.getBlockTimestamp().call());
 }
 
-async function getAdmin(
-  world: World,
-  joetroller: Joetroller
-): Promise<AddressV> {
-  return new AddressV(await joetroller.methods.admin().call());
+async function getAdmin(world: World, gTroller: Gtroller): Promise<AddressV> {
+  return new AddressV(await gTroller.methods.admin().call());
 }
 
 async function getPendingAdmin(
   world: World,
-  joetroller: Joetroller
+  gTroller: Gtroller
 ): Promise<AddressV> {
-  return new AddressV(await joetroller.methods.pendingAdmin().call());
+  return new AddressV(await gTroller.methods.pendingAdmin().call());
 }
 
 async function getCollateralFactor(
   world: World,
-  joetroller: Joetroller,
-  jToken: JToken
+  gTroller: Gtroller,
+  jToken: GToken
 ): Promise<NumberV> {
-  let { 0: _isListed, 1: collateralFactorMantissa } = await joetroller.methods
+  let { 0: _isListed, 1: collateralFactorMantissa } = await gTroller.methods
     .markets(jToken._address)
     .call();
   return new NumberV(collateralFactorMantissa, 1e18);
@@ -133,111 +125,111 @@ async function getCollateralFactor(
 
 async function membershipLength(
   world: World,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   user: string
 ): Promise<NumberV> {
-  return new NumberV(await joetroller.methods.membershipLength(user).call());
+  return new NumberV(await gTroller.methods.membershipLength(user).call());
 }
 
 async function checkMembership(
   world: World,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   user: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<BoolV> {
   return new BoolV(
-    await joetroller.methods.checkMembership(user, jToken._address).call()
+    await gTroller.methods.checkMembership(user, jToken._address).call()
   );
 }
 
 async function getAssetsIn(
   world: World,
-  joetroller: Joetroller,
+  gTroller: Gtroller,
   user: string
 ): Promise<ListV> {
-  let assetsList = await joetroller.methods.getAssetsIn(user).call();
+  let assetsList = await gTroller.methods.getAssetsIn(user).call();
 
   return new ListV(assetsList.map((a) => new AddressV(a)));
 }
 
 async function checkListed(
   world: World,
-  joetroller: Joetroller,
-  jToken: JToken
+  gTroller: Gtroller,
+  jToken: GToken
 ): Promise<BoolV> {
-  let { 0: isListed, 1: _collateralFactorMantissa } = await joetroller.methods
+  let { 0: isListed, 1: _collateralFactorMantissa } = await gTroller.methods
     .markets(jToken._address)
     .call();
 
   return new BoolV(isListed);
 }
 
-async function checkJTokenVersion(
+async function checkGTokenVersion(
   world: World,
-  joetroller: Joetroller,
-  jToken: JToken
+  gTroller: Gtroller,
+  jToken: GToken
 ): Promise<NumberV> {
   let {
     0: isListed,
     1: _collateralFactorMantissa,
     2: version,
-  } = await joetroller.methods.markets(jToken._address).call();
+  } = await gTroller.methods.markets(jToken._address).call();
   return new NumberV(version);
 }
 
-export function joetrollerFetchers() {
+export function gTrollerFetchers() {
   return [
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### Address
 
-        * "Joetroller Address" - Returns address of joetroller
+        * "Gtroller Address" - Returns address of gTroller
       `,
       "Address",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getJoetrollerAddress(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getGtrollerAddress(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller; account: AddressV }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; account: AddressV }, NumberV>(
       `
         #### Liquidity
 
-        * "Joetroller Liquidity <User>" - Returns a given user's trued up liquidity
-          * E.g. "Joetroller Liquidity Geoff"
+        * "Gtroller Liquidity <User>" - Returns a given user's trued up liquidity
+          * E.g. "Gtroller Liquidity Geoff"
       `,
       "Liquidity",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
       ],
-      (world, { joetroller, account }) =>
-        getLiquidity(world, joetroller, account.val)
+      (world, { gTroller, account }) =>
+        getLiquidity(world, gTroller, account.val)
     ),
     new Fetcher<
       {
-        joetroller: Joetroller;
+        gTroller: Gtroller;
         account: AddressV;
         action: StringV;
         amount: NumberV;
-        jToken: JToken;
+        jToken: GToken;
       },
       NumberV
     >(
       `
         #### Hypothetical
 
-        * "Joetroller Hypothetical <User> <Action> <Asset> <Number>" - Returns a given user's trued up liquidity given a hypothetical change in asset with redeeming a certain number of tokens and/or borrowing a given amount.
-          * E.g. "Joetroller Hypothetical Geoff Redeems 6.0 cZRX"
-          * E.g. "Joetroller Hypothetical Geoff Borrows 5.0 cZRX"
+        * "Gtroller Hypothetical <User> <Action> <Asset> <Number>" - Returns a given user's trued up liquidity given a hypothetical change in asset with redeeming a certain number of tokens and/or borrowing a given amount.
+          * E.g. "Gtroller Hypothetical Geoff Redeems 6.0 cZRX"
+          * E.g. "Gtroller Hypothetical Geoff Borrows 5.0 cZRX"
       `,
       "Hypothetical",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
         new Arg("action", getStringV),
         new Arg("amount", getNumberV),
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
       ],
-      async (world, { joetroller, account, action, jToken, amount }) => {
+      async (world, { gTroller, account, action, jToken, amount }) => {
         let redeemTokens: NumberV;
         let borrowAmount: NumberV;
 
@@ -256,7 +248,7 @@ export function joetrollerFetchers() {
 
         return await getHypotheticalLiquidity(
           world,
-          joetroller,
+          gTroller,
           account.val,
           jToken._address,
           redeemTokens.encode(),
@@ -264,371 +256,371 @@ export function joetrollerFetchers() {
         );
       }
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### Admin
 
-        * "Joetroller Admin" - Returns the Joetrollers's admin
-          * E.g. "Joetroller Admin"
+        * "Gtroller Admin" - Returns the Gtrollers's admin
+          * E.g. "Gtroller Admin"
       `,
       "Admin",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getAdmin(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getAdmin(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### PendingAdmin
 
-        * "Joetroller PendingAdmin" - Returns the pending admin of the Joetroller
-          * E.g. "Joetroller PendingAdmin" - Returns Joetroller's pending admin
+        * "Gtroller PendingAdmin" - Returns the pending admin of the Gtroller
+          * E.g. "Gtroller PendingAdmin" - Returns Gtroller's pending admin
       `,
       "PendingAdmin",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getPendingAdmin(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getPendingAdmin(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### PriceOracle
 
-        * "Joetroller PriceOracle" - Returns the Joetrollers's price oracle
-          * E.g. "Joetroller PriceOracle"
+        * "Gtroller PriceOracle" - Returns the Gtrollers's price oracle
+          * E.g. "Gtroller PriceOracle"
       `,
       "PriceOracle",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getPriceOracle(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getPriceOracle(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller }, NumberV>(
       `
         #### CloseFactor
 
-        * "Joetroller CloseFactor" - Returns the Joetrollers's price oracle
-          * E.g. "Joetroller CloseFactor"
+        * "Gtroller CloseFactor" - Returns the Gtrollers's price oracle
+          * E.g. "Gtroller CloseFactor"
       `,
       "CloseFactor",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getCloseFactor(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getCloseFactor(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller }, NumberV>(
       `
         #### LiquidationIncentive
 
-        * "Joetroller LiquidationIncentive" - Returns the Joetrollers's liquidation incentive
-          * E.g. "Joetroller LiquidationIncentive"
+        * "Gtroller LiquidationIncentive" - Returns the Gtrollers's liquidation incentive
+          * E.g. "Gtroller LiquidationIncentive"
       `,
       "LiquidationIncentive",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getLiquidationIncentive(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getLiquidationIncentive(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### Implementation
 
-        * "Joetroller Implementation" - Returns the Joetrollers's implementation
-          * E.g. "Joetroller Implementation"
+        * "Gtroller Implementation" - Returns the Gtrollers's implementation
+          * E.g. "Gtroller Implementation"
       `,
       "Implementation",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getImplementation(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getImplementation(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller }, NumberV>(
       `
         #### BlockTimestamp
 
-        * "Joetroller BlockTimestamp" - Returns the Joetrollers's mocked block timestamp (for scenario runner)
-          * E.g. "Joetroller BlockTimestamp"
+        * "Gtroller BlockTimestamp" - Returns the Gtrollers's mocked block timestamp (for scenario runner)
+          * E.g. "Gtroller BlockTimestamp"
       `,
       "BlockTimestamp",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      (world, { joetroller }) => getBlockTimestamp(world, joetroller)
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      (world, { gTroller }) => getBlockTimestamp(world, gTroller)
     ),
-    new Fetcher<{ joetroller: Joetroller; jToken: JToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, NumberV>(
       `
         #### CollateralFactor
 
-        * "Joetroller CollateralFactor <JToken>" - Returns the collateralFactor associated with a given asset
-          * E.g. "Joetroller CollateralFactor cZRX"
+        * "Gtroller CollateralFactor <GToken>" - Returns the collateralFactor associated with a given asset
+          * E.g. "Gtroller CollateralFactor cZRX"
       `,
       "CollateralFactor",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, { joetroller, jToken }) =>
-        getCollateralFactor(world, joetroller, jToken)
+      (world, { gTroller, jToken }) =>
+        getCollateralFactor(world, gTroller, jToken)
     ),
-    new Fetcher<{ joetroller: Joetroller; account: AddressV }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; account: AddressV }, NumberV>(
       `
         #### MembershipLength
 
-        * "Joetroller MembershipLength <User>" - Returns a given user's length of membership
-          * E.g. "Joetroller MembershipLength Geoff"
+        * "Gtroller MembershipLength <User>" - Returns a given user's length of membership
+          * E.g. "Gtroller MembershipLength Geoff"
       `,
       "MembershipLength",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
       ],
-      (world, { joetroller, account }) =>
-        membershipLength(world, joetroller, account.val)
+      (world, { gTroller, account }) =>
+        membershipLength(world, gTroller, account.val)
     ),
     new Fetcher<
-      { joetroller: Joetroller; account: AddressV; jToken: JToken },
+      { gTroller: Gtroller; account: AddressV; jToken: GToken },
       BoolV
     >(
       `
         #### CheckMembership
 
-        * "Joetroller CheckMembership <User> <JToken>" - Returns one if user is in asset, zero otherwise.
-          * E.g. "Joetroller CheckMembership Geoff cZRX"
+        * "Gtroller CheckMembership <User> <GToken>" - Returns one if user is in asset, zero otherwise.
+          * E.g. "Gtroller CheckMembership Geoff cZRX"
       `,
       "CheckMembership",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, { joetroller, account, jToken }) =>
-        checkMembership(world, joetroller, account.val, jToken)
+      (world, { gTroller, account, jToken }) =>
+        checkMembership(world, gTroller, account.val, jToken)
     ),
-    new Fetcher<{ joetroller: Joetroller; account: AddressV }, ListV>(
+    new Fetcher<{ gTroller: Gtroller; account: AddressV }, ListV>(
       `
         #### AssetsIn
 
-        * "Joetroller AssetsIn <User>" - Returns the assets a user is in
-          * E.g. "Joetroller AssetsIn Geoff"
+        * "Gtroller AssetsIn <User>" - Returns the assets a user is in
+          * E.g. "Gtroller AssetsIn Geoff"
       `,
       "AssetsIn",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
       ],
-      (world, { joetroller, account }) =>
-        getAssetsIn(world, joetroller, account.val)
+      (world, { gTroller, account }) =>
+        getAssetsIn(world, gTroller, account.val)
     ),
-    new Fetcher<{ joetroller: Joetroller; jToken: JToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
       `
         #### CheckListed
 
-        * "Joetroller CheckListed <JToken>" - Returns true if market is listed, false otherwise.
-          * E.g. "Joetroller CheckListed cZRX"
+        * "Gtroller CheckListed <GToken>" - Returns true if market is listed, false otherwise.
+          * E.g. "Gtroller CheckListed cZRX"
       `,
       "CheckListed",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, { joetroller, jToken }) => checkListed(world, joetroller, jToken)
+      (world, { gTroller, jToken }) => checkListed(world, gTroller, jToken)
     ),
-    new Fetcher<{ joetroller: Joetroller; jToken: JToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, NumberV>(
       `
-        #### CheckJTokenVersion
+        #### CheckGTokenVersion
 
-        * "Joetroller CheckJTokenVersion <JToken>" - Returns the version of given JToken.
-          * E.g. "Joetroller CheckJTokenVersion cZRX"
+        * "Gtroller CheckGTokenVersion <GToken>" - Returns the version of given GToken.
+          * E.g. "Gtroller CheckGTokenVersion cZRX"
       `,
-      "CheckJTokenVersion",
+      "CheckGTokenVersion",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      (world, { joetroller, jToken }) =>
-        checkJTokenVersion(world, joetroller, jToken)
+      (world, { gTroller, jToken }) =>
+        checkGTokenVersion(world, gTroller, jToken)
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### PauseGuardian
 
-        * "PauseGuardian" - Returns the Joetrollers's PauseGuardian
-        * E.g. "Joetroller PauseGuardian"
+        * "PauseGuardian" - Returns the Gtrollers's PauseGuardian
+        * E.g. "Gtroller PauseGuardian"
         `,
       "PauseGuardian",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new AddressV(await joetroller.methods.pauseGuardian().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new AddressV(await gTroller.methods.pauseGuardian().call())
     ),
 
-    new Fetcher<{ joetroller: Joetroller }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller }, BoolV>(
       `
         #### _MintGuardianPaused
 
-        * "_MintGuardianPaused" - Returns the Joetrollers's original global Mint paused status
-        * E.g. "Joetroller _MintGuardianPaused"
+        * "_MintGuardianPaused" - Returns the Gtrollers's original global Mint paused status
+        * E.g. "Gtroller _MintGuardianPaused"
         `,
       "_MintGuardianPaused",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new BoolV(await joetroller.methods._mintGuardianPaused().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new BoolV(await gTroller.methods._mintGuardianPaused().call())
     ),
-    new Fetcher<{ joetroller: Joetroller }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller }, BoolV>(
       `
         #### _BorrowGuardianPaused
 
-        * "_BorrowGuardianPaused" - Returns the Joetrollers's original global Borrow paused status
-        * E.g. "Joetroller _BorrowGuardianPaused"
+        * "_BorrowGuardianPaused" - Returns the Gtrollers's original global Borrow paused status
+        * E.g. "Gtroller _BorrowGuardianPaused"
         `,
       "_BorrowGuardianPaused",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new BoolV(await joetroller.methods._borrowGuardianPaused().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new BoolV(await gTroller.methods._borrowGuardianPaused().call())
     ),
 
-    new Fetcher<{ joetroller: Joetroller }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller }, BoolV>(
       `
         #### TransferGuardianPaused
 
-        * "TransferGuardianPaused" - Returns the Joetrollers's Transfer paused status
-        * E.g. "Joetroller TransferGuardianPaused"
+        * "TransferGuardianPaused" - Returns the Gtrollers's Transfer paused status
+        * E.g. "Gtroller TransferGuardianPaused"
         `,
       "TransferGuardianPaused",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new BoolV(await joetroller.methods.transferGuardianPaused().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new BoolV(await gTroller.methods.transferGuardianPaused().call())
     ),
-    new Fetcher<{ joetroller: Joetroller }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller }, BoolV>(
       `
         #### SeizeGuardianPaused
 
-        * "SeizeGuardianPaused" - Returns the Joetrollers's Seize paused status
-        * E.g. "Joetroller SeizeGuardianPaused"
+        * "SeizeGuardianPaused" - Returns the Gtrollers's Seize paused status
+        * E.g. "Gtroller SeizeGuardianPaused"
         `,
       "SeizeGuardianPaused",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new BoolV(await joetroller.methods.seizeGuardianPaused().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new BoolV(await gTroller.methods.seizeGuardianPaused().call())
     ),
 
-    new Fetcher<{ joetroller: Joetroller; jToken: JToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
       `
         #### MintGuardianMarketPaused
 
-        * "MintGuardianMarketPaused" - Returns the Joetrollers's Mint paused status in market
-        * E.g. "Joetroller MintGuardianMarketPaused cREP"
+        * "MintGuardianMarketPaused" - Returns the Gtrollers's Mint paused status in market
+        * E.g. "Gtroller MintGuardianMarketPaused cREP"
         `,
       "MintGuardianMarketPaused",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      async (world, { joetroller, jToken }) =>
+      async (world, { gTroller, jToken }) =>
         new BoolV(
-          await joetroller.methods.mintGuardianPaused(jToken._address).call()
+          await gTroller.methods.mintGuardianPaused(jToken._address).call()
         )
     ),
-    new Fetcher<{ joetroller: Joetroller; jToken: JToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
       `
         #### BorrowGuardianMarketPaused
 
-        * "BorrowGuardianMarketPaused" - Returns the Joetrollers's Borrow paused status in market
-        * E.g. "Joetroller BorrowGuardianMarketPaused cREP"
+        * "BorrowGuardianMarketPaused" - Returns the Gtrollers's Borrow paused status in market
+        * E.g. "Gtroller BorrowGuardianMarketPaused cREP"
         `,
       "BorrowGuardianMarketPaused",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("jToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("jToken", getGTokenV),
       ],
-      async (world, { joetroller, jToken }) =>
+      async (world, { gTroller, jToken }) =>
         new BoolV(
-          await joetroller.methods.borrowGuardianPaused(jToken._address).call()
+          await gTroller.methods.borrowGuardianPaused(jToken._address).call()
         )
     ),
     new Fetcher<
-      { joetroller: Joetroller; signature: StringV; callArgs: StringV[] },
+      { gTroller: Gtroller; signature: StringV; callArgs: StringV[] },
       NumberV
     >(
       `
         #### CallNum
 
         * "CallNum signature:<String> ...callArgs<CoreValue>" - Simple direct call method
-          * E.g. "Joetroller CallNum \"joeSpeeds(address)\" (Address Coburn)"
+          * E.g. "Gtroller CallNum \"joeSpeeds(address)\" (Address Coburn)"
       `,
       "CallNum",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
+        new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("signature", getStringV),
         new Arg("callArgs", getCoreValue, { variadic: true, mapped: true }),
       ],
-      async (world, { joetroller, signature, callArgs }) => {
+      async (world, { gTroller, signature, callArgs }) => {
         const fnData = encodeABI(
           world,
           signature.val,
           callArgs.map((a) => a.val)
         );
         const res = await world.web3.eth.call({
-          to: joetroller._address,
+          to: gTroller._address,
           data: fnData,
         });
         const resNum: any = world.web3.eth.abi.decodeParameter("uint256", res);
         return new NumberV(resNum);
       }
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### SupplyCapGuardian
 
-        * "SupplyCapGuardian" - Returns the Joetrollers's SupplyCapGuardian
-        * E.g. "Joetroller SupplyCapGuardian"
+        * "SupplyCapGuardian" - Returns the Gtrollers's SupplyCapGuardian
+        * E.g. "Gtroller SupplyCapGuardian"
         `,
       "SupplyCapGuardian",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new AddressV(await joetroller.methods.supplyCapGuardian().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new AddressV(await gTroller.methods.supplyCapGuardian().call())
     ),
-    new Fetcher<{ joetroller: Joetroller; JToken: JToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; GToken: GToken }, NumberV>(
       `
         #### SupplyCaps
 
-        * "Joetroller SupplyCaps cZRX
+        * "Gtroller SupplyCaps cZRX
       `,
       "SupplyCaps",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("JToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("GToken", getGTokenV),
       ],
-      async (world, { joetroller, JToken }) => {
+      async (world, { gTroller, GToken }) => {
         return new NumberV(
-          await joetroller.methods.supplyCaps(JToken._address).call()
+          await gTroller.methods.supplyCaps(GToken._address).call()
         );
       }
     ),
-    new Fetcher<{ joetroller: Joetroller }, AddressV>(
+    new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
         #### BorrowCapGuardian
 
-        * "BorrowCapGuardian" - Returns the Joetrollers's BorrowCapGuardian
-        * E.g. "Joetroller BorrowCapGuardian"
+        * "BorrowCapGuardian" - Returns the Gtrollers's BorrowCapGuardian
+        * E.g. "Gtroller BorrowCapGuardian"
         `,
       "BorrowCapGuardian",
-      [new Arg("joetroller", getJoetroller, { implicit: true })],
-      async (world, { joetroller }) =>
-        new AddressV(await joetroller.methods.borrowCapGuardian().call())
+      [new Arg("gTroller", getGtroller, { implicit: true })],
+      async (world, { gTroller }) =>
+        new AddressV(await gTroller.methods.borrowCapGuardian().call())
     ),
-    new Fetcher<{ joetroller: Joetroller; JToken: JToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; GToken: GToken }, NumberV>(
       `
         #### BorrowCaps
 
-        * "Joetroller BorrowCaps cZRX
+        * "Gtroller BorrowCaps cZRX
       `,
       "BorrowCaps",
       [
-        new Arg("joetroller", getJoetroller, { implicit: true }),
-        new Arg("JToken", getJTokenV),
+        new Arg("gTroller", getGtroller, { implicit: true }),
+        new Arg("GToken", getGTokenV),
       ],
-      async (world, { joetroller, JToken }) => {
+      async (world, { gTroller, GToken }) => {
         return new NumberV(
-          await joetroller.methods.borrowCaps(JToken._address).call()
+          await gTroller.methods.borrowCaps(GToken._address).call()
         );
       }
     ),
   ];
 }
 
-export async function getJoetrollerValue(
+export async function getGtrollerValue(
   world: World,
   event: Event
 ): Promise<Value> {
   return await getFetcherValue<any, any>(
-    "Joetroller",
-    joetrollerFetchers(),
+    "Gtroller",
+    gTrollerFetchers(),
     world,
     event
   );

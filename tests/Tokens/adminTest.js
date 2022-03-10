@@ -1,12 +1,12 @@
 const { address } = require("../Utils/Avalanche");
-const { makeJToken } = require("../Utils/BankerJoe");
+const { makeGToken } = require("../Utils/BankerJoe");
 
 describe("admin / _setPendingAdmin / _acceptAdmin", () => {
   let jToken, root, accounts;
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    jToken = await makeJToken();
+    jToken = await makeGToken();
   });
 
   describe("admin()", () => {

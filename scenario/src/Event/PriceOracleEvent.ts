@@ -143,7 +143,7 @@ export function priceOracleCommands() {
       `
         #### SetPrice
 
-        * "SetPrice <JToken> <Amount>" - Sets the per-ether price for the given jToken
+        * "SetPrice <GToken> <Amount>" - Sets the per-ether price for the given jToken
           * E.g. "PriceOracle SetPrice cZRX 1.0"
       `,
       "SetPrice",

@@ -26,21 +26,19 @@ async function getUnitrollerPendingAdmin(
   return new AddressV(await unitroller.methods.pendingAdmin().call());
 }
 
-async function getJoetrollerImplementation(
+async function getGtrollerImplementation(
   world: World,
   unitroller: Unitroller
 ): Promise<AddressV> {
-  return new AddressV(
-    await unitroller.methods.joetrollerImplementation().call()
-  );
+  return new AddressV(await unitroller.methods.gTrollerImplementation().call());
 }
 
-async function getPendingJoetrollerImplementation(
+async function getPendingGtrollerImplementation(
   world: World,
   unitroller: Unitroller
 ): Promise<AddressV> {
   return new AddressV(
-    await unitroller.methods.pendingJoetrollerImplementation().call()
+    await unitroller.methods.pendingGtrollerImplementation().call()
   );
 }
 
@@ -83,23 +81,23 @@ export function unitrollerFetchers() {
         #### Implementation
 
         * "Unitroller Implementation" - Returns the Implementation of Unitroller contract
-          * E.g. "Unitroller Implementation" - Returns address of joetrollerImplentation
+          * E.g. "Unitroller Implementation" - Returns address of gTrollerImplentation
       `,
       "Implementation",
       [new Arg("unitroller", getUnitroller, { implicit: true })],
-      (world, { unitroller }) => getJoetrollerImplementation(world, unitroller)
+      (world, { unitroller }) => getGtrollerImplementation(world, unitroller)
     ),
     new Fetcher<{ unitroller: Unitroller }, AddressV>(
       `
         #### PendingImplementation
 
         * "Unitroller PendingImplementation" - Returns the pending implementation of Unitroller contract
-          * E.g. "Unitroller PendingImplementation" - Returns address of pendingJoetrollerImplementation
+          * E.g. "Unitroller PendingImplementation" - Returns address of pendingGtrollerImplementation
       `,
       "PendingImplementation",
       [new Arg("unitroller", getUnitroller, { implicit: true })],
       (world, { unitroller }) =>
-        getPendingJoetrollerImplementation(world, unitroller)
+        getPendingGtrollerImplementation(world, unitroller)
     ),
   ];
 }

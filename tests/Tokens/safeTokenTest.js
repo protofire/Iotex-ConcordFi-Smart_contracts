@@ -1,19 +1,19 @@
 const {
-  makeJToken,
+  makeGToken,
   getBalances,
   adjustBalances,
 } = require("../Utils/BankerJoe");
 
 const exchangeRate = 5;
 
-describe("JAvax", function () {
+describe("GIotx", function () {
   let root, nonRoot, accounts;
   let jToken;
   beforeEach(async () => {
     [root, nonRoot, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
+    jToken = await makeGToken({
       kind: "javax",
-      joetrollerOpts: { kind: "bool" },
+      gTrollerOpts: { kind: "bool" },
     });
   });
 

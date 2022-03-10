@@ -1,9 +1,9 @@
 import { Event } from "../Event";
 import { addAction, describeUser, World } from "../World";
 import { decodeCall, getPastEvents } from "../Contract";
-import { JToken, JTokenScenario } from "../Contract/JToken";
-import { JErc20Delegate } from "../Contract/JErc20Delegate";
-import { JErc20Delegator } from "../Contract/JErc20Delegator";
+import { GToken, GTokenScenario } from "../Contract/GToken";
+import { GXrc20Delegate } from "../Contract/GXrc20Delegate";
+import { GXrc20Delegator } from "../Contract/GXrc20Delegator";
 import { invoke, Sendable } from "../Invokation";
 import {
   getAddressV,
@@ -16,18 +16,18 @@ import {
 import { AddressV, BoolV, EventV, NothingV, NumberV, StringV } from "../Value";
 import { getContract } from "../Contract";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { JTokenErrorReporter } from "../ErrorReporter";
-import { getJoetroller, getJTokenData } from "../ContractLookup";
-import { buildJToken } from "../Builder/JTokenBuilder";
+import { GTokenErrorReporter } from "../ErrorReporter";
+import { getGtroller, getGTokenData } from "../ContractLookup";
+import { buildGToken } from "../Builder/GTokenBuilder";
 import { verify } from "../Verify";
-import { getLiquidity } from "../Value/JoetrollerValue";
-import { getJTokenV, getJErc20DelegatorV } from "../Value/JTokenValue";
+import { getLiquidity } from "../Value/GtrollerValue";
+import { getGTokenV, getGXrc20DelegatorV } from "../Value/GTokenValue";
 
 function showTrxValue(world: World): string {
   return new NumberV(world.trxInvokationOpts.get("value")).show();
 }
 
-async function genJToken(
+async function genGToken(
   world: World,
   from: string,
   event: Event
@@ -36,7 +36,7 @@ async function genJToken(
     world: nextWorld,
     jToken,
     tokenData,
-  } = await buildJToken(world, from, event);
+  } = await buildGToken(world, from, event);
   world = nextWorld;
 
   world = addAction(
@@ -51,18 +51,18 @@ async function genJToken(
 async function accrueInterest(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.accrueInterest(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: Interest accrued`,
+    `GToken ${jToken.name}: Interest accrued`,
     invokation
   );
 
@@ -72,7 +72,7 @@ async function accrueInterest(
 async function mint(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV | NothingV
 ): Promise<World> {
   let invokation;
@@ -84,7 +84,7 @@ async function mint(
       world,
       jToken.methods.mint(amount.encode()),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   } else {
     showAmount = showTrxValue(world);
@@ -92,13 +92,13 @@ async function mint(
       world,
       jToken.methods.mint(),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   }
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(world, from)} mints ${showAmount}`,
+    `GToken ${jToken.name}: ${describeUser(world, from)} mints ${showAmount}`,
     invokation
   );
 
@@ -108,19 +108,19 @@ async function mint(
 async function mintNative(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   const showAmount = showTrxValue(world);
   let invokation = await invoke(
     world,
     jToken.methods.mintNative(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(world, from)} mints ${showAmount}`,
+    `GToken ${jToken.name}: ${describeUser(world, from)} mints ${showAmount}`,
     invokation
   );
 
@@ -130,19 +130,19 @@ async function mintNative(
 async function redeem(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   tokens: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.redeem(tokens.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} redeems ${tokens.show()} tokens`,
@@ -155,19 +155,19 @@ async function redeem(
 async function redeemNative(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   tokens: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.redeemNative(tokens.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} redeems ${tokens.show()} tokens`,
@@ -180,19 +180,19 @@ async function redeemNative(
 async function redeemUnderlying(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.redeemUnderlying(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} redeems ${amount.show()} underlying`,
@@ -205,19 +205,19 @@ async function redeemUnderlying(
 async function redeemUnderlyingNative(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.redeemUnderlyingNative(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} redeems ${amount.show()} underlying`,
@@ -230,19 +230,19 @@ async function redeemUnderlyingNative(
 async function borrow(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.borrow(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} borrows ${amount.show()}`,
@@ -255,19 +255,19 @@ async function borrow(
 async function borrowNative(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.borrowNative(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} borrows ${amount.show()}`,
@@ -280,7 +280,7 @@ async function borrowNative(
 async function repayBorrow(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV | NothingV
 ): Promise<World> {
   let invokation;
@@ -292,7 +292,7 @@ async function repayBorrow(
       world,
       jToken.methods.repayBorrow(amount.encode()),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   } else {
     showAmount = showTrxValue(world);
@@ -300,13 +300,13 @@ async function repayBorrow(
       world,
       jToken.methods.repayBorrow(),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   }
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} repays ${showAmount} of borrow`,
@@ -319,19 +319,19 @@ async function repayBorrow(
 async function repayBorrowNative(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   const showAmount = showTrxValue(world);
   let invokation = await invoke(
     world,
     jToken.methods.repayBorrowNative(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} repays ${showAmount} of borrow`,
@@ -344,9 +344,9 @@ async function repayBorrowNative(
 async function liquidateBorrow(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   borrower: string,
-  collateral: JToken,
+  collateral: GToken,
   repayAmount: NumberV | NothingV
 ): Promise<World> {
   let invokation;
@@ -362,7 +362,7 @@ async function liquidateBorrow(
         collateral._address
       ),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   } else {
     showAmount = showTrxValue(world);
@@ -370,13 +370,13 @@ async function liquidateBorrow(
       world,
       jToken.methods.liquidateBorrow(borrower, collateral._address),
       from,
-      JTokenErrorReporter
+      GTokenErrorReporter
     );
   }
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} liquidates ${showAmount} from of ${describeUser(
@@ -392,7 +392,7 @@ async function liquidateBorrow(
 async function seize(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   liquidator: string,
   borrower: string,
   seizeTokens: NumberV
@@ -401,12 +401,12 @@ async function seize(
     world,
     jToken.methods.seize(liquidator, borrower, seizeTokens.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} initiates seizing ${seizeTokens.show()} to ${describeUser(
@@ -422,8 +422,8 @@ async function seize(
 async function evilSeize(
   world: World,
   from: string,
-  jToken: JToken,
-  treasure: JToken,
+  jToken: GToken,
+  treasure: GToken,
   liquidator: string,
   borrower: string,
   seizeTokens: NumberV
@@ -437,12 +437,12 @@ async function evilSeize(
       seizeTokens.encode()
     ),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} initiates illegal seizing ${seizeTokens.show()} to ${describeUser(
@@ -458,19 +458,19 @@ async function evilSeize(
 async function setPendingAdmin(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   newPendingAdmin: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._setPendingAdmin(newPendingAdmin),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} sets pending admin to ${newPendingAdmin}`,
@@ -483,18 +483,18 @@ async function setPendingAdmin(
 async function acceptAdmin(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._acceptAdmin(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(world, from)} accepts admin`,
+    `GToken ${jToken.name}: ${describeUser(world, from)} accepts admin`,
     invokation
   );
 
@@ -504,19 +504,19 @@ async function acceptAdmin(
 async function addReserves(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._addReserves(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} adds to reserves by ${amount.show()}`,
@@ -529,19 +529,19 @@ async function addReserves(
 async function reduceReserves(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   amount: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._reduceReserves(amount.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} reduces reserves by ${amount.show()}`,
@@ -554,19 +554,19 @@ async function reduceReserves(
 async function setReserveFactor(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   reserveFactor: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._setReserveFactor(reserveFactor.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} sets reserve factor to ${reserveFactor.show()}`,
@@ -579,14 +579,14 @@ async function setReserveFactor(
 async function setInterestRateModel(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   interestRateModel: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._setInterestRateModel(interestRateModel),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -600,22 +600,22 @@ async function setInterestRateModel(
   return world;
 }
 
-async function setJoetroller(
+async function setGtroller(
   world: World,
   from: string,
-  jToken: JToken,
-  joetroller: string
+  jToken: GToken,
+  gTroller: string
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    jToken.methods._setJoetroller(joetroller),
+    jToken.methods._setGtroller(gTroller),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `Set joetroller for ${jToken.name} to ${joetroller} as ${describeUser(
+    `Set gTroller for ${jToken.name} to ${gTroller} as ${describeUser(
       world,
       from
     )}`,
@@ -628,16 +628,16 @@ async function setJoetroller(
 async function gulp(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.gulp(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
-  world = addAction(world, `JToken ${jToken.name}: Gulp`, invokation);
+  world = addAction(world, `GToken ${jToken.name}: Gulp`, invokation);
 
   return world;
 }
@@ -645,14 +645,14 @@ async function gulp(
 async function setCollateralCap(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   cap: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods._setCollateralCap(cap.encode()),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -667,11 +667,11 @@ async function setCollateralCap(
 async function becomeImplementation(
   world: World,
   from: string,
-  jToken: JToken,
+  jToken: GToken,
   becomeImplementationData: string
 ): Promise<World> {
-  const cErc20Delegate = getContract("JErc20Delegate");
-  const cErc20DelegateContract = await cErc20Delegate.at<JErc20Delegate>(
+  const cErc20Delegate = getContract("GXrc20Delegate");
+  const cErc20DelegateContract = await cErc20Delegate.at<GXrc20Delegate>(
     world,
     jToken._address
   );
@@ -682,12 +682,12 @@ async function becomeImplementation(
       becomeImplementationData
     ),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} initiates _becomeImplementation with data:${becomeImplementationData}.`,
@@ -700,10 +700,10 @@ async function becomeImplementation(
 async function resignImplementation(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
-  const cErc20Delegate = getContract("JErc20Delegate");
-  const cErc20DelegateContract = await cErc20Delegate.at<JErc20Delegate>(
+  const cErc20Delegate = getContract("GXrc20Delegate");
+  const cErc20DelegateContract = await cErc20Delegate.at<GXrc20Delegate>(
     world,
     jToken._address
   );
@@ -712,12 +712,12 @@ async function resignImplementation(
     world,
     cErc20DelegateContract.methods._resignImplementation(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} initiates _resignImplementation.`,
@@ -730,7 +730,7 @@ async function resignImplementation(
 async function setImplementation(
   world: World,
   from: string,
-  jToken: JErc20Delegator,
+  jToken: GXrc20Delegator,
   implementation: string,
   allowResign: boolean,
   becomeImplementationData: string
@@ -743,12 +743,12 @@ async function setImplementation(
       becomeImplementationData
     ),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
     world,
-    `JToken ${jToken.name}: ${describeUser(
+    `GToken ${jToken.name}: ${describeUser(
       world,
       from
     )} initiates setImplementation with implementation:${implementation} allowResign:${allowResign} data:${becomeImplementationData}.`,
@@ -761,13 +761,13 @@ async function setImplementation(
 async function donate(
   world: World,
   from: string,
-  jToken: JToken
+  jToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
     jToken.methods.donate(),
     from,
-    JTokenErrorReporter
+    GTokenErrorReporter
   );
 
   world = addAction(
@@ -782,10 +782,10 @@ async function donate(
   return world;
 }
 
-async function setJTokenMock(
+async function setGTokenMock(
   world: World,
   from: string,
-  jToken: JTokenScenario,
+  jToken: GTokenScenario,
   mock: string,
   value: NumberV
 ): Promise<World> {
@@ -813,9 +813,9 @@ async function setJTokenMock(
   return world;
 }
 
-async function verifyJToken(
+async function verifyGToken(
   world: World,
-  jToken: JToken,
+  jToken: GToken,
   name: string,
   contract: string,
   apiKey: string
@@ -831,7 +831,7 @@ async function verifyJToken(
   return world;
 }
 
-async function printMinters(world: World, jToken: JToken): Promise<World> {
+async function printMinters(world: World, jToken: GToken): Promise<World> {
   let events = await getPastEvents(world, jToken, jToken.name, "Mint");
   let addresses = events.map((event) => event.returnValues["minter"]);
   let uniq = [...new Set(addresses)];
@@ -845,7 +845,7 @@ async function printMinters(world: World, jToken: JToken): Promise<World> {
   return world;
 }
 
-async function printBorrowers(world: World, jToken: JToken): Promise<World> {
+async function printBorrowers(world: World, jToken: GToken): Promise<World> {
   let events = await getPastEvents(world, jToken, jToken.name, "Borrow");
   let addresses = events.map((event) => event.returnValues["borrower"]);
   let uniq = [...new Set(addresses)];
@@ -859,7 +859,7 @@ async function printBorrowers(world: World, jToken: JToken): Promise<World> {
   return world;
 }
 
-async function printLiquidity(world: World, jToken: JToken): Promise<World> {
+async function printLiquidity(world: World, jToken: GToken): Promise<World> {
   let mintEvents = await getPastEvents(world, jToken, jToken.name, "Mint");
   let mintAddresses = mintEvents.map((event) => event.returnValues["minter"]);
   let borrowEvents = await getPastEvents(world, jToken, jToken.name, "Borrow");
@@ -867,13 +867,13 @@ async function printLiquidity(world: World, jToken: JToken): Promise<World> {
     (event) => event.returnValues["borrower"]
   );
   let uniq = [...new Set(mintAddresses.concat(borrowAddresses))];
-  let joetroller = await getJoetroller(world);
+  let gTroller = await getGtroller(world);
 
   world.printer.printLine("Liquidity:");
 
   const liquidityMap = await Promise.all(
     uniq.map(async (address) => {
-      let userLiquidity = await getLiquidity(world, joetroller, address);
+      let userLiquidity = await getLiquidity(world, gTroller, address);
 
       return [address, userLiquidity.val];
     })
@@ -894,27 +894,27 @@ export function jTokenCommands() {
       `
         #### Deploy
 
-        * "JToken Deploy ...jTokenParams" - Generates a new JToken
-          * E.g. "JToken cZRX Deploy"
+        * "GToken Deploy ...jTokenParams" - Generates a new GToken
+          * E.g. "GToken cZRX Deploy"
       `,
       "Deploy",
       [new Arg("jTokenParams", getEventV, { variadic: true })],
       (world, from, { jTokenParams }) =>
-        genJToken(world, from, jTokenParams.val)
+        genGToken(world, from, jTokenParams.val)
     ),
     new View<{ jTokenArg: StringV; apiKey: StringV }>(
       `
         #### Verify
 
-        * "JToken <jToken> Verify apiKey:<String>" - Verifies JToken in Etherscan
-          * E.g. "JToken cZRX Verify "myApiKey"
+        * "GToken <jToken> Verify apiKey:<String>" - Verifies GToken in Etherscan
+          * E.g. "GToken cZRX Verify "myApiKey"
       `,
       "Verify",
       [new Arg("jTokenArg", getStringV), new Arg("apiKey", getStringV)],
       async (world, { jTokenArg, apiKey }) => {
-        let [jToken, name, data] = await getJTokenData(world, jTokenArg.val);
+        let [jToken, name, data] = await getGTokenData(world, jTokenArg.val);
 
-        return await verifyJToken(
+        return await verifyGToken(
           world,
           jToken,
           name,
@@ -924,169 +924,169 @@ export function jTokenCommands() {
       },
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### AccrueInterest
 
-        * "JToken <jToken> AccrueInterest" - Accrues interest for given token
-          * E.g. "JToken cZRX AccrueInterest"
+        * "GToken <jToken> AccrueInterest" - Accrues interest for given token
+          * E.g. "GToken cZRX AccrueInterest"
       `,
       "AccrueInterest",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => accrueInterest(world, from, jToken),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV | NothingV }>(
+    new Command<{ jToken: GToken; amount: NumberV | NothingV }>(
       `
         #### Mint
 
-        * "JToken <jToken> Mint amount:<Number>" - Mints the given amount of jToken as specified user
-          * E.g. "JToken cZRX Mint 1.0e18"
+        * "GToken <jToken> Mint amount:<Number>" - Mints the given amount of jToken as specified user
+          * E.g. "GToken cZRX Mint 1.0e18"
       `,
       "Mint",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("amount", getNumberV, { nullable: true }),
       ],
       (world, from, { jToken, amount }) => mint(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### MintNative
 
-        * "JToken <jToken> MintNative" - Mints the given amount of jToken as specified user
-          * E.g. "JToken cWETH MintNative"
+        * "GToken <jToken> MintNative" - Mints the given amount of jToken as specified user
+          * E.g. "GToken cWETH MintNative"
       `,
       "MintNative",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => mintNative(world, from, jToken),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; tokens: NumberV }>(
+    new Command<{ jToken: GToken; tokens: NumberV }>(
       `
         #### Redeem
 
-        * "JToken <jToken> Redeem tokens:<Number>" - Redeems the given amount of jTokens as specified user
-          * E.g. "JToken cZRX Redeem 1.0e9"
+        * "GToken <jToken> Redeem tokens:<Number>" - Redeems the given amount of jTokens as specified user
+          * E.g. "GToken cZRX Redeem 1.0e9"
       `,
       "Redeem",
-      [new Arg("jToken", getJTokenV), new Arg("tokens", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("tokens", getNumberV)],
       (world, from, { jToken, tokens }) => redeem(world, from, jToken, tokens),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; tokens: NumberV }>(
+    new Command<{ jToken: GToken; tokens: NumberV }>(
       `
         #### RedeemNative
 
-        * "JToken <jToken> RedeemNative tokens:<Number>" - Redeems the given amount of jTokens as specified user
-          * E.g. "JToken cZRX RedeemNative 1.0e9"
+        * "GToken <jToken> RedeemNative tokens:<Number>" - Redeems the given amount of jTokens as specified user
+          * E.g. "GToken cZRX RedeemNative 1.0e9"
       `,
       "RedeemNative",
-      [new Arg("jToken", getJTokenV), new Arg("tokens", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("tokens", getNumberV)],
       (world, from, { jToken, tokens }) =>
         redeemNative(world, from, jToken, tokens),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### RedeemUnderlying
 
-        * "JToken <jToken> RedeemUnderlying amount:<Number>" - Redeems the given amount of underlying as specified user
-          * E.g. "JToken cZRX RedeemUnderlying 1.0e18"
+        * "GToken <jToken> RedeemUnderlying amount:<Number>" - Redeems the given amount of underlying as specified user
+          * E.g. "GToken cZRX RedeemUnderlying 1.0e18"
       `,
       "RedeemUnderlying",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       (world, from, { jToken, amount }) =>
         redeemUnderlying(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### RedeemUnderlyingNative
 
-        * "JToken <jToken> RedeemUnderlyingNative amount:<Number>" - Redeems the given amount of underlying as specified user
-          * E.g. "JToken cZRX RedeemUnderlyingNative 1.0e18"
+        * "GToken <jToken> RedeemUnderlyingNative amount:<Number>" - Redeems the given amount of underlying as specified user
+          * E.g. "GToken cZRX RedeemUnderlyingNative 1.0e18"
       `,
       "RedeemUnderlyingNative",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       (world, from, { jToken, amount }) =>
         redeemUnderlyingNative(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### Borrow
 
-        * "JToken <jToken> Borrow amount:<Number>" - Borrows the given amount of this jToken as specified user
-          * E.g. "JToken cZRX Borrow 1.0e18"
+        * "GToken <jToken> Borrow amount:<Number>" - Borrows the given amount of this jToken as specified user
+          * E.g. "GToken cZRX Borrow 1.0e18"
       `,
       "Borrow",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       // Note: we override from
       (world, from, { jToken, amount }) => borrow(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### BorrowNative
 
-        * "JToken <jToken> BorrowNative amount:<Number>" - Borrows the given amount of this jToken as specified user
-          * E.g. "JToken cZRX BorrowNative 1.0e18"
+        * "GToken <jToken> BorrowNative amount:<Number>" - Borrows the given amount of this jToken as specified user
+          * E.g. "GToken cZRX BorrowNative 1.0e18"
       `,
       "BorrowNative",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       // Note: we override from
       (world, from, { jToken, amount }) =>
         borrowNative(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV | NothingV }>(
+    new Command<{ jToken: GToken; amount: NumberV | NothingV }>(
       `
         #### RepayBorrow
 
-        * "JToken <jToken> RepayBorrow underlyingAmount:<Number>" - Repays borrow in the given underlying amount as specified user
-          * E.g. "JToken cZRX RepayBorrow 1.0e18"
+        * "GToken <jToken> RepayBorrow underlyingAmount:<Number>" - Repays borrow in the given underlying amount as specified user
+          * E.g. "GToken cZRX RepayBorrow 1.0e18"
       `,
       "RepayBorrow",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("amount", getNumberV, { nullable: true }),
       ],
       (world, from, { jToken, amount }) =>
         repayBorrow(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV | NothingV }>(
+    new Command<{ jToken: GToken; amount: NumberV | NothingV }>(
       `
         #### RepayBorrowNative
 
-        * "JToken <jToken> RepayBorrowNative" - Repays borrow in the given underlying amount as specified user
-          * E.g. "JToken cZRX RepayBorrowNative"
+        * "GToken <jToken> RepayBorrowNative" - Repays borrow in the given underlying amount as specified user
+          * E.g. "GToken cZRX RepayBorrowNative"
       `,
       "RepayBorrowNative",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken, amount }) =>
         repayBorrowNative(world, from, jToken),
       { namePos: 1 }
     ),
     new Command<{
       borrower: AddressV;
-      jToken: JToken;
-      collateral: JToken;
+      jToken: GToken;
+      collateral: GToken;
       repayAmount: NumberV | NothingV;
     }>(
       `
         #### Liquidate
 
-        * "JToken <jToken> Liquidate borrower:<User> jTokenCollateral:<Address> repayAmount:<Number>" - Liquidates repayAmount of given token seizing collateral token
-          * E.g. "JToken cZRX Liquidate Geoff cBAT 1.0e18"
+        * "GToken <jToken> Liquidate borrower:<User> jTokenCollateral:<Address> repayAmount:<Number>" - Liquidates repayAmount of given token seizing collateral token
+          * E.g. "GToken cZRX Liquidate Geoff cBAT 1.0e18"
       `,
       "Liquidate",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("borrower", getAddressV),
-        new Arg("collateral", getJTokenV),
+        new Arg("collateral", getGTokenV),
         new Arg("repayAmount", getNumberV, { nullable: true }),
       ],
       (world, from, { borrower, jToken, collateral, repayAmount }) =>
@@ -1101,7 +1101,7 @@ export function jTokenCommands() {
       { namePos: 1 }
     ),
     new Command<{
-      jToken: JToken;
+      jToken: GToken;
       liquidator: AddressV;
       borrower: AddressV;
       seizeTokens: NumberV;
@@ -1109,12 +1109,12 @@ export function jTokenCommands() {
       `
         #### Seize
 
-        * "JToken <jToken> Seize liquidator:<User> borrower:<User> seizeTokens:<Number>" - Seizes a given number of tokens from a user (to be called from other JToken)
-          * E.g. "JToken cZRX Seize Geoff Torrey 1.0e18"
+        * "GToken <jToken> Seize liquidator:<User> borrower:<User> seizeTokens:<Number>" - Seizes a given number of tokens from a user (to be called from other GToken)
+          * E.g. "GToken cZRX Seize Geoff Torrey 1.0e18"
       `,
       "Seize",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("liquidator", getAddressV),
         new Arg("borrower", getAddressV),
         new Arg("seizeTokens", getNumberV),
@@ -1124,8 +1124,8 @@ export function jTokenCommands() {
       { namePos: 1 }
     ),
     new Command<{
-      jToken: JToken;
-      treasure: JToken;
+      jToken: GToken;
+      treasure: GToken;
       liquidator: AddressV;
       borrower: AddressV;
       seizeTokens: NumberV;
@@ -1133,13 +1133,13 @@ export function jTokenCommands() {
       `
         #### EvilSeize
 
-        * "JToken <jToken> EvilSeize treasure:<Token> liquidator:<User> borrower:<User> seizeTokens:<Number>" - Improperly seizes a given number of tokens from a user
-          * E.g. "JToken cEVL EvilSeize cZRX Geoff Torrey 1.0e18"
+        * "GToken <jToken> EvilSeize treasure:<Token> liquidator:<User> borrower:<User> seizeTokens:<Number>" - Improperly seizes a given number of tokens from a user
+          * E.g. "GToken cEVL EvilSeize cZRX Geoff Torrey 1.0e18"
       `,
       "EvilSeize",
       [
-        new Arg("jToken", getJTokenV),
-        new Arg("treasure", getJTokenV),
+        new Arg("jToken", getGTokenV),
+        new Arg("treasure", getGTokenV),
         new Arg("liquidator", getAddressV),
         new Arg("borrower", getAddressV),
         new Arg("seizeTokens", getNumberV),
@@ -1156,155 +1156,155 @@ export function jTokenCommands() {
         ),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### ReduceReserves
 
-        * "JToken <jToken> ReduceReserves amount:<Number>" - Reduces the reserves of the jToken
-          * E.g. "JToken cZRX ReduceReserves 1.0e18"
+        * "GToken <jToken> ReduceReserves amount:<Number>" - Reduces the reserves of the jToken
+          * E.g. "GToken cZRX ReduceReserves 1.0e18"
       `,
       "ReduceReserves",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       (world, from, { jToken, amount }) =>
         reduceReserves(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
     #### AddReserves
 
-    * "JToken <jToken> AddReserves amount:<Number>" - Adds reserves to the jToken
-      * E.g. "JToken cZRX AddReserves 1.0e18"
+    * "GToken <jToken> AddReserves amount:<Number>" - Adds reserves to the jToken
+      * E.g. "GToken cZRX AddReserves 1.0e18"
   `,
       "AddReserves",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       (world, from, { jToken, amount }) =>
         addReserves(world, from, jToken, amount),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; newPendingAdmin: AddressV }>(
+    new Command<{ jToken: GToken; newPendingAdmin: AddressV }>(
       `
         #### SetPendingAdmin
 
-        * "JToken <jToken> SetPendingAdmin newPendingAdmin:<Address>" - Sets the pending admin for the jToken
-          * E.g. "JToken cZRX SetPendingAdmin Geoff"
+        * "GToken <jToken> SetPendingAdmin newPendingAdmin:<Address>" - Sets the pending admin for the jToken
+          * E.g. "GToken cZRX SetPendingAdmin Geoff"
       `,
       "SetPendingAdmin",
-      [new Arg("jToken", getJTokenV), new Arg("newPendingAdmin", getAddressV)],
+      [new Arg("jToken", getGTokenV), new Arg("newPendingAdmin", getAddressV)],
       (world, from, { jToken, newPendingAdmin }) =>
         setPendingAdmin(world, from, jToken, newPendingAdmin.val),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### AcceptAdmin
 
-        * "JToken <jToken> AcceptAdmin" - Accepts admin for the jToken
-          * E.g. "From Geoff (JToken cZRX AcceptAdmin)"
+        * "GToken <jToken> AcceptAdmin" - Accepts admin for the jToken
+          * E.g. "From Geoff (GToken cZRX AcceptAdmin)"
       `,
       "AcceptAdmin",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => acceptAdmin(world, from, jToken),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; reserveFactor: NumberV }>(
+    new Command<{ jToken: GToken; reserveFactor: NumberV }>(
       `
         #### SetReserveFactor
 
-        * "JToken <jToken> SetReserveFactor reserveFactor:<Number>" - Sets the reserve factor for the jToken
-          * E.g. "JToken cZRX SetReserveFactor 0.1"
+        * "GToken <jToken> SetReserveFactor reserveFactor:<Number>" - Sets the reserve factor for the jToken
+          * E.g. "GToken cZRX SetReserveFactor 0.1"
       `,
       "SetReserveFactor",
-      [new Arg("jToken", getJTokenV), new Arg("reserveFactor", getExpNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("reserveFactor", getExpNumberV)],
       (world, from, { jToken, reserveFactor }) =>
         setReserveFactor(world, from, jToken, reserveFactor),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; interestRateModel: AddressV }>(
+    new Command<{ jToken: GToken; interestRateModel: AddressV }>(
       `
         #### SetInterestRateModel
 
-        * "JToken <jToken> SetInterestRateModel interestRateModel:<Contract>" - Sets the interest rate model for the given jToken
-          * E.g. "JToken cZRX SetInterestRateModel (FixedRate 1.5)"
+        * "GToken <jToken> SetInterestRateModel interestRateModel:<Contract>" - Sets the interest rate model for the given jToken
+          * E.g. "GToken cZRX SetInterestRateModel (FixedRate 1.5)"
       `,
       "SetInterestRateModel",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("interestRateModel", getAddressV),
       ],
       (world, from, { jToken, interestRateModel }) =>
         setInterestRateModel(world, from, jToken, interestRateModel.val),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; joetroller: AddressV }>(
+    new Command<{ jToken: GToken; gTroller: AddressV }>(
       `
-        #### SetJoetroller
+        #### SetGtroller
 
-        * "JToken <jToken> SetJoetroller joetroller:<Contract>" - Sets the joetroller for the given jToken
-          * E.g. "JToken cZRX SetJoetroller Joetroller"
+        * "GToken <jToken> SetGtroller gTroller:<Contract>" - Sets the gTroller for the given jToken
+          * E.g. "GToken cZRX SetGtroller Gtroller"
       `,
-      "SetJoetroller",
-      [new Arg("jToken", getJTokenV), new Arg("joetroller", getAddressV)],
-      (world, from, { jToken, joetroller }) =>
-        setJoetroller(world, from, jToken, joetroller.val),
+      "SetGtroller",
+      [new Arg("jToken", getGTokenV), new Arg("gTroller", getAddressV)],
+      (world, from, { jToken, gTroller }) =>
+        setGtroller(world, from, jToken, gTroller.val),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### Gulp
-        * "JToken <jToken> Gulp" - Gulps for the jToken
-          * E.g. "JToken cZRX Gulp"
+        * "GToken <jToken> Gulp" - Gulps for the jToken
+          * E.g. "GToken cZRX Gulp"
       `,
       "Gulp",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => gulp(world, from, jToken),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; amount: NumberV }>(
+    new Command<{ jToken: GToken; amount: NumberV }>(
       `
         #### SetCollateralCap
-        * "JToken <jToken> SetCollateralCap amount:<Number>" - Sets the collateral cap for the given jToken
-          * E.g. "JToken cZRX SetCollateralCap 1e10"
+        * "GToken <jToken> SetCollateralCap amount:<Number>" - Sets the collateral cap for the given jToken
+          * E.g. "GToken cZRX SetCollateralCap 1e10"
       `,
       "SetCollateralCap",
-      [new Arg("jToken", getJTokenV), new Arg("amount", getNumberV)],
+      [new Arg("jToken", getGTokenV), new Arg("amount", getNumberV)],
       (world, from, { jToken, amount }) =>
         setCollateralCap(world, from, jToken, amount),
       { namePos: 1 }
     ),
     new Command<{
-      jToken: JToken;
+      jToken: GToken;
       becomeImplementationData: StringV;
     }>(
       `
         #### BecomeImplementation
 
-        * "JToken <jToken> BecomeImplementation becomeImplementationData:<String>"
-          * E.g. "JToken cDAI BecomeImplementation "0x01234anyByTeS56789""
+        * "GToken <jToken> BecomeImplementation becomeImplementationData:<String>"
+          * E.g. "GToken cDAI BecomeImplementation "0x01234anyByTeS56789""
       `,
       "BecomeImplementation",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("becomeImplementationData", getStringV),
       ],
       (world, from, { jToken, becomeImplementationData }) =>
         becomeImplementation(world, from, jToken, becomeImplementationData.val),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### ResignImplementation
 
-        * "JToken <jToken> ResignImplementation"
-          * E.g. "JToken cDAI ResignImplementation"
+        * "GToken <jToken> ResignImplementation"
+          * E.g. "GToken cDAI ResignImplementation"
       `,
       "ResignImplementation",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => resignImplementation(world, from, jToken),
       { namePos: 1 }
     ),
     new Command<{
-      jToken: JErc20Delegator;
+      jToken: GXrc20Delegator;
       implementation: AddressV;
       allowResign: BoolV;
       becomeImplementationData: StringV;
@@ -1312,12 +1312,12 @@ export function jTokenCommands() {
       `
         #### SetImplementation
 
-        * "JToken <jToken> SetImplementation implementation:<Address> allowResign:<Bool> becomeImplementationData:<String>"
-          * E.g. "JToken cDAI SetImplementation (JToken cDAIDelegate Address) True "0x01234anyByTeS56789"
+        * "GToken <jToken> SetImplementation implementation:<Address> allowResign:<Bool> becomeImplementationData:<String>"
+          * E.g. "GToken cDAI SetImplementation (GToken cDAIDelegate Address) True "0x01234anyByTeS56789"
       `,
       "SetImplementation",
       [
-        new Arg("jToken", getJErc20DelegatorV),
+        new Arg("jToken", getGXrc20DelegatorV),
         new Arg("implementation", getAddressV),
         new Arg("allowResign", getBoolV),
         new Arg("becomeImplementationData", getStringV),
@@ -1337,90 +1337,90 @@ export function jTokenCommands() {
         ),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken }>(
+    new Command<{ jToken: GToken }>(
       `
         #### Donate
 
-        * "JToken <jToken> Donate" - Calls the donate (payable no-op) function
-          * E.g. "(Trx Value 5.0e18 (JToken cETH Donate))"
+        * "GToken <jToken> Donate" - Calls the donate (payable no-op) function
+          * E.g. "(Trx Value 5.0e18 (GToken cETH Donate))"
       `,
       "Donate",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, from, { jToken }) => donate(world, from, jToken),
       { namePos: 1 }
     ),
-    new Command<{ jToken: JToken; variable: StringV; value: NumberV }>(
+    new Command<{ jToken: GToken; variable: StringV; value: NumberV }>(
       `
         #### Mock
 
-        * "JToken <jToken> Mock variable:<String> value:<Number>" - Mocks a given value on jToken. Note: value must be a supported mock and this will only work on a "JTokenScenario" contract.
-          * E.g. "JToken cZRX Mock totalBorrows 5.0e18"
-          * E.g. "JToken cZRX Mock totalReserves 0.5e18"
+        * "GToken <jToken> Mock variable:<String> value:<Number>" - Mocks a given value on jToken. Note: value must be a supported mock and this will only work on a "GTokenScenario" contract.
+          * E.g. "GToken cZRX Mock totalBorrows 5.0e18"
+          * E.g. "GToken cZRX Mock totalReserves 0.5e18"
       `,
       "Mock",
       [
-        new Arg("jToken", getJTokenV),
+        new Arg("jToken", getGTokenV),
         new Arg("variable", getStringV),
         new Arg("value", getNumberV),
       ],
       (world, from, { jToken, variable, value }) =>
-        setJTokenMock(world, from, <JTokenScenario>jToken, variable.val, value),
+        setGTokenMock(world, from, <GTokenScenario>jToken, variable.val, value),
       { namePos: 1 }
     ),
-    new View<{ jToken: JToken }>(
+    new View<{ jToken: GToken }>(
       `
         #### Minters
 
-        * "JToken <jToken> Minters" - Print address of all minters
+        * "GToken <jToken> Minters" - Print address of all minters
       `,
       "Minters",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, { jToken }) => printMinters(world, jToken),
       { namePos: 1 }
     ),
-    new View<{ jToken: JToken }>(
+    new View<{ jToken: GToken }>(
       `
         #### Borrowers
 
-        * "JToken <jToken> Borrowers" - Print address of all borrowers
+        * "GToken <jToken> Borrowers" - Print address of all borrowers
       `,
       "Borrowers",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, { jToken }) => printBorrowers(world, jToken),
       { namePos: 1 }
     ),
-    new View<{ jToken: JToken }>(
+    new View<{ jToken: GToken }>(
       `
         #### Liquidity
 
-        * "JToken <jToken> Liquidity" - Prints liquidity of all minters or borrowers
+        * "GToken <jToken> Liquidity" - Prints liquidity of all minters or borrowers
       `,
       "Liquidity",
-      [new Arg("jToken", getJTokenV)],
+      [new Arg("jToken", getGTokenV)],
       (world, { jToken }) => printLiquidity(world, jToken),
       { namePos: 1 }
     ),
-    new View<{ jToken: JToken; input: StringV }>(
+    new View<{ jToken: GToken; input: StringV }>(
       `
         #### Decode
 
         * "Decode <jToken> input:<String>" - Prints information about a call to a jToken contract
       `,
       "Decode",
-      [new Arg("jToken", getJTokenV), new Arg("input", getStringV)],
+      [new Arg("jToken", getGTokenV), new Arg("input", getStringV)],
       (world, { jToken, input }) => decodeCall(world, jToken, input.val),
       { namePos: 1 }
     ),
   ];
 }
 
-export async function processJTokenEvent(
+export async function processGTokenEvent(
   world: World,
   event: Event,
   from: string | null
 ): Promise<World> {
   return await processCommandEvent<any>(
-    "JToken",
+    "GToken",
     jTokenCommands(),
     world,
     event,

@@ -17,9 +17,9 @@ module.exports = async function ({
     throw Error("No DAI on this chain");
   }
 
-  const Joetroller = await ethers.getContract("Joetroller");
+  const Gtroller = await ethers.getContract("Gtroller");
   const unitroller = await ethers.getContract("Unitroller");
-  const joetroller = Joetroller.attach(unitroller.address);
+  const gTroller = Gtroller.attach(unitroller.address);
 
   const interestRateModel = await ethers.getContract("StableInterestRateModel");
 
@@ -27,7 +27,7 @@ module.exports = async function ({
     from: deployer,
     log: true,
     deterministicDeployment: false,
-    contract: "JCollateralCapErc20Delegate",
+    contract: "GCollateralCapXrc20Delegate",
   });
   const jDaiDelegate = await ethers.getContract("JDaiDelegate");
 
@@ -35,7 +35,7 @@ module.exports = async function ({
     from: deployer,
     args: [
       DAI.get(chainId),
-      joetroller.address,
+      gTroller.address,
       interestRateModel.address,
       ethers.utils.parseUnits("2", 26).toString(),
       "Banker Joe DAI",
@@ -47,13 +47,13 @@ module.exports = async function ({
     ],
     log: true,
     deterministicDeployment: false,
-    contract: "JCollateralCapErc20Delegator",
+    contract: "GCollateralCapXrc20Delegator",
   });
   await deployment.receipt;
   const jDaiDelegator = await ethers.getContract("JDaiDelegator");
 
   console.log("Supporting jDAI market...");
-  await joetroller._supportMarket(jDaiDelegator.address, 1, {
+  await gTroller._supportMarket(jDaiDelegator.address, 1, {
     gasLimit: 2000000,
   });
 
@@ -66,7 +66,7 @@ module.exports = async function ({
 
   const collateralFactor = "0.80";
   console.log("Setting collateral factor ", collateralFactor);
-  await joetroller._setCollateralFactor(
+  await gTroller._setCollateralFactor(
     jDaiDelegator.address,
     ethers.utils.parseEther(collateralFactor)
   );
@@ -78,7 +78,7 @@ module.exports = async function ({
 
 module.exports.tags = ["jDAI"];
 module.exports.dependencies = [
-  "Joetroller",
+  "Gtroller",
   "TripleSlopeRateModel",
   "PriceOracle",
 ];

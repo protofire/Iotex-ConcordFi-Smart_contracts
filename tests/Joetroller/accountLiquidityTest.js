@@ -1,12 +1,12 @@
 const {
-  makeJoetroller,
-  makeJToken,
+  makeGtroller,
+  makeGToken,
   enterMarkets,
   quickMint,
 } = require("../Utils/BankerJoe");
 const { UInt256Max } = require("../Utils/Avalanche");
 
-describe("Joetroller", () => {
+describe("Gtroller", () => {
   let root, accounts;
 
   beforeEach(async () => {
@@ -17,11 +17,11 @@ describe("Joetroller", () => {
     it("fails if a price has not been set", async () => {
       const user = accounts[1],
         amount = 1e6;
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await call(jToken.underlying, "balanceOf", [user]);
       await enterMarkets([jToken], user);
       await quickMint(jToken, user, amount);
-      let result = await call(jToken.joetroller, "getAccountLiquidity", [user]);
+      let result = await call(jToken.gTroller, "getAccountLiquidity", [user]);
       expect(result).toHaveTrollError("PRICE_ERROR");
     });
 
@@ -30,7 +30,7 @@ describe("Joetroller", () => {
         underlyingPrice = 1,
         user = accounts[1],
         amount = 1e6;
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         collateralFactor,
         underlyingPrice,
@@ -40,7 +40,7 @@ describe("Joetroller", () => {
 
       // not in market yet, hypothetical borrow should have no effect
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken.joetroller,
+        jToken.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken._address, 0, amount]
       ));
@@ -52,7 +52,7 @@ describe("Joetroller", () => {
 
       // total account liquidity after supplying `amount`
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken.joetroller,
+        jToken.gTroller,
         "getAccountLiquidity",
         [user]
       ));
@@ -61,7 +61,7 @@ describe("Joetroller", () => {
 
       // hypothetically borrow `amount`, should shortfall over collateralFactor
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken.joetroller,
+        jToken.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken._address, 0, amount]
       ));
@@ -70,7 +70,7 @@ describe("Joetroller", () => {
 
       // hypothetically redeem `amount`, should be back to even
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken.joetroller,
+        jToken.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken._address, amount, 0]
       ));
@@ -91,20 +91,20 @@ describe("Joetroller", () => {
       const c1 = amount1 * cf1 * up1,
         c2 = amount2 * cf2 * up2,
         collateral = Math.floor(c1 + c2);
-      const jToken1 = await makeJToken({
+      const jToken1 = await makeGToken({
         supportMarket: true,
         collateralFactor: cf1,
         underlyingPrice: up1,
       });
-      const jToken2 = await makeJToken({
+      const jToken2 = await makeGToken({
         supportMarket: true,
-        joetroller: jToken1.joetroller,
+        gTroller: jToken1.gTroller,
         collateralFactor: cf2,
         underlyingPrice: up2,
       });
-      const jToken3 = await makeJToken({
+      const jToken3 = await makeGToken({
         supportMarket: true,
-        joetroller: jToken1.joetroller,
+        gTroller: jToken1.gTroller,
         collateralFactor: cf3,
         underlyingPrice: up3,
       });
@@ -119,13 +119,13 @@ describe("Joetroller", () => {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken3.joetroller, "getAccountLiquidity", [user]));
+      } = await call(jToken3.gTroller, "getAccountLiquidity", [user]));
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(collateral);
       expect(shortfall).toEqualNumber(0);
 
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken3.joetroller,
+        jToken3.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken3._address, Math.floor(c2), 0]
       ));
@@ -133,7 +133,7 @@ describe("Joetroller", () => {
       expect(shortfall).toEqualNumber(0);
 
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken3.joetroller,
+        jToken3.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken3._address, 0, Math.floor(c2)]
       ));
@@ -141,7 +141,7 @@ describe("Joetroller", () => {
       expect(shortfall).toEqualNumber(0);
 
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken3.joetroller,
+        jToken3.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken3._address, 0, collateral + c1]
       ));
@@ -149,7 +149,7 @@ describe("Joetroller", () => {
       expect(shortfall).toEqualNumber(c1);
 
       ({ 1: liquidity, 2: shortfall } = await call(
-        jToken1.joetroller,
+        jToken1.gTroller,
         "getHypotheticalAccountLiquidity",
         [user, jToken1._address, amount1, 0]
       ));
@@ -163,7 +163,7 @@ describe("Joetroller", () => {
         user = accounts[1],
         amount = 1e6,
         creditLimit = 500;
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         collateralFactor,
         underlyingPrice,
@@ -174,18 +174,18 @@ describe("Joetroller", () => {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken.joetroller, "getAccountLiquidity", [user]));
+      } = await call(jToken.gTroller, "getAccountLiquidity", [user]));
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(0);
       expect(shortfall).toEqualNumber(0);
 
-      await send(jToken.joetroller, "_setCreditLimit", [user, creditLimit]);
+      await send(jToken.gTroller, "_setCreditLimit", [user, creditLimit]);
 
       ({
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken.joetroller, "getAccountLiquidity", [user]));
+      } = await call(jToken.gTroller, "getAccountLiquidity", [user]));
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(creditLimit);
       expect(shortfall).toEqualNumber(0);
@@ -195,7 +195,7 @@ describe("Joetroller", () => {
         "revert credit account cannot mint"
       );
 
-      await send(jToken.joetroller, "_setCreditLimit", [user, 0]);
+      await send(jToken.gTroller, "_setCreditLimit", [user, 0]);
 
       await enterMarkets([jToken], user);
       await quickMint(jToken, user, amount);
@@ -204,7 +204,7 @@ describe("Joetroller", () => {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken.joetroller, "getAccountLiquidity", [user]));
+      } = await call(jToken.gTroller, "getAccountLiquidity", [user]));
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(amount * collateralFactor);
       expect(shortfall).toEqualNumber(0);
@@ -213,12 +213,12 @@ describe("Joetroller", () => {
 
   describe("getAccountLiquidity", () => {
     it("returns 0 if not 'in' any markets", async () => {
-      const joetroller = await makeJoetroller();
+      const gTroller = await makeGtroller();
       const {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(joetroller, "getAccountLiquidity", [accounts[0]]);
+      } = await call(gTroller, "getAccountLiquidity", [accounts[0]]);
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(0);
       expect(shortfall).toEqualNumber(0);
@@ -227,12 +227,12 @@ describe("Joetroller", () => {
 
   describe("getHypotheticalAccountLiquidity", () => {
     it("returns 0 if not 'in' any markets", async () => {
-      const jToken = await makeJToken();
+      const jToken = await makeGToken();
       const {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken.joetroller, "getHypotheticalAccountLiquidity", [
+      } = await call(jToken.gTroller, "getHypotheticalAccountLiquidity", [
         accounts[0],
         jToken._address,
         0,
@@ -247,7 +247,7 @@ describe("Joetroller", () => {
       const collateralFactor = 0.5,
         exchangeRate = 1,
         underlyingPrice = 1;
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         supportMarket: true,
         collateralFactor,
         exchangeRate,
@@ -268,7 +268,7 @@ describe("Joetroller", () => {
         0: error,
         1: liquidity,
         2: shortfall,
-      } = await call(jToken.joetroller, "getHypotheticalAccountLiquidity", [
+      } = await call(jToken.gTroller, "getHypotheticalAccountLiquidity", [
         from,
         jToken._address,
         0,
@@ -286,7 +286,7 @@ describe("Joetroller", () => {
     const collateralFactor = 0.5,
       exchangeRate = 1,
       underlyingPrice = 1;
-    const jToken = await makeJToken({
+    const jToken = await makeGToken({
       supportMarket: true,
       collateralFactor,
       exchangeRate,
@@ -309,7 +309,7 @@ describe("Joetroller", () => {
     expect(result1).toSucceed();
     console.log("result1", result1.gasUsed); // 180466
 
-    await send(jToken.joetroller, "_setCreditLimit", [from, UInt256Max()]);
+    await send(jToken.gTroller, "_setCreditLimit", [from, UInt256Max()]);
 
     const result2 = await send(jToken, "borrow", [borrowAmount], { from });
     expect(result2).toSucceed();

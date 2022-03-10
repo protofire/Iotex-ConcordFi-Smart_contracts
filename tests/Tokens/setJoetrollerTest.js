@@ -1,52 +1,50 @@
-const { makeJoetroller, makeJToken } = require("../Utils/BankerJoe");
+const { makeGtroller, makeGToken } = require("../Utils/BankerJoe");
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, accounts;
-  let jToken, oldJoetroller, newJoetroller;
+  let jToken, oldGtroller, newGtroller;
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    jToken = await makeJToken();
-    oldJoetroller = jToken.joetroller;
-    newJoetroller = await makeJoetroller();
-    expect(newJoetroller._address).not.toEqual(oldJoetroller._address);
+    jToken = await makeGToken();
+    oldGtroller = jToken.gTroller;
+    newGtroller = await makeGtroller();
+    expect(newGtroller._address).not.toEqual(oldGtroller._address);
   });
 
-  describe("_setJoetroller", () => {
+  describe("_setGtroller", () => {
     it("should fail if called by non-admin", async () => {
       expect(
-        await send(jToken, "_setJoetroller", [newJoetroller._address], {
+        await send(jToken, "_setGtroller", [newGtroller._address], {
           from: accounts[0],
         })
       ).toHaveTokenFailure("UNAUTHORIZED", "SET_JOETROLLER_OWNER_CHECK");
-      expect(await call(jToken, "joetroller")).toEqual(oldJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(oldGtroller._address);
     });
 
-    it("reverts if passed a contract that doesn't implement isJoetroller", async () => {
+    it("reverts if passed a contract that doesn't implement isGtroller", async () => {
       await expect(
-        send(jToken, "_setJoetroller", [jToken.underlying._address])
+        send(jToken, "_setGtroller", [jToken.underlying._address])
       ).rejects.toRevert("revert");
-      expect(await call(jToken, "joetroller")).toEqual(oldJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(oldGtroller._address);
     });
 
-    it("reverts if passed a contract that implements isJoetroller as false", async () => {
+    it("reverts if passed a contract that implements isGtroller as false", async () => {
       // extremely unlikely to occur, of course, but let's be exhaustive
-      const badJoetroller = await makeJoetroller({ kind: "false-marker" });
+      const badGtroller = await makeGtroller({ kind: "false-marker" });
       await expect(
-        send(jToken, "_setJoetroller", [badJoetroller._address])
+        send(jToken, "_setGtroller", [badGtroller._address])
       ).rejects.toRevert("revert marker method returned false");
-      expect(await call(jToken, "joetroller")).toEqual(oldJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(oldGtroller._address);
     });
 
-    it("updates joetroller and emits log on success", async () => {
-      const result = await send(jToken, "_setJoetroller", [
-        newJoetroller._address,
-      ]);
+    it("updates gTroller and emits log on success", async () => {
+      const result = await send(jToken, "_setGtroller", [newGtroller._address]);
       expect(result).toSucceed();
-      expect(result).toHaveLog("NewJoetroller", {
-        oldJoetroller: oldJoetroller._address,
-        newJoetroller: newJoetroller._address,
+      expect(result).toHaveLog("NewGtroller", {
+        oldGtroller: oldGtroller._address,
+        newGtroller: newGtroller._address,
       });
-      expect(await call(jToken, "joetroller")).toEqual(newJoetroller._address);
+      expect(await call(jToken, "gTroller")).toEqual(newGtroller._address);
     });
   });
 });

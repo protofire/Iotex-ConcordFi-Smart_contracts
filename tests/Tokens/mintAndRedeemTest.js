@@ -5,7 +5,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   balanceOf,
   fastForward,
   setBalance,
@@ -26,8 +26,8 @@ const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
 async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
   await preApprove(jToken, minter, mintAmount);
-  await send(jToken.joetroller, "setMintAllowed", [true]);
-  await send(jToken.joetroller, "setMintVerify", [true]);
+  await send(jToken.gTroller, "setMintAllowed", [true]);
+  await send(jToken.gTroller, "setMintVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
     minter,
@@ -49,8 +49,8 @@ async function preRedeem(
   exchangeRate
 ) {
   await preSupply(jToken, redeemer, redeemTokens);
-  await send(jToken.joetroller, "setRedeemAllowed", [true]);
-  await send(jToken.joetroller, "setRedeemVerify", [true]);
+  await send(jToken.gTroller, "setRedeemAllowed", [true]);
+  await send(jToken.gTroller, "setRedeemVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken.underlying, "harnessSetBalance", [
     jToken._address,
@@ -72,13 +72,13 @@ async function redeemFreshAmount(jToken, redeemer, redeemTokens, redeemAmount) {
   return send(jToken, "harnessRedeemFresh", [redeemer, 0, redeemAmount]);
 }
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, minter, redeemer, accounts;
   let jToken;
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
-      joetrollerOpts: { kind: "bool" },
+    jToken = await makeGToken({
+      gTrollerOpts: { kind: "bool" },
       exchangeRate,
     });
   });
@@ -88,15 +88,15 @@ describe("JToken", function () {
       await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
     });
 
-    it("fails if joetroller tells it to", async () => {
-      await send(jToken.joetroller, "setMintAllowed", [false]);
+    it("fails if gTroller tells it to", async () => {
+      await send(jToken.gTroller, "setMintAllowed", [false]);
       expect(await mintFresh(jToken, minter, mintAmount)).toHaveTrollReject(
         "MINT_JOETROLLER_REJECTION",
         "MATH_ERROR"
       );
     });
 
-    it("proceeds if joetroller tells it to", async () => {
+    it("proceeds if gTroller tells it to", async () => {
       await expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
     });
 
@@ -228,8 +228,8 @@ describe("JToken", function () {
         );
       });
 
-      it("fails if joetroller tells it to", async () => {
-        await send(jToken.joetroller, "setRedeemAllowed", [false]);
+      it("fails if gTroller tells it to", async () => {
+        await send(jToken.gTroller, "setRedeemAllowed", [false]);
         expect(
           await redeemFresh(jToken, redeemer, redeemTokens, redeemAmount)
         ).toHaveTrollReject("REDEEM_JOETROLLER_REJECTION");

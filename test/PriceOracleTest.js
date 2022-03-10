@@ -22,16 +22,16 @@ describe("PriceOracleProxyUSD", function () {
     this.PriceOracleCFNew = await ethers.getContractFactory(
       "PriceOracleProxyUSD"
     );
-    this.JCollateralCapErc20DelegateCF = await ethers.getContractFactory(
-      "JCollateralCapErc20Delegate"
+    this.GCollateralCapXrc20DelegateCF = await ethers.getContractFactory(
+      "GCollateralCapXrc20Delegate"
     );
-    this.JErc20CF = await ethers.getContractFactory("JErc20");
+    this.GXrc20CF = await ethers.getContractFactory("GXrc20");
 
     // Tokens
-    // We cast here to JErc20 for its ERC20 interface
-    this.joe = await this.JErc20CF.attach(JOE_ADDRESS);
-    this.xJoe = await this.JErc20CF.attach(XJOE_ADDRESS);
-    this.jXJoe = await this.JCollateralCapErc20DelegateCF.attach(JXJOE_ADDRESS);
+    // We cast here to GXrc20 for its ERC20 interface
+    this.joe = await this.GXrc20CF.attach(JOE_ADDRESS);
+    this.xJoe = await this.GXrc20CF.attach(XJOE_ADDRESS);
+    this.jXJoe = await this.GCollateralCapXrc20DelegateCF.attach(JXJOE_ADDRESS);
     this.oracleOld = await this.PriceOracleCFOld.attach(
       PRICE_ORACLE_ARTIFACT_V1.address
     );

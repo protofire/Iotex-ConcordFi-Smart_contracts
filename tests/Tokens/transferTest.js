@@ -1,7 +1,7 @@
 const { avaxUnsigned, avaxMantissa } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   preApprove,
   balanceOf,
   fastForward,
@@ -13,8 +13,8 @@ const mintTokens = mintAmount.div(exchangeRate);
 
 async function preMint(jToken, minter, mintAmount, exchangeRate) {
   await preApprove(jToken, minter, mintAmount);
-  await send(jToken.joetroller, "setMintAllowed", [true]);
-  await send(jToken.joetroller, "setMintVerify", [true]);
+  await send(jToken.gTroller, "setMintAllowed", [true]);
+  await send(jToken.gTroller, "setMintVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
     minter,
@@ -28,7 +28,7 @@ async function mintFresh(jToken, minter, mintAmount) {
   return send(jToken, "harnessMintFresh", [minter, mintAmount]);
 }
 
-describe("JToken", function () {
+describe("GToken", function () {
   let root, minter, accounts;
   beforeEach(async () => {
     [root, minter, ...accounts] = saddle.accounts;
@@ -36,7 +36,7 @@ describe("JToken", function () {
 
   describe("transfer", () => {
     it("cannot transfer from a zero balance", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       expect(await call(jToken, "balanceOf", [root])).toEqualNumber(0);
       await expect(
         send(jToken, "transfer", [accounts[0], 100])
@@ -44,7 +44,7 @@ describe("JToken", function () {
     });
 
     it("transfers 50 tokens", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken, "harnessSetBalance", [root, 100]);
       expect(await call(jToken, "balanceOf", [root])).toEqualNumber(100);
       await send(jToken, "transfer", [accounts[0], 50]);
@@ -53,7 +53,7 @@ describe("JToken", function () {
     });
 
     it("doesn't transfer when src == dst", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken, "harnessSetBalance", [root, 100]);
       expect(await call(jToken, "balanceOf", [root])).toEqualNumber(100);
       expect(await send(jToken, "transfer", [root, 50])).toHaveTokenFailure(
@@ -63,25 +63,25 @@ describe("JToken", function () {
     });
 
     it("rejects transfer when not allowed and reverts if not verified", async () => {
-      const jToken = await makeJToken({ joetrollerOpts: { kind: "bool" } });
+      const jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
       await send(jToken, "harnessSetBalance", [root, 100]);
       expect(await call(jToken, "balanceOf", [root])).toEqualNumber(100);
 
-      await send(jToken.joetroller, "setTransferAllowed", [false]);
+      await send(jToken.gTroller, "setTransferAllowed", [false]);
       expect(await send(jToken, "transfer", [root, 50])).toHaveTrollReject(
         "TRANSFER_JOETROLLER_REJECTION"
       );
 
-      await send(jToken.joetroller, "setTransferAllowed", [true]);
-      await send(jToken.joetroller, "setTransferVerify", [false]);
+      await send(jToken.gTroller, "setTransferAllowed", [true]);
+      await send(jToken.gTroller, "setTransferVerify", [false]);
       // no longer support verifyTransfer on jToken end
       // await expect(send(jToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
     });
 
     it("transfers jjlp token", async () => {
-      const jToken = await makeJToken({
+      const jToken = await makeGToken({
         kind: "jjlp",
-        joetrollerOpts: { kind: "bool" },
+        gTrollerOpts: { kind: "bool" },
       });
       const joeAddress = await call(jToken, "joe", []);
       const masterChefAddress = await call(jToken, "masterChef", []);
@@ -117,7 +117,7 @@ describe("JToken", function () {
       await fastForward(jToken, 1);
       await fastForward(masterChef, 1);
 
-      await send(jToken, "claimJoe", [minter], { from: minter });
+      await send(jToken, "claimG", [minter], { from: minter });
       expect(await balanceOf(joe, minter)).toEqualNumber(avaxMantissa(1));
       expect(await call(jToken, "xJoeUserAccrued", [minter])).toEqualNumber(
         avaxMantissa(0)
@@ -126,7 +126,7 @@ describe("JToken", function () {
 
     describe("transfer jcollateralcap token", () => {
       it("transfers collateral tokens", async () => {
-        const jToken = await makeJToken({
+        const jToken = await makeGToken({
           kind: "jcollateralcap",
           supportMarket: true,
         });
@@ -153,7 +153,7 @@ describe("JToken", function () {
       });
 
       it("transfers non-collateral tokens", async () => {
-        const jToken = await makeJToken({
+        const jToken = await makeGToken({
           kind: "jcollateralcap",
           supportMarket: true,
         });
@@ -180,7 +180,7 @@ describe("JToken", function () {
       });
 
       it("transfers partial collateral tokens", async () => {
-        const jToken = await makeJToken({
+        const jToken = await makeGToken({
           kind: "jcollateralcap",
           supportMarket: true,
         });

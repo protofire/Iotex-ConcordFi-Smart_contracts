@@ -6,7 +6,7 @@ const {
 } = require("./Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   balanceOf,
   borrowSnapshot,
   enterMarkets,
@@ -21,7 +21,7 @@ describe("Spinarama", () => {
 
   describe("#mintMint", () => {
     it("should succeed", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
       await send(
         jToken.underlying,
@@ -39,7 +39,7 @@ describe("Spinarama", () => {
     });
 
     it("should partial succeed", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
       await send(jToken.underlying, "approve", [jToken._address, 10], { from });
       await minerStop();
@@ -61,7 +61,7 @@ describe("Spinarama", () => {
 
   describe("#mintRedeem", () => {
     it("should succeed", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
       await send(jToken.underlying, "approve", [jToken._address, 10], { from });
       await minerStop();
@@ -76,7 +76,7 @@ describe("Spinarama", () => {
 
   describe("#redeemMint", () => {
     it("should succeed", async () => {
-      const jToken = await makeJToken({ supportMarket: true });
+      const jToken = await makeGToken({ supportMarket: true });
       await send(jToken, "harnessSetTotalSupply", [10]);
       await send(jToken, "harnessSetExchangeRate", [avaxMantissa(1)]);
       await send(jToken, "harnessSetBalance", [from, 10]);
@@ -94,15 +94,15 @@ describe("Spinarama", () => {
 
   describe("#repayRepay", () => {
     it("should succeed", async () => {
-      const jToken1 = await makeJToken({
+      const jToken1 = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
         collateralFactor: 0.5,
       });
-      const jToken2 = await makeJToken({
+      const jToken2 = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
-        joetroller: jToken1.joetroller,
+        gTroller: jToken1.gTroller,
       });
       await send(jToken1.underlying, "harnessSetBalance", [from, 10]);
       await send(jToken1.underlying, "approve", [jToken1._address, 10], {

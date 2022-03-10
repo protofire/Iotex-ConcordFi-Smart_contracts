@@ -1,18 +1,18 @@
 pragma solidity ^0.5.16;
 pragma experimental ABIEncoderV2;
 
-import "../../contracts/JErc20Immutable.sol";
-import "../../contracts/JErc20Delegator.sol";
-import "../../contracts/JErc20Delegate.sol";
+import "../../contracts/GXrc20Immutable.sol";
+import "../../contracts/GXrc20Delegator.sol";
+import "../../contracts/GXrc20Delegate.sol";
 import "../../contracts/JJLPDelegate.sol";
-import "../../contracts/JJTokenDelegate.sol";
-import "../../contracts/JCollateralCapErc20Delegate.sol";
-import "../../contracts/JCollateralCapErc20Delegator.sol";
-import "../../contracts/JWrappedNativeDelegate.sol";
-import "../../contracts/JWrappedNativeDelegator.sol";
-import "./JoetrollerScenario.sol";
+import "../../contracts/JGTokenDelegate.sol";
+import "../../contracts/GCollateralCapXrc20Delegate.sol";
+import "../../contracts/GCollateralCapXrc20Delegator.sol";
+import "../../contracts/GWrappedNativeDelegate.sol";
+import "../../contracts/GWrappedNativeDelegator.sol";
+import "./GtrollerScenario.sol";
 
-contract JErc20Harness is JErc20Immutable {
+contract GXrc20Harness is GXrc20Immutable {
     uint256 blockTimestamp = 100000;
     uint256 harnessExchangeRate;
     bool harnessExchangeRateStored;
@@ -21,7 +21,7 @@ contract JErc20Harness is JErc20Immutable {
 
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -30,9 +30,9 @@ contract JErc20Harness is JErc20Immutable {
         address payable admin_
     )
         public
-        JErc20Immutable(
+        GXrc20Immutable(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -160,7 +160,7 @@ contract JErc20Harness is JErc20Immutable {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -183,14 +183,14 @@ contract JErc20Harness is JErc20Immutable {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 }
 
-contract JErc20Scenario is JErc20Immutable {
+contract GXrc20Scenario is GXrc20Immutable {
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -199,9 +199,9 @@ contract JErc20Scenario is JErc20Immutable {
         address payable admin_
     )
         public
-        JErc20Immutable(
+        GXrc20Immutable(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -220,15 +220,15 @@ contract JErc20Scenario is JErc20Immutable {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }
 
-contract JEvil is JErc20Scenario {
+contract JEvil is GXrc20Scenario {
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -237,9 +237,9 @@ contract JEvil is JErc20Scenario {
         address payable admin_
     )
         public
-        JErc20Scenario(
+        GXrc20Scenario(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -250,7 +250,7 @@ contract JEvil is JErc20Scenario {
     {}
 
     function evilSeize(
-        JToken treasure,
+        GToken treasure,
         address liquidator,
         address borrower,
         uint256 seizeTokens
@@ -259,10 +259,10 @@ contract JEvil is JErc20Scenario {
     }
 }
 
-contract JErc20DelegatorScenario is JErc20Delegator {
+contract GXrc20DelegatorScenario is GXrc20Delegator {
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -273,9 +273,9 @@ contract JErc20DelegatorScenario is JErc20Delegator {
         bytes memory becomeImplementationData
     )
         public
-        JErc20Delegator(
+        GXrc20Delegator(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -296,10 +296,10 @@ contract JErc20DelegatorScenario is JErc20Delegator {
     }
 }
 
-contract JCollateralCapErc20DelegatorScenario is JCollateralCapErc20Delegator {
+contract GCollateralCapXrc20DelegatorScenario is GCollateralCapXrc20Delegator {
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -310,9 +310,9 @@ contract JCollateralCapErc20DelegatorScenario is JCollateralCapErc20Delegator {
         bytes memory becomeImplementationData
     )
         public
-        JCollateralCapErc20Delegator(
+        GCollateralCapXrc20Delegator(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -333,10 +333,10 @@ contract JCollateralCapErc20DelegatorScenario is JCollateralCapErc20Delegator {
     }
 }
 
-contract JWrappedNativeDelegatorScenario is JWrappedNativeDelegator {
+contract GWrappedNativeDelegatorScenario is GWrappedNativeDelegator {
     constructor(
         address underlying_,
-        JoetrollerInterface joetroller_,
+        GtrollerInterface gTroller_,
         InterestRateModel interestRateModel_,
         uint256 initialExchangeRateMantissa_,
         string memory name_,
@@ -347,9 +347,9 @@ contract JWrappedNativeDelegatorScenario is JWrappedNativeDelegator {
         bytes memory becomeImplementationData
     )
         public
-        JWrappedNativeDelegator(
+        GWrappedNativeDelegator(
             underlying_,
-            joetroller_,
+            gTroller_,
             interestRateModel_,
             initialExchangeRateMantissa_,
             name_,
@@ -372,7 +372,7 @@ contract JWrappedNativeDelegatorScenario is JWrappedNativeDelegator {
     function() external payable {}
 }
 
-contract JErc20DelegateHarness is JErc20Delegate {
+contract GXrc20DelegateHarness is GXrc20Delegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -504,7 +504,7 @@ contract JErc20DelegateHarness is JErc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -527,11 +527,11 @@ contract JErc20DelegateHarness is JErc20Delegate {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 }
 
-contract JErc20DelegateScenario is JErc20Delegate {
+contract GXrc20DelegateScenario is GXrc20Delegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
@@ -543,12 +543,12 @@ contract JErc20DelegateScenario is JErc20Delegate {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }
 
-contract JErc20DelegateScenarioExtra is JErc20DelegateScenario {
+contract GXrc20DelegateScenarioExtra is GXrc20DelegateScenario {
     function iHaveSpoken() public pure returns (string memory) {
         return "i have spoken";
     }
@@ -678,7 +678,7 @@ contract JJLPDelegateHarness is JJLPDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -701,7 +701,7 @@ contract JJLPDelegateHarness is JJLPDelegate {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 }
 
@@ -715,12 +715,12 @@ contract JJLPDelegateScenario is JJLPDelegate {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }
 
-contract JJTokenDelegateHarness is JJTokenDelegate {
+contract JGTokenDelegateHarness is JGTokenDelegate {
     uint256 blockTimestamp = 100000;
     uint256 harnessExchangeRate;
     bool harnessExchangeRateStored;
@@ -836,7 +836,7 @@ contract JJTokenDelegateHarness is JJTokenDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -859,7 +859,7 @@ contract JJTokenDelegateHarness is JJTokenDelegate {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 
     function harnessSetInternalCash(uint256 amount) public returns (uint256) {
@@ -867,7 +867,7 @@ contract JJTokenDelegateHarness is JJTokenDelegate {
     }
 }
 
-contract JJTokenDelegateScenario is JJTokenDelegate {
+contract JGTokenDelegateScenario is JGTokenDelegate {
     function setTotalBorrows(uint256 totalBorrows_) public {
         totalBorrows = totalBorrows_;
     }
@@ -877,12 +877,12 @@ contract JJTokenDelegateScenario is JJTokenDelegate {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }
 
-contract JCollateralCapErc20DelegateHarness is JCollateralCapErc20Delegate {
+contract GCollateralCapXrc20DelegateHarness is GCollateralCapXrc20Delegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -1026,7 +1026,7 @@ contract JCollateralCapErc20DelegateHarness is JCollateralCapErc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
         return err;
@@ -1049,7 +1049,7 @@ contract JCollateralCapErc20DelegateHarness is JCollateralCapErc20Delegate {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 
     function harnessSetInternalCash(uint256 amount) public returns (uint256) {
@@ -1057,7 +1057,7 @@ contract JCollateralCapErc20DelegateHarness is JCollateralCapErc20Delegate {
     }
 }
 
-contract JCollateralCapErc20DelegateScenario is JCollateralCapErc20Delegate {
+contract GCollateralCapXrc20DelegateScenario is GCollateralCapXrc20Delegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
@@ -1069,12 +1069,12 @@ contract JCollateralCapErc20DelegateScenario is JCollateralCapErc20Delegate {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 }
 
-contract JWrappedNativeDelegateHarness is JWrappedNativeDelegate {
+contract GWrappedNativeDelegateHarness is GWrappedNativeDelegate {
     event Log(string x, address y);
     event Log(string x, uint256 y);
 
@@ -1210,7 +1210,7 @@ contract JWrappedNativeDelegateHarness is JWrappedNativeDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        JToken jTokenCollateral
+        GToken jTokenCollateral
     ) public returns (uint256) {
         // isNative is not important for liquidate borrow fresh testing.
         (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, true);
@@ -1234,7 +1234,7 @@ contract JWrappedNativeDelegateHarness is JWrappedNativeDelegate {
     }
 
     function harnessCallBorrowAllowed(uint256 amount) public returns (uint256) {
-        return joetroller.borrowAllowed(address(this), msg.sender, amount);
+        return gTroller.borrowAllowed(address(this), msg.sender, amount);
     }
 
     function harnessDoTransferIn(address from, uint256 amount) public payable returns (uint256) {
@@ -1248,7 +1248,7 @@ contract JWrappedNativeDelegateHarness is JWrappedNativeDelegate {
     function() external payable {}
 }
 
-contract JWrappedNativeDelegateScenario is JWrappedNativeDelegate {
+contract GWrappedNativeDelegateScenario is GWrappedNativeDelegate {
     constructor() public {}
 
     function setTotalBorrows(uint256 totalBorrows_) public {
@@ -1260,8 +1260,8 @@ contract JWrappedNativeDelegateScenario is JWrappedNativeDelegate {
     }
 
     function getBlockTimestamp() internal view returns (uint256) {
-        JoetrollerScenario joetrollerScenario = JoetrollerScenario(address(joetroller));
-        return joetrollerScenario.blockTimestamp();
+        GtrollerScenario gTrollerScenario = GtrollerScenario(address(gTroller));
+        return gTrollerScenario.blockTimestamp();
     }
 
     function() external payable {}

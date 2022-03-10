@@ -3,21 +3,21 @@
 pragma solidity ^0.5.16;
 
 import "./ErrorReporter.sol";
-import "./JoetrollerStorage.sol";
+import "./GtrollerStorage.sol";
 
 /**
- * @title JoetrollerCore
- * @dev Storage for the joetroller is at this address, while execution is delegated to the `implementation`.
- * JTokens should reference this contract as their joetroller.
+ * @title GtrollerCore
+ * @dev Storage for the gTroller is at this address, while execution is delegated to the `implementation`.
+ * GTokens should reference this contract as their gTroller.
  */
-contract Unitroller is UnitrollerAdminStorage, JoetrollerErrorReporter {
+contract Unitroller is UnitrollerAdminStorage, GtrollerErrorReporter {
     /**
      * @notice Emitted when pendingImplementation is changed
      */
     event NewPendingImplementation(address oldPendingImplementation, address newPendingImplementation);
 
     /**
-     * @notice Emitted when pendingImplementation is accepted, which means joetroller implementation is updated
+     * @notice Emitted when pendingImplementation is accepted, which means gTroller implementation is updated
      */
     event NewImplementation(address oldImplementation, address newImplementation);
 
@@ -52,7 +52,7 @@ contract Unitroller is UnitrollerAdminStorage, JoetrollerErrorReporter {
     }
 
     /**
-     * @notice Accepts new implementation of joetroller. msg.sender must be pendingImplementation
+     * @notice Accepts new implementation of gTroller. msg.sender must be pendingImplementation
      * @dev Admin function for new implementation to accept it's role as implementation
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */

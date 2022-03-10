@@ -1,6 +1,6 @@
 import { Event } from "../Event";
 import { addAction, World } from "../World";
-import { JoetrollerImpl } from "../Contract/JoetrollerImpl";
+import { GtrollerImpl } from "../Contract/GtrollerImpl";
 import { Unitroller } from "../Contract/Unitroller";
 import { invoke } from "../Invokation";
 import {
@@ -13,32 +13,32 @@ import {
 } from "../CoreValue";
 import { ArrayV, AddressV, EventV, NumberV, StringV } from "../Value";
 import { Arg, Command, View, processCommandEvent } from "../Command";
-import { buildJoetrollerImpl } from "../Builder/JoetrollerImplBuilder";
-import { JoetrollerErrorReporter } from "../ErrorReporter";
+import { buildGtrollerImpl } from "../Builder/GtrollerImplBuilder";
+import { GtrollerErrorReporter } from "../ErrorReporter";
 import {
-  getJoetrollerImpl,
-  getJoetrollerImplData,
+  getGtrollerImpl,
+  getGtrollerImplData,
   getUnitroller,
 } from "../ContractLookup";
 import { verify } from "../Verify";
 import { mergeContractABI } from "../Networks";
 
-async function genJoetrollerImpl(
+async function genGtrollerImpl(
   world: World,
   from: string,
   params: Event
 ): Promise<World> {
   let {
     world: nextWorld,
-    joetrollerImpl,
-    joetrollerImplData,
-  } = await buildJoetrollerImpl(world, from, params);
+    gTrollerImpl,
+    gTrollerImplData,
+  } = await buildGtrollerImpl(world, from, params);
   world = nextWorld;
 
   world = addAction(
     world,
-    `Added Joetroller Implementation (${joetrollerImplData.description}) at address ${joetrollerImpl._address}`,
-    joetrollerImplData.invokation
+    `Added Gtroller Implementation (${gTrollerImplData.description}) at address ${gTrollerImpl._address}`,
+    gTrollerImplData.invokation
   );
 
   return world;
@@ -47,17 +47,17 @@ async function genJoetrollerImpl(
 async function mergeABI(
   world: World,
   from: string,
-  joetrollerImpl: JoetrollerImpl,
+  gTrollerImpl: GtrollerImpl,
   unitroller: Unitroller
 ): Promise<World> {
   if (!world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world = await mergeContractABI(
       world,
-      "Joetroller",
+      "Gtroller",
       unitroller,
       unitroller.name,
-      joetrollerImpl.name
+      gTrollerImpl.name
     );
   }
 
@@ -67,39 +67,39 @@ async function mergeABI(
 async function become(
   world: World,
   from: string,
-  joetrollerImpl: JoetrollerImpl,
+  gTrollerImpl: GtrollerImpl,
   unitroller: Unitroller
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    joetrollerImpl.methods._become(unitroller._address),
+    gTrollerImpl.methods._become(unitroller._address),
     from,
-    JoetrollerErrorReporter
+    GtrollerErrorReporter
   );
 
   if (!world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world = await mergeContractABI(
       world,
-      "Joetroller",
+      "Gtroller",
       unitroller,
       unitroller.name,
-      joetrollerImpl.name
+      gTrollerImpl.name
     );
   }
 
   world = addAction(
     world,
-    `Become ${unitroller._address}'s Joetroller Impl`,
+    `Become ${unitroller._address}'s Gtroller Impl`,
     invokation
   );
 
   return world;
 }
 
-async function verifyJoetrollerImpl(
+async function verifyGtrollerImpl(
   world: World,
-  joetrollerImpl: JoetrollerImpl,
+  gTrollerImpl: GtrollerImpl,
   name: string,
   contract: string,
   apiKey: string
@@ -109,44 +109,44 @@ async function verifyJoetrollerImpl(
       `Politely declining to verify on local network: ${world.network}.`
     );
   } else {
-    await verify(world, apiKey, name, contract, joetrollerImpl._address);
+    await verify(world, apiKey, name, contract, gTrollerImpl._address);
   }
 
   return world;
 }
 
-export function joetrollerImplCommands() {
+export function gTrollerImplCommands() {
   return [
-    new Command<{ joetrollerImplParams: EventV }>(
+    new Command<{ gTrollerImplParams: EventV }>(
       `
         #### Deploy
 
-        * "JoetrollerImpl Deploy ...joetrollerImplParams" - Generates a new Joetroller Implementation
-          * E.g. "JoetrollerImpl Deploy MyScen Scenario"
+        * "GtrollerImpl Deploy ...gTrollerImplParams" - Generates a new Gtroller Implementation
+          * E.g. "GtrollerImpl Deploy MyScen Scenario"
       `,
       "Deploy",
-      [new Arg("joetrollerImplParams", getEventV, { variadic: true })],
-      (world, from, { joetrollerImplParams }) =>
-        genJoetrollerImpl(world, from, joetrollerImplParams.val)
+      [new Arg("gTrollerImplParams", getEventV, { variadic: true })],
+      (world, from, { gTrollerImplParams }) =>
+        genGtrollerImpl(world, from, gTrollerImplParams.val)
     ),
-    new View<{ joetrollerImplArg: StringV; apiKey: StringV }>(
+    new View<{ gTrollerImplArg: StringV; apiKey: StringV }>(
       `
         #### Verify
 
-        * "JoetrollerImpl <Impl> Verify apiKey:<String>" - Verifies Joetroller Implemetation in Etherscan
-          * E.g. "JoetrollerImpl Verify "myApiKey"
+        * "GtrollerImpl <Impl> Verify apiKey:<String>" - Verifies Gtroller Implemetation in Etherscan
+          * E.g. "GtrollerImpl Verify "myApiKey"
       `,
       "Verify",
-      [new Arg("joetrollerImplArg", getStringV), new Arg("apiKey", getStringV)],
-      async (world, { joetrollerImplArg, apiKey }) => {
-        let [joetrollerImpl, name, data] = await getJoetrollerImplData(
+      [new Arg("gTrollerImplArg", getStringV), new Arg("apiKey", getStringV)],
+      async (world, { gTrollerImplArg, apiKey }) => {
+        let [gTrollerImpl, name, data] = await getGtrollerImplData(
           world,
-          joetrollerImplArg.val
+          gTrollerImplArg.val
         );
 
-        return await verifyJoetrollerImpl(
+        return await verifyGtrollerImpl(
           world,
-          joetrollerImpl,
+          gTrollerImpl,
           name,
           data.get("contract")!,
           apiKey.val
@@ -157,55 +157,55 @@ export function joetrollerImplCommands() {
 
     new Command<{
       unitroller: Unitroller;
-      joetrollerImpl: JoetrollerImpl;
+      gTrollerImpl: GtrollerImpl;
     }>(
       `
         #### Become
 
-        * "JoetrollerImpl <Impl> Become <Rate> <JoeMarkets> <OtherMarkets>" - Become the joetroller, if possible.
-          * E.g. "JoetrollerImpl MyImpl Become 0.1e18 [cDAI, cETH, cUSDC]
+        * "GtrollerImpl <Impl> Become <Rate> <JoeMarkets> <OtherMarkets>" - Become the gTroller, if possible.
+          * E.g. "GtrollerImpl MyImpl Become 0.1e18 [cDAI, cETH, cUSDC]
       `,
       "Become",
       [
         new Arg("unitroller", getUnitroller, { implicit: true }),
-        new Arg("joetrollerImpl", getJoetrollerImpl),
+        new Arg("gTrollerImpl", getGtrollerImpl),
       ],
-      (world, from, { unitroller, joetrollerImpl }) => {
-        return become(world, from, joetrollerImpl, unitroller);
+      (world, from, { unitroller, gTrollerImpl }) => {
+        return become(world, from, gTrollerImpl, unitroller);
       },
       { namePos: 1 }
     ),
 
     new Command<{
       unitroller: Unitroller;
-      joetrollerImpl: JoetrollerImpl;
+      gTrollerImpl: GtrollerImpl;
     }>(
       `
         #### MergeABI
 
-        * "JoetrollerImpl <Impl> MergeABI" - Merges the ABI, as if it was a become.
-          * E.g. "JoetrollerImpl MyImpl MergeABI
+        * "GtrollerImpl <Impl> MergeABI" - Merges the ABI, as if it was a become.
+          * E.g. "GtrollerImpl MyImpl MergeABI
       `,
       "MergeABI",
       [
         new Arg("unitroller", getUnitroller, { implicit: true }),
-        new Arg("joetrollerImpl", getJoetrollerImpl),
+        new Arg("gTrollerImpl", getGtrollerImpl),
       ],
-      (world, from, { unitroller, joetrollerImpl }) =>
-        mergeABI(world, from, joetrollerImpl, unitroller),
+      (world, from, { unitroller, gTrollerImpl }) =>
+        mergeABI(world, from, gTrollerImpl, unitroller),
       { namePos: 1 }
     ),
   ];
 }
 
-export async function processJoetrollerImplEvent(
+export async function processGtrollerImplEvent(
   world: World,
   event: Event,
   from: string | null
 ): Promise<World> {
   return await processCommandEvent<any>(
-    "JoetrollerImpl",
-    joetrollerImplCommands(),
+    "GtrollerImpl",
+    gTrollerImplCommands(),
     world,
     event,
     from

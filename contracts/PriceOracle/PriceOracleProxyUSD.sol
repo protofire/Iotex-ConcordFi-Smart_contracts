@@ -2,8 +2,8 @@
 
 pragma solidity ^0.5.16;
 
-import "../JErc20.sol";
-import "../JToken.sol";
+import "../GXrc20.sol";
+import "../GToken.sol";
 import "./PriceOracle.sol";
 import "../Exponential.sol";
 import "../EIP20Interface.sol";
@@ -75,13 +75,13 @@ contract PriceOracleProxyUSD is PriceOracle, Exponential {
      * @param jToken The jToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(JToken jToken) public view returns (uint256) {
+    function getUnderlyingPrice(GToken jToken) public view returns (uint256) {
         address jTokenAddress = address(jToken);
 
         AggregatorV3Interface aggregator = aggregators[jTokenAddress];
         if (address(aggregator) != address(0)) {
             uint256 price = getPriceFromChainlink(aggregator);
-            uint256 underlyingDecimals = EIP20Interface(JErc20(jTokenAddress).underlying()).decimals();
+            uint256 underlyingDecimals = EIP20Interface(GXrc20(jTokenAddress).underlying()).decimals();
 
             if (jTokenAddress == jXJoeAddress){
                 price = mul_(price, Exp({mantissa: getXJoeRatio()}));
@@ -93,7 +93,7 @@ contract PriceOracleProxyUSD is PriceOracle, Exponential {
             return div_(price, 10**(underlyingDecimals - 18));
         }
 
-        address asset = address(JErc20(jTokenAddress).underlying());
+        address asset = address(GXrc20(jTokenAddress).underlying());
 
         uint256 price = prices[asset];
         require(price > 0, "invalid price");
@@ -175,9 +175,9 @@ contract PriceOracleProxyUSD is PriceOracle, Exponential {
      * @param jToken The jToken to get underlying asset from
      * @param underlyingPriceMantissa The new price for the underling asset
      */
-    function _setUnderlyingPrice(JToken jToken, uint256 underlyingPriceMantissa) external {
+    function _setUnderlyingPrice(GToken jToken, uint256 underlyingPriceMantissa) external {
         require(msg.sender == admin, "only the admin may set the underlying price");
-        address asset = address(JErc20(address(jToken)).underlying());
+        address asset = address(GXrc20(address(jToken)).underlying());
         prices[asset] = underlyingPriceMantissa;
     }
 

@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
 import "./ERC20.sol";
-import "../../contracts/JCollateralCapErc20.sol";
+import "../../contracts/GCollateralCapXrc20.sol";
 import "../../contracts/ERC3156FlashLenderInterface.sol";
-import "../../contracts/JWrappedNative.sol";
+import "../../contracts/GWrappedNative.sol";
 import "../../contracts/SafeMath.sol";
 
 // FlashloanReceiver is a simple flashloan receiver implementation for testing
@@ -19,10 +19,10 @@ contract FlashloanReceiver is ERC3156FlashBorrowerInterface {
         uint256 borrowAmount,
         uint256 repayAmount
     ) external {
-        borrowToken = JCollateralCapErc20(jToken).underlying();
+        borrowToken = GCollateralCapXrc20(jToken).underlying();
         uint256 balanceBefore = ERC20(borrowToken).balanceOf(address(this));
         bytes memory data = abi.encode(jToken, borrowAmount, repayAmount);
-        totalBorrows = JCollateralCapErc20(jToken).totalBorrows();
+        totalBorrows = GCollateralCapXrc20(jToken).totalBorrows();
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
     }
 
@@ -37,7 +37,7 @@ contract FlashloanReceiver is ERC3156FlashBorrowerInterface {
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         (address jToken, uint256 borrowAmount, uint256 repayAmount) = abi.decode(data, (address, uint256, uint256));
         require(amount == borrowAmount, "Params not match");
-        uint256 totalBorrowsAfter = JCollateralCapErc20(jToken).totalBorrows();
+        uint256 totalBorrowsAfter = GCollateralCapXrc20(jToken).totalBorrows();
         require(totalBorrows.add(borrowAmount) == totalBorrowsAfter, "totalBorrow mismatch");
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
@@ -53,7 +53,7 @@ contract FlashloanAndMint is ERC3156FlashBorrowerInterface {
         address jToken,
         uint256 borrowAmount
     ) external {
-        borrowToken = JCollateralCapErc20(jToken).underlying();
+        borrowToken = GCollateralCapXrc20(jToken).underlying();
         bytes memory data = abi.encode(jToken);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
     }
@@ -68,7 +68,7 @@ contract FlashloanAndMint is ERC3156FlashBorrowerInterface {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         address jToken = abi.decode(data, (address));
-        JCollateralCapErc20(jToken).mint(amount.add(fee));
+        GCollateralCapXrc20(jToken).mint(amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -83,7 +83,7 @@ contract FlashloanAndRepayBorrow is ERC3156FlashBorrowerInterface {
         address jToken,
         uint256 borrowAmount
     ) external {
-        borrowToken = JCollateralCapErc20(jToken).underlying();
+        borrowToken = GCollateralCapXrc20(jToken).underlying();
         bytes memory data = abi.encode(jToken);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
     }
@@ -98,7 +98,7 @@ contract FlashloanAndRepayBorrow is ERC3156FlashBorrowerInterface {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         address jToken = abi.decode(data, (address));
-        JCollateralCapErc20(jToken).repayBorrow(amount.add(fee));
+        GCollateralCapXrc20(jToken).repayBorrow(amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -112,7 +112,7 @@ contract FlashloanTwice is ERC3156FlashBorrowerInterface {
         address jToken,
         uint256 borrowAmount
     ) external {
-        borrowToken = JCollateralCapErc20(jToken).underlying();
+        borrowToken = GCollateralCapXrc20(jToken).underlying();
 
         bytes memory data = abi.encode(jToken);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
@@ -128,7 +128,7 @@ contract FlashloanTwice is ERC3156FlashBorrowerInterface {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         ERC20(borrowToken).approve(msg.sender, amount.add(fee));
         address jToken = abi.decode(data, (address));
-        JCollateralCapErc20(jToken).flashLoan(this, address(this), amount, data);
+        GCollateralCapXrc20(jToken).flashLoan(this, address(this), amount, data);
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -144,10 +144,10 @@ contract FlashloanReceiverNative is ERC3156FlashBorrowerInterface {
         uint256 borrowAmount,
         uint256 repayAmount
     ) external {
-        ERC20 underlying = ERC20(JWrappedNative(jToken).underlying());
+        ERC20 underlying = ERC20(GWrappedNative(jToken).underlying());
         uint256 balanceBefore = underlying.balanceOf(address(this));
         bytes memory data = abi.encode(jToken, borrowAmount);
-        totalBorrows = JWrappedNative(jToken).totalBorrows();
+        totalBorrows = GWrappedNative(jToken).totalBorrows();
         underlying.approve(jToken, repayAmount);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, address(underlying), borrowAmount, data);
         uint256 balanceAfter = underlying.balanceOf(address(this));
@@ -163,9 +163,9 @@ contract FlashloanReceiverNative is ERC3156FlashBorrowerInterface {
     ) external returns (bytes32) {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         (address payable jToken, uint256 borrowAmount) = abi.decode(data, (address, uint256));
-        require(token == JWrappedNative(jToken).underlying(), "Params not match");
+        require(token == GWrappedNative(jToken).underlying(), "Params not match");
         require(amount == borrowAmount, "Params not match");
-        uint256 totalBorrowsAfter = JWrappedNative(jToken).totalBorrows();
+        uint256 totalBorrowsAfter = GWrappedNative(jToken).totalBorrows();
         require(totalBorrows.add(borrowAmount) == totalBorrowsAfter, "totalBorrow mismatch");
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
@@ -184,7 +184,7 @@ contract FlashloanAndMintNative is ERC3156FlashBorrowerInterface {
         bytes memory data = abi.encode(jToken);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(
             this,
-            JWrappedNative(jToken).underlying(),
+            GWrappedNative(jToken).underlying(),
             borrowAmount,
             data
         );
@@ -199,7 +199,7 @@ contract FlashloanAndMintNative is ERC3156FlashBorrowerInterface {
     ) external returns (bytes32) {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         address payable jToken = abi.decode(data, (address));
-        JWrappedNative(jToken).mint(amount.add(fee));
+        GWrappedNative(jToken).mint(amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -215,7 +215,7 @@ contract FlashloanAndRepayBorrowNative is ERC3156FlashBorrowerInterface {
         bytes memory data = abi.encode(jToken);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(
             this,
-            JWrappedNative(jToken).underlying(),
+            GWrappedNative(jToken).underlying(),
             borrowAmount,
             data
         );
@@ -230,7 +230,7 @@ contract FlashloanAndRepayBorrowNative is ERC3156FlashBorrowerInterface {
     ) external returns (bytes32) {
         require(initiator == address(this), "FlashBorrower: Untrusted loan initiator");
         address payable jToken = abi.decode(data, (address));
-        JWrappedNative(jToken).repayBorrow(amount.add(fee));
+        GWrappedNative(jToken).repayBorrow(amount.add(fee));
         return keccak256("ERC3156FlashBorrowerInterface.onFlashLoan");
     }
 }
@@ -243,7 +243,7 @@ contract FlashloanTwiceNative is ERC3156FlashBorrowerInterface {
         address payable jToken,
         uint256 borrowAmount
     ) external {
-        address borrowToken = JWrappedNative(jToken).underlying();
+        address borrowToken = GWrappedNative(jToken).underlying();
         bytes memory data = abi.encode(flashloanLender);
         ERC3156FlashLenderInterface(flashloanLender).flashLoan(this, borrowToken, borrowAmount, data);
     }

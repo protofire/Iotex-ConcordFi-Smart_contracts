@@ -15,9 +15,9 @@ module.exports = async function ({
 
   const { deployer } = await getNamedAccounts();
   const chainId = await getChainId();
-  const Joetroller = await ethers.getContract("Joetroller");
+  const Gtroller = await ethers.getContract("Gtroller");
   const unitroller = await ethers.getContract("Unitroller");
-  const joetroller = Joetroller.attach(unitroller.address);
+  const gTroller = Gtroller.attach(unitroller.address);
 
   const interestRateModel = await ethers.getContract("MajorInterestRateModel");
 
@@ -25,7 +25,7 @@ module.exports = async function ({
     from: deployer,
     log: true,
     deterministicDeployment: false,
-    contract: "JCollateralCapErc20Delegate",
+    contract: "GCollateralCapXrc20Delegate",
   });
   const jWbtcDelegate = await ethers.getContract("JWbtcDelegate");
 
@@ -33,7 +33,7 @@ module.exports = async function ({
     from: deployer,
     args: [
       WBTC.get(chainId),
-      joetroller.address,
+      gTroller.address,
       interestRateModel.address,
       ethers.utils.parseUnits("2", 16).toString(),
       "Banker Joe Wrapped Bitcoin",
@@ -45,13 +45,13 @@ module.exports = async function ({
     ],
     log: true,
     deterministicDeployment: false,
-    contract: "JCollateralCapErc20Delegator",
+    contract: "GCollateralCapXrc20Delegator",
   });
   await deployment.receipt;
   const jWbtcDelegator = await ethers.getContract("JWbtcDelegator");
 
   console.log("Supporting jWBTC market...");
-  await joetroller._supportMarket(jWbtcDelegator.address, 1, {
+  await gTroller._supportMarket(jWbtcDelegator.address, 1, {
     gasLimit: 2000000,
   });
 
@@ -64,7 +64,7 @@ module.exports = async function ({
 
   const collateralFactor = "0.75";
   console.log("Setting collateral factor ", collateralFactor);
-  await joetroller._setCollateralFactor(
+  await gTroller._setCollateralFactor(
     jWbtcDelegator.address,
     ethers.utils.parseEther(collateralFactor)
   );
@@ -78,7 +78,7 @@ module.exports = async function ({
 
 module.exports.tags = ["jWBTC"];
 module.exports.dependencies = [
-  "Joetroller",
+  "Gtroller",
   "TripleSlopeRateModel",
   "PriceOracle",
 ];

@@ -5,7 +5,7 @@ const {
 } = require("../Utils/Avalanche");
 
 const {
-  makeJToken,
+  makeGToken,
   fastForward,
   setBalance,
   setAvaxBalance,
@@ -20,8 +20,8 @@ const redeemTokens = avaxUnsigned(10e3);
 const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
 async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await send(jToken.joetroller, "setMintAllowed", [true]);
-  await send(jToken.joetroller, "setMintVerify", [true]);
+  await send(jToken.gTroller, "setMintAllowed", [true]);
+  await send(jToken.gTroller, "setMintVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken.underlying, "deposit", [], {
     from: minter,
@@ -50,8 +50,8 @@ async function preRedeem(
   exchangeRate
 ) {
   const root = saddle.account;
-  await send(jToken.joetroller, "setRedeemAllowed", [true]);
-  await send(jToken.joetroller, "setRedeemVerify", [true]);
+  await send(jToken.gTroller, "setRedeemAllowed", [true]);
+  await send(jToken.gTroller, "setRedeemVerify", [true]);
   await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
   await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
   await send(jToken.underlying, "deposit", [], {
@@ -66,7 +66,7 @@ async function preRedeem(
   await setBalance(jToken, redeemer, redeemTokens);
 }
 
-async function redeemJTokensNative(
+async function redeemGTokensNative(
   jToken,
   redeemer,
   redeemTokens,
@@ -75,7 +75,7 @@ async function redeemJTokensNative(
   return send(jToken, "redeemNative", [redeemTokens], { from: redeemer });
 }
 
-async function redeemJTokens(jToken, redeemer, redeemTokens, redeemAmount) {
+async function redeemGTokens(jToken, redeemer, redeemTokens, redeemAmount) {
   return send(jToken, "redeem", [redeemTokens], { from: redeemer });
 }
 
@@ -100,9 +100,9 @@ describe("CWrappedNative", () => {
 
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
-    jToken = await makeJToken({
+    jToken = await makeGToken({
       kind: "jwrapped",
-      joetrollerOpts: { kind: "bool" },
+      gTrollerOpts: { kind: "bool" },
       exchangeRate,
     });
     await fastForward(jToken, 1);
@@ -167,7 +167,7 @@ describe("CWrappedNative", () => {
     });
   });
 
-  [redeemJTokensNative, redeemUnderlyingNative].forEach((redeem) => {
+  [redeemGTokensNative, redeemUnderlyingNative].forEach((redeem) => {
     describe(redeem.name, () => {
       beforeEach(async () => {
         await preRedeem(
@@ -226,7 +226,7 @@ describe("CWrappedNative", () => {
     });
   });
 
-  [redeemJTokens, redeemUnderlying].forEach((redeem) => {
+  [redeemGTokens, redeemUnderlying].forEach((redeem) => {
     describe(redeem.name, () => {
       beforeEach(async () => {
         await preRedeem(

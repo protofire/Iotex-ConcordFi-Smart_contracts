@@ -2,33 +2,33 @@
 
 pragma solidity ^0.5.16;
 
-import "./JCapableErc20Delegate.sol";
+import "./GCapableXrc20Delegate.sol";
 import "./EIP20Interface.sol";
 
 /**
- * @notice Compound's Joetroller interface to get Joe address
+ * @notice Compound's Gtroller interface to get G address
  */
-interface IJoetroller {
-    function getJoeAddress() external view returns (address);
+interface IGtroller {
+    function getGAddress() external view returns (address);
 
-    function claimJoe(
+    function claimG(
         address[] calldata holders,
-        JToken[] calldata jTokens,
+        GToken[] calldata jTokens,
         bool borrowers,
         bool suppliers
     ) external;
 }
 
 /**
- * @title Cream's JJToken's Contract
- * @notice JToken which wraps Compound's Ctoken
+ * @title Cream's GGToken's Contract
+ * @notice GToken which wraps Compound's Ctoken
  * @author Cream
  */
-contract JJTokenDelegate is JCapableErc20Delegate {
+contract GGTokenDelegate is GCapableXrc20Delegate {
     /**
-     * @notice The joetroller of Compound's JToken
+     * @notice The gTroller of Compound's GToken
      */
-    address public underlyingJoetroller;
+    address public underlyingGtroller;
 
     /**
      * @notice Joe token address
@@ -46,12 +46,12 @@ contract JJTokenDelegate is JCapableErc20Delegate {
     }
 
     /**
-     * @notice The state of Compound's JToken supply
+     * @notice The state of Compound's GToken supply
      */
     RewardState public supplyState;
 
     /**
-     * @notice The index of every Compound's JToken supplier
+     * @notice The index of every Compound's GToken supplier
      */
     mapping(address => uint256) public supplierState;
 
@@ -67,15 +67,15 @@ contract JJTokenDelegate is JCapableErc20Delegate {
     function _becomeImplementation(bytes memory data) public {
         super._becomeImplementation(data);
 
-        underlyingJoetroller = address(JToken(underlying).joetroller());
-        joe = IJoetroller(underlyingJoetroller).getJoeAddress();
+        underlyingGtroller = address(GToken(underlying).gTroller());
+        joe = IGtroller(underlyingGtroller).getGAddress();
     }
 
     /**
      * @notice Manually claim joe rewards by user
      * @return The amount of joe rewards user claims
      */
-    function claimJoe(address account) public returns (uint256) {
+    function claimG(address account) public returns (uint256) {
         harvestJoe();
 
         updateSupplyIndex();
@@ -95,7 +95,7 @@ contract JJTokenDelegate is JCapableErc20Delegate {
         return 0;
     }
 
-    /*** JToken Overrides ***/
+    /*** GToken Overrides ***/
 
     /**
      * @notice Transfer `tokens` tokens from `src` to `dst` by `spender`
@@ -166,16 +166,16 @@ contract JJTokenDelegate is JCapableErc20Delegate {
     function harvestJoe() internal {
         address[] memory holders = new address[](1);
         holders[0] = address(this);
-        JToken[] memory jTokens = new JToken[](1);
-        jTokens[0] = JToken(underlying);
+        GToken[] memory jTokens = new GToken[](1);
+        jTokens[0] = GToken(underlying);
 
-        // JJToken contract will never borrow assets from Compound.
-        IJoetroller(underlyingJoetroller).claimJoe(holders, jTokens, false, true);
+        // JGToken contract will never borrow assets from Compound.
+        IGtroller(underlyingGtroller).claimG(holders, jTokens, false, true);
     }
 
     function updateSupplyIndex() internal {
         uint256 joeAccrued = sub_(joeBalance(), supplyState.balance);
-        uint256 supplyTokens = JToken(address(this)).totalSupply();
+        uint256 supplyTokens = GToken(address(this)).totalSupply();
         Double memory ratio = supplyTokens > 0 ? fraction(joeAccrued, supplyTokens) : Double({mantissa: 0});
         Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
 
@@ -189,7 +189,7 @@ contract JJTokenDelegate is JCapableErc20Delegate {
         Double memory supplierIndex = Double({mantissa: supplierState[supplier]});
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
         if (deltaIndex.mantissa > 0) {
-            uint256 supplierTokens = JToken(address(this)).balanceOf(supplier);
+            uint256 supplierTokens = GToken(address(this)).balanceOf(supplier);
             uint256 supplierDelta = mul_(supplierTokens, deltaIndex);
             joeUserAccrued[supplier] = add_(joeUserAccrued[supplier], supplierDelta);
             supplierState[supplier] = supplyIndex.mantissa;

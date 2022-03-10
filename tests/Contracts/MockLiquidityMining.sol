@@ -3,10 +3,10 @@ pragma solidity ^0.5.16;
 import "../../contracts/LiquidityMiningInterface.sol";
 
 contract MockLiquidityMining is LiquidityMiningInterface {
-    address public joetroller;
+    address public gTroller;
 
-    constructor(address _joetroller) public {
-        joetroller = _joetroller;
+    constructor(address _gTroller) public {
+        gTroller = _gTroller;
     }
 
     function updateSupplyIndex(address jToken, address[] calldata accounts) external {

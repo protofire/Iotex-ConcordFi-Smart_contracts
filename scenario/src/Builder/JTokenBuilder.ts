@@ -1,12 +1,12 @@
 import { Event } from "../Event";
 import { World } from "../World";
 import {
-  JErc20Delegator,
-  JErc20DelegatorScenario,
-  JCollateralCapErc20DelegatorScenario,
-  JWrappedNativeDelegatorScenario,
-} from "../Contract/JErc20Delegator";
-import { JToken } from "../Contract/JToken";
+  GXrc20Delegator,
+  GXrc20DelegatorScenario,
+  GCollateralCapXrc20DelegatorScenario,
+  GWrappedNativeDelegatorScenario,
+} from "../Contract/GXrc20Delegator";
+import { GToken } from "../Contract/GToken";
 import { Invokation, invoke } from "../Invokation";
 import {
   getAddressV,
@@ -19,22 +19,22 @@ import { Arg, Fetcher, getFetcherValue } from "../Command";
 import { storeAndSaveContract } from "../Networks";
 import { getContract, getTestContract } from "../Contract";
 
-const JErc20Contract = getContract("JErc20Immutable");
-const JErc20Delegator = getContract("JErc20Delegator");
-const JErc20DelegatorScenario = getTestContract("JErc20DelegatorScenario");
-const JCollateralCapErc20DelegatorScenario = getContract(
-  "JCollateralCapErc20DelegatorScenario"
+const GXrc20Contract = getContract("GXrc20Immutable");
+const GXrc20Delegator = getContract("GXrc20Delegator");
+const GXrc20DelegatorScenario = getTestContract("GXrc20DelegatorScenario");
+const GCollateralCapXrc20DelegatorScenario = getContract(
+  "GCollateralCapXrc20DelegatorScenario"
 );
-const JWrappedNativeDelegatorScenario = getContract(
-  "JWrappedNativeDelegatorScenario"
+const GWrappedNativeDelegatorScenario = getContract(
+  "GWrappedNativeDelegatorScenario"
 );
-const JAvaxContract = getContract("JAvax");
-const JErc20ScenarioContract = getTestContract("JErc20Scenario");
-const JAvaxScenarioContract = getTestContract("JAvaxScenario");
+const GIotxContract = getContract("GIotx");
+const GXrc20ScenarioContract = getTestContract("GXrc20Scenario");
+const GIotxScenarioContract = getTestContract("GIotxScenario");
 const JEvilContract = getTestContract("JEvil");
 
 export interface TokenData {
-  invokation: Invokation<JToken>;
+  invokation: Invokation<GToken>;
   name: string;
   symbol: string;
   decimals?: number;
@@ -45,11 +45,11 @@ export interface TokenData {
   admin?: string;
 }
 
-export async function buildJToken(
+export async function buildGToken(
   world: World,
   from: string,
   params: Event
-): Promise<{ world: World; jToken: JToken; tokenData: TokenData }> {
+): Promise<{ world: World; jToken: GToken; tokenData: TokenData }> {
   const fetchers = [
     new Fetcher<
       {
@@ -57,7 +57,7 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
         admin: AddressV;
@@ -67,17 +67,17 @@ export async function buildJToken(
       TokenData
     >(
       `
-      #### JErc20Delegator
+      #### GXrc20Delegator
 
-      * "JErc20Delegator symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal JToken
-        * E.g. "JToken Deploy JErc20Delegator cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Joetroller Address) (InterestRateModel Address) 1.0 8 Geoff (JToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GXrc20Delegator symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal GToken
+        * E.g. "GToken Deploy GXrc20Delegator cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Gtroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      "JErc20Delegator",
+      "GXrc20Delegator",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -91,7 +91,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -101,12 +101,12 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JErc20Delegator.deploy<JErc20Delegator>(
+          invokation: await GXrc20Delegator.deploy<GXrc20Delegator>(
             world,
             from,
             [
               underlying.val,
-              joetroller.val,
+              gTroller.val,
               interestRateModel.val,
               initialExchangeRate.val,
               name.val,
@@ -121,7 +121,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JErc20Delegator",
+          contract: "GXrc20Delegator",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -136,7 +136,7 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
         admin: AddressV;
@@ -146,17 +146,17 @@ export async function buildJToken(
       TokenData
     >(
       `
-      #### JErc20DelegatorScenario
+      #### GXrc20DelegatorScenario
 
-      * "JErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A JToken Scenario for local testing
-        * E.g. "JToken Deploy JErc20DelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Joetroller Address) (InterestRateModel Address) 1.0 8 Geoff (JToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GXrc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A GToken Scenario for local testing
+        * E.g. "GToken Deploy GXrc20DelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Gtroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      "JErc20DelegatorScenario",
+      "GXrc20DelegatorScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -170,7 +170,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -181,12 +181,12 @@ export async function buildJToken(
       ) => {
         return {
           invokation:
-            await JErc20DelegatorScenario.deploy<JErc20DelegatorScenario>(
+            await GXrc20DelegatorScenario.deploy<GXrc20DelegatorScenario>(
               world,
               from,
               [
                 underlying.val,
-                joetroller.val,
+                gTroller.val,
                 interestRateModel.val,
                 initialExchangeRate.val,
                 name.val,
@@ -201,7 +201,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JErc20DelegatorScenario",
+          contract: "GXrc20DelegatorScenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -216,7 +216,7 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
         admin: AddressV;
@@ -226,17 +226,17 @@ export async function buildJToken(
       TokenData
     >(
       `
-      #### JCollateralCapErc20DelegatorScenario
+      #### GCollateralCapXrc20DelegatorScenario
 
-      * "JCollateralCapErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A JToken Scenario for local testing
-        * E.g. "JToken Deploy JCollateralCapErc20DelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Joetroller Address) (InterestRateModel Address) 1.0 8 Geoff (JToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GCollateralCapXrc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A GToken Scenario for local testing
+        * E.g. "GToken Deploy GCollateralCapXrc20DelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Gtroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      "JCollateralCapErc20DelegatorScenario",
+      "GCollateralCapXrc20DelegatorScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -250,7 +250,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -261,12 +261,12 @@ export async function buildJToken(
       ) => {
         return {
           invokation:
-            await JCollateralCapErc20DelegatorScenario.deploy<JCollateralCapErc20DelegatorScenario>(
+            await GCollateralCapXrc20DelegatorScenario.deploy<GCollateralCapXrc20DelegatorScenario>(
               world,
               from,
               [
                 underlying.val,
-                joetroller.val,
+                gTroller.val,
                 interestRateModel.val,
                 initialExchangeRate.val,
                 name.val,
@@ -281,7 +281,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JCollateralCapErc20DelegatorScenario",
+          contract: "GCollateralCapXrc20DelegatorScenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -296,7 +296,7 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
         admin: AddressV;
@@ -306,17 +306,17 @@ export async function buildJToken(
       TokenData
     >(
       `
-      #### JWrappedNativeDelegatorScenario
+      #### GWrappedNativeDelegatorScenario
 
-      * "JWrappedNativeDelegatorScenario symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A JToken Scenario for local testing
-        * E.g. "JToken Deploy JWrappedNativeDelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Joetroller Address) (InterestRateModel Address) 1.0 8 Geoff (JToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GWrappedNativeDelegatorScenario symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A GToken Scenario for local testing
+        * E.g. "GToken Deploy GWrappedNativeDelegatorScenario cDAI \"Banker Joe DAI\" (Erc20 DAI Address) (Gtroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      "JWrappedNativeDelegatorScenario",
+      "GWrappedNativeDelegatorScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -330,7 +330,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -341,12 +341,12 @@ export async function buildJToken(
       ) => {
         return {
           invokation:
-            await JWrappedNativeDelegatorScenario.deploy<JWrappedNativeDelegatorScenario>(
+            await GWrappedNativeDelegatorScenario.deploy<GWrappedNativeDelegatorScenario>(
               world,
               from,
               [
                 underlying.val,
-                joetroller.val,
+                gTroller.val,
                 interestRateModel.val,
                 initialExchangeRate.val,
                 name.val,
@@ -361,7 +361,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JWrappedNativeDelegatorScenario",
+          contract: "GWrappedNativeDelegatorScenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -376,7 +376,7 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
         admin: AddressV;
@@ -386,15 +386,15 @@ export async function buildJToken(
       `
         #### Scenario
 
-        * "Scenario symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A JToken Scenario for local testing
-          * E.g. "JToken Deploy Scenario cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "Scenario symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy Scenario cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Scenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -406,7 +406,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -414,9 +414,9 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JErc20ScenarioContract.deploy<JToken>(world, from, [
+          invokation: await GXrc20ScenarioContract.deploy<GToken>(world, from, [
             underlying.val,
-            joetroller.val,
+            gTroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
             name.val,
@@ -428,7 +428,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JErc20Scenario",
+          contract: "GXrc20Scenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -443,23 +443,23 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         admin: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
       },
       TokenData
     >(
       `
-        #### JAvaxScenario
+        #### GIotxScenario
 
-        * "JAvaxScenario symbol:<String> name:<String> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A JToken Scenario for local testing
-          * E.g. "JToken Deploy JAvaxScenario cETH \"Banker Joe Ether\" (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "GIotxScenario symbol:<String> name:<String> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy GIotxScenario cETH \"Banker Joe Ether\" (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "JAvaxScenario",
+      "GIotxScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -470,7 +470,7 @@ export async function buildJToken(
         {
           symbol,
           name,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -478,12 +478,12 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JAvaxScenarioContract.deploy<JToken>(world, from, [
+          invokation: await GIotxScenarioContract.deploy<GToken>(world, from, [
             name.val,
             symbol.val,
             decimals.val,
             admin.val,
-            joetroller.val,
+            gTroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
           ]),
@@ -491,7 +491,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: "JAvaxScenario",
+          contract: "GIotxScenario",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -506,23 +506,23 @@ export async function buildJToken(
         name: StringV;
         decimals: NumberV;
         admin: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
       },
       TokenData
     >(
       `
-        #### JAvax
+        #### GIotx
 
-        * "JAvax symbol:<String> name:<String> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A JToken Scenario for local testing
-          * E.g. "JToken Deploy JAvax cETH \"Banker Joe Ether\" (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "GIotx symbol:<String> name:<String> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy GIotx cETH \"Banker Joe Ether\" (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "JAvax",
+      "GIotx",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -533,7 +533,7 @@ export async function buildJToken(
         {
           symbol,
           name,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -541,8 +541,8 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JAvaxContract.deploy<JToken>(world, from, [
-            joetroller.val,
+          invokation: await GIotxContract.deploy<GToken>(world, from, [
+            gTroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
             name.val,
@@ -554,7 +554,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: "JAvax",
+          contract: "GIotx",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -570,24 +570,24 @@ export async function buildJToken(
         decimals: NumberV;
         admin: AddressV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
       },
       TokenData
     >(
       `
-        #### JErc20
+        #### GXrc20
 
-        * "JErc20 symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official JToken contract
-          * E.g. "JToken Deploy JErc20 cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "GXrc20 symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official GToken contract
+          * E.g. "GToken Deploy GXrc20 cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "JErc20",
+      "GXrc20",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -599,7 +599,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -607,9 +607,9 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JErc20Contract.deploy<JToken>(world, from, [
+          invokation: await GXrc20Contract.deploy<GToken>(world, from, [
             underlying.val,
-            joetroller.val,
+            gTroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
             name.val,
@@ -621,7 +621,7 @@ export async function buildJToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: "JErc20",
+          contract: "GXrc20",
           initial_exchange_rate_mantissa: initialExchangeRate
             .encode()
             .toString(),
@@ -637,7 +637,7 @@ export async function buildJToken(
         decimals: NumberV;
         admin: AddressV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
       },
@@ -646,15 +646,15 @@ export async function buildJToken(
       `
         #### JEvil
 
-        * "JEvil symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious JToken contract
-          * E.g. "JToken Deploy JEvil cEVL \"Banker Joe EVL\" (Erc20 ZRX Address) (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "JEvil symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious GToken contract
+          * E.g. "GToken Deploy JEvil cEVL \"Banker Joe EVL\" (Erc20 ZRX Address) (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "JEvil",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -666,7 +666,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -674,9 +674,9 @@ export async function buildJToken(
         }
       ) => {
         return {
-          invokation: await JEvilContract.deploy<JToken>(world, from, [
+          invokation: await JEvilContract.deploy<GToken>(world, from, [
             underlying.val,
-            joetroller.val,
+            gTroller.val,
             interestRateModel.val,
             initialExchangeRate.val,
             name.val,
@@ -704,7 +704,7 @@ export async function buildJToken(
         decimals: NumberV;
         admin: AddressV;
         underlying: AddressV;
-        joetroller: AddressV;
+        gTroller: AddressV;
         interestRateModel: AddressV;
         initialExchangeRate: NumberV;
       },
@@ -713,15 +713,15 @@ export async function buildJToken(
       `
         #### Standard
 
-        * "symbol:<String> name:<String> underlying:<Address> joetroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official JToken contract
-          * E.g. "JToken Deploy Standard cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Joetroller Address) (InterestRateModel Address) 1.0 8"
+        * "symbol:<String> name:<String> underlying:<Address> gTroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official GToken contract
+          * E.g. "GToken Deploy Standard cZRX \"Banker Joe ZRX\" (Erc20 ZRX Address) (Gtroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Standard",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
         new Arg("underlying", getAddressV),
-        new Arg("joetroller", getAddressV),
+        new Arg("gTroller", getAddressV),
         new Arg("interestRateModel", getAddressV),
         new Arg("initialExchangeRate", getExpNumberV),
         new Arg("decimals", getNumberV),
@@ -733,7 +733,7 @@ export async function buildJToken(
           symbol,
           name,
           underlying,
-          joetroller,
+          gTroller,
           interestRateModel,
           initialExchangeRate,
           decimals,
@@ -743,12 +743,12 @@ export async function buildJToken(
         // Note: we're going to use the scenario contract as the standard deployment on local networks
         if (world.isLocalNetwork()) {
           return {
-            invokation: await JErc20ScenarioContract.deploy<JToken>(
+            invokation: await GXrc20ScenarioContract.deploy<GToken>(
               world,
               from,
               [
                 underlying.val,
-                joetroller.val,
+                gTroller.val,
                 interestRateModel.val,
                 initialExchangeRate.val,
                 name.val,
@@ -761,7 +761,7 @@ export async function buildJToken(
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: "JErc20Scenario",
+            contract: "GXrc20Scenario",
             initial_exchange_rate_mantissa: initialExchangeRate
               .encode()
               .toString(),
@@ -769,9 +769,9 @@ export async function buildJToken(
           };
         } else {
           return {
-            invokation: await JErc20Contract.deploy<JToken>(world, from, [
+            invokation: await GXrc20Contract.deploy<GToken>(world, from, [
               underlying.val,
-              joetroller.val,
+              gTroller.val,
               interestRateModel.val,
               initialExchangeRate.val,
               name.val,
@@ -783,7 +783,7 @@ export async function buildJToken(
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: "JErc20Immutable",
+            contract: "GXrc20Immutable",
             initial_exchange_rate_mantissa: initialExchangeRate
               .encode()
               .toString(),
@@ -796,7 +796,7 @@ export async function buildJToken(
   ];
 
   let tokenData = await getFetcherValue<any, TokenData>(
-    "DeployJToken",
+    "DeployGToken",
     fetchers,
     world,
     params

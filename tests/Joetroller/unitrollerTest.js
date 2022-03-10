@@ -11,7 +11,7 @@ describe("Unitroller", () => {
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
     oracle = await makePriceOracle();
-    brains = await deploy("Joetroller");
+    brains = await deploy("Gtroller");
     unitroller = await deploy("Unitroller");
   });
 
@@ -148,7 +148,7 @@ describe("Unitroller", () => {
     describe("fallback delegates to brains", () => {
       let troll;
       beforeEach(async () => {
-        troll = await deploy("EchoTypesJoetroller");
+        troll = await deploy("EchoTypesGtroller");
         unitroller = await deploy("Unitroller");
         await setPending(troll, root);
         await send(troll, "becomeBrains", [unitroller._address]);
