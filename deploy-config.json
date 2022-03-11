@@ -1,13 +1,13 @@
 {
   "JumpRateModelV2": {
-    "cUSDT": {
+    "USDT": {
       "baseRatePerYear": "0",
       "multiplierPerYear": "0.05",
       "jumpMultiplierPerYear": "1.09",
       "kink": "0.8",
       "roof": "1"
     },
-    "gIotx": {
+    "IOTX": {
       "baseRatePerYear": "0.02",
       "multiplierPerYear": "0.15",
       "jumpMultiplierPerYear": "1.09",
@@ -15,14 +15,16 @@
       "roof": "1"
     }
   },
-  "XErc20Delegator": {
-    "underlying_": "0x1655Bb6179F618C09435d7dbC82E3D1179F7b077",
-    "initialExchangeRateMantissa_": "50",
-    "name": "cUSD Tether",
-    "symbol": "cUSDT",
-    "decimals": 18,
-    "admin_": "0xc62661BAe6E8346725305318476521E87977E371",
-    "becomeImplementationData": "0x4dec04e750ca11537cabcd8a9eab06494de08da3735bc8871cd41250e190bc04"
+  "Xrc20Delegator": {
+    "USDT": {
+      "underlying_": "0x1655Bb6179F618C09435d7dbC82E3D1179F7b077",
+      "initialExchangeRateMantissa_": "50",
+      "name": "cUSD Tether",
+      "symbol": "cUSDT",
+      "decimals": 18,
+      "admin_": "0xc62661BAe6E8346725305318476521E87977E371",
+      "becomeImplementationData": "0x4dec04e750ca11537cabcd8a9eab06494de08da3735bc8871cd41250e190bc04"
+    }
   },
   "gIOTX": {
     "initialExchangeRateMantissa_": "50",

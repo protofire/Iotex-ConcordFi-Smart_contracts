@@ -25,7 +25,7 @@ function saveContractAddress(network, contract, address) {
   addrs[network][contract] = address;
 
   fs.writeFileSync(
-    path.join(__dirname, `../../${addressFile}`),
+    path.join(__dirname, `../${addressFile}`),
     JSON.stringify(addrs, null, "    ")
   );
 }

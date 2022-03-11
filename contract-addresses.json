@@ -1,0 +1,12 @@
+{
+    "4690": {
+        "Gtroller": "0xB42c71329788E42918ac51cedDAA5E3231657003",
+        "JumpRateModelV2_USDT": "0x3f43FeB4EB8BbeD88DBf00972640ff9597B93133",
+        "JumpRateModelV2_IOTX": "0xb46734073f5C1545ff78EA3f3E318fa8A514432d",
+        "GXrc20Delegate": "0x8a1192E45D78A5e79505C6c00E71b6180eDe5F9A",
+        "GXrc20Delegator": "0x732662ea29eb19DC9f182c3928a9A2E45fF5Eca2",
+        "GIotx": "0x99D9655224c429c6E406CbC614d1F2f169fa6663",
+        "Maximillion": "0xBB665CF927230659e68Fe9c34b2eF1DFd1f08413",
+        "Unitroller": "0xabA7Ce9eaB06Cfb08CFcd03C27cF8f3875AEE452"
+    }
+}

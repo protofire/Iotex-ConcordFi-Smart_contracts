@@ -29,7 +29,7 @@ contract JumpRateModelV2 is InterestRateModel {
     /**
      * @notice The approximate number of seconds per year that is assumed by the interest rate model
      */
-    uint256 public constant secondsPerYear = 31536000;
+    uint256 public constant secondsPerYear = 4204800;
 
     /**
      * @notice The minimum roof value used for calculating borrow rate.

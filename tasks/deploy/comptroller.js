@@ -2,7 +2,6 @@ const { task } = require("hardhat/config");
 const { saveContractAddress } = require("../utils");
 
 task("deploy-comptroller").setAction(async (taskArgs, { ethers }) => {
-  const signers = await ethers.getSigners();
   const contractName = "Gtroller";
 
   console.log("Deploying comptroller");
