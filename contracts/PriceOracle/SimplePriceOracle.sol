@@ -14,16 +14,16 @@ contract SimplePriceOracle is PriceOracle {
         uint256 newPriceMantissa
     );
 
-    function getUnderlyingPrice(GToken jToken) public view returns (uint256) {
-        if (compareStrings(jToken.symbol(), "jAVAX")) {
+    function getUnderlyingPrice(GToken gToken) public view returns (uint256) {
+        if (compareStrings(gToken.symbol(), "jAVAX")) {
             return 1e18;
         } else {
-            return prices[address(GXrc20(address(jToken)).underlying())];
+            return prices[address(GXrc20(address(gToken)).underlying())];
         }
     }
 
-    function setUnderlyingPrice(GToken jToken, uint256 underlyingPriceMantissa) public {
-        address asset = address(GXrc20(address(jToken)).underlying());
+    function setUnderlyingPrice(GToken gToken, uint256 underlyingPriceMantissa) public {
+        address asset = address(GXrc20(address(gToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }

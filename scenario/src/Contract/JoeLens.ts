@@ -2,16 +2,16 @@ import { Contract } from "../Contract";
 import { Sendable } from "../Invokation";
 
 export interface JoeLensMethods {
-  jTokenBalances(
-    jToken: string,
+  gTokenBalances(
+    gToken: string,
     account: string
   ): Sendable<[string, number, number, number, number, number]>;
-  jTokenBalancesAll(
-    jTokens: string[],
+  gTokenBalancesAll(
+    gTokens: string[],
     account: string
   ): Sendable<[string, number, number, number, number, number][]>;
-  jTokenMetadata(
-    jToken: string
+  gTokenMetadata(
+    gToken: string
   ): Sendable<
     [
       string,
@@ -30,8 +30,8 @@ export interface JoeLensMethods {
       number
     ]
   >;
-  jTokenMetadataAll(
-    jTokens: string[]
+  gTokenMetadataAll(
+    gTokens: string[]
   ): Sendable<
     [
       string,

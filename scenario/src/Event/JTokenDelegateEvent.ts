@@ -25,14 +25,14 @@ async function genGTokenDelegate(
 ): Promise<World> {
   let {
     world: nextWorld,
-    jTokenDelegate,
+    gTokenDelegate,
     delegateData,
   } = await buildGTokenDelegate(world, from, event);
   world = nextWorld;
 
   world = addAction(
     world,
-    `Added jToken ${delegateData.name} (${delegateData.contract}) at address ${jTokenDelegate._address}`,
+    `Added gToken ${delegateData.name} (${delegateData.contract}) at address ${gTokenDelegate._address}`,
     delegateData.invokation
   );
 
@@ -41,7 +41,7 @@ async function genGTokenDelegate(
 
 async function verifyGTokenDelegate(
   world: World,
-  jTokenDelegate: GXrc20Delegate,
+  gTokenDelegate: GXrc20Delegate,
   name: string,
   contract: string,
   apiKey: string
@@ -51,44 +51,44 @@ async function verifyGTokenDelegate(
       `Politely declining to verify on local network: ${world.network}.`
     );
   } else {
-    await verify(world, apiKey, name, contract, jTokenDelegate._address);
+    await verify(world, apiKey, name, contract, gTokenDelegate._address);
   }
 
   return world;
 }
 
-export function jTokenDelegateCommands() {
+export function gTokenDelegateCommands() {
   return [
-    new Command<{ jTokenDelegateParams: EventV }>(
+    new Command<{ gTokenDelegateParams: EventV }>(
       `
         #### Deploy
 
-        * "GTokenDelegate Deploy ...jTokenDelegateParams" - Generates a new GTokenDelegate
+        * "GTokenDelegate Deploy ...gTokenDelegateParams" - Generates a new GTokenDelegate
           * E.g. "GTokenDelegate Deploy CDaiDelegate cDAIDelegate"
       `,
       "Deploy",
-      [new Arg("jTokenDelegateParams", getEventV, { variadic: true })],
-      (world, from, { jTokenDelegateParams }) =>
-        genGTokenDelegate(world, from, jTokenDelegateParams.val)
+      [new Arg("gTokenDelegateParams", getEventV, { variadic: true })],
+      (world, from, { gTokenDelegateParams }) =>
+        genGTokenDelegate(world, from, gTokenDelegateParams.val)
     ),
-    new View<{ jTokenDelegateArg: StringV; apiKey: StringV }>(
+    new View<{ gTokenDelegateArg: StringV; apiKey: StringV }>(
       `
         #### Verify
 
-        * "GTokenDelegate <jTokenDelegate> Verify apiKey:<String>" - Verifies GTokenDelegate in Etherscan
+        * "GTokenDelegate <gTokenDelegate> Verify apiKey:<String>" - Verifies GTokenDelegate in Etherscan
           * E.g. "GTokenDelegate cDaiDelegate Verify "myApiKey"
       `,
       "Verify",
-      [new Arg("jTokenDelegateArg", getStringV), new Arg("apiKey", getStringV)],
-      async (world, { jTokenDelegateArg, apiKey }) => {
-        let [jToken, name, data] = await getGTokenDelegateData(
+      [new Arg("gTokenDelegateArg", getStringV), new Arg("apiKey", getStringV)],
+      async (world, { gTokenDelegateArg, apiKey }) => {
+        let [gToken, name, data] = await getGTokenDelegateData(
           world,
-          jTokenDelegateArg.val
+          gTokenDelegateArg.val
         );
 
         return await verifyGTokenDelegate(
           world,
-          jToken,
+          gToken,
           name,
           data.get("contract")!,
           apiKey.val
@@ -106,7 +106,7 @@ export async function processGTokenDelegateEvent(
 ): Promise<World> {
   return await processCommandEvent<any>(
     "GTokenDelegate",
-    jTokenDelegateCommands(),
+    gTokenDelegateCommands(),
     world,
     event,
     from

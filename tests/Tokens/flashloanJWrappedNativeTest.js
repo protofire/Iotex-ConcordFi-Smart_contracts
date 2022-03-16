@@ -11,7 +11,7 @@ const {
 } = require("../Utils/BankerJoe");
 
 describe("Flashloan test", function () {
-  let jToken;
+  let gToken;
   let flashloanReceiver;
   let flashloanLender;
   let cash = 1000_000;
@@ -19,24 +19,24 @@ describe("Flashloan test", function () {
   let reservesFactor = 0.5;
 
   beforeEach(async () => {
-    jToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
+    gToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
     flashloanReceiver = await makeFlashloanReceiver({ kind: "native" });
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.gTroller._address,
+      gToken.gTroller._address,
       saddle.accounts[0],
     ]);
 
-    // so that we can format jToken event logs
-    mergeInterface(flashloanReceiver, jToken);
+    // so that we can format gToken event logs
+    mergeInterface(flashloanReceiver, gToken);
 
-    await send(jToken.underlying, "harnessSetBalance", [jToken._address, cash]);
-    await send(jToken, "harnessSetBlockTimestamp", [avaxUnsigned(1e6)]);
-    await send(jToken, "harnessSetAccrualBlockTimestamp", [avaxUnsigned(1e6)]);
-    await send(jToken, "harnessSetReserveFactorFresh", [
+    await send(gToken.underlying, "harnessSetBalance", [gToken._address, cash]);
+    await send(gToken, "harnessSetBlockTimestamp", [avaxUnsigned(1e6)]);
+    await send(gToken, "harnessSetAccrualBlockTimestamp", [avaxUnsigned(1e6)]);
+    await send(gToken, "harnessSetReserveFactorFresh", [
       avaxMantissa(reservesFactor),
     ]);
 
-    await send(jToken.underlying, "harnessSetBalance", [
+    await send(gToken.underlying, "harnessSetBalance", [
       flashloanReceiver._address,
       receiverBalance,
     ]);
@@ -49,7 +49,7 @@ describe("Flashloan test", function () {
       const reservesFee = 4;
       const result = await send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ]);
@@ -61,15 +61,15 @@ describe("Flashloan test", function () {
         reservesFee: reservesFee,
       });
 
-      expect(await balanceOf(jToken.underlying, jToken._address)).toEqualNumber(
+      expect(await balanceOf(gToken.underlying, gToken._address)).toEqualNumber(
         cash + totalFee
       );
-      expect(await call(jToken, "getCash", [])).toEqualNumber(cash + totalFee);
-      expect(await call(jToken, "totalReserves", [])).toEqualNumber(
+      expect(await call(gToken, "getCash", [])).toEqualNumber(cash + totalFee);
+      expect(await call(gToken, "totalReserves", [])).toEqualNumber(
         reservesFee
       );
       expect(
-        await balanceOf(jToken.underlying, flashloanReceiver._address)
+        await balanceOf(gToken.underlying, flashloanReceiver._address)
       ).toEqualNumber(receiverBalance - totalFee);
     });
 
@@ -79,7 +79,7 @@ describe("Flashloan test", function () {
       const reservesFee = 0;
       const result = await send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ]);
@@ -91,15 +91,15 @@ describe("Flashloan test", function () {
         reservesFee: reservesFee,
       });
 
-      expect(await balanceOf(jToken.underlying, jToken._address)).toEqualNumber(
+      expect(await balanceOf(gToken.underlying, gToken._address)).toEqualNumber(
         cash + totalFee
       );
-      expect(await call(jToken, "getCash", [])).toEqualNumber(cash + totalFee);
-      expect(await call(jToken, "totalReserves", [])).toEqualNumber(
+      expect(await call(gToken, "getCash", [])).toEqualNumber(cash + totalFee);
+      expect(await call(gToken, "totalReserves", [])).toEqualNumber(
         reservesFee
       );
       expect(
-        await balanceOf(jToken.underlying, flashloanReceiver._address)
+        await balanceOf(gToken.underlying, flashloanReceiver._address)
       ).toEqualNumber(receiverBalance - totalFee);
     });
 
@@ -109,7 +109,7 @@ describe("Flashloan test", function () {
       const reservesFee = 0;
       const result = await send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ]);
@@ -121,15 +121,15 @@ describe("Flashloan test", function () {
         reservesFee: reservesFee,
       });
 
-      expect(await balanceOf(jToken.underlying, jToken._address)).toEqualNumber(
+      expect(await balanceOf(gToken.underlying, gToken._address)).toEqualNumber(
         cash + totalFee
       );
-      expect(await call(jToken, "getCash", [])).toEqualNumber(cash + totalFee);
-      expect(await call(jToken, "totalReserves", [])).toEqualNumber(
+      expect(await call(gToken, "getCash", [])).toEqualNumber(cash + totalFee);
+      expect(await call(gToken, "totalReserves", [])).toEqualNumber(
         reservesFee
       );
       expect(
-        await balanceOf(jToken.underlying, flashloanReceiver._address)
+        await balanceOf(gToken.underlying, flashloanReceiver._address)
       ).toEqualNumber(receiverBalance - totalFee);
     });
 
@@ -138,7 +138,7 @@ describe("Flashloan test", function () {
       const totalFee = 3;
       const result = send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ]);
@@ -152,35 +152,32 @@ describe("Flashloan test", function () {
     expect(
       await send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ])
     ).toSucceed();
 
-    await send(jToken.gTroller, "_setFlashloanPaused", [
-      jToken._address,
-      true,
-    ]);
+    await send(gToken.gTroller, "_setFlashloanPaused", [gToken._address, true]);
 
     await expect(
       send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ])
     ).rejects.toRevert("revert flashloan is paused");
 
-    await send(jToken.gTroller, "_setFlashloanPaused", [
-      jToken._address,
+    await send(gToken.gTroller, "_setFlashloanPaused", [
+      gToken._address,
       false,
     ]);
 
     expect(
       await send(flashloanReceiver, "doFlashloan", [
         flashloanLender._address,
-        jToken._address,
+        gToken._address,
         borrowAmount,
         borrowAmount + totalFee,
       ])
@@ -189,18 +186,18 @@ describe("Flashloan test", function () {
 });
 
 describe("Flashloan re-entry test", () => {
-  let jToken;
+  let gToken;
   let cash = 1000_000;
 
   beforeEach(async () => {
-    jToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
+    gToken = await makeGToken({ kind: "jwrapped", supportMarket: true });
     flashloanLender = await deploy("FlashloanLender", [
-      jToken.gTroller._address,
+      gToken.gTroller._address,
       saddle.accounts[0],
     ]);
-    await send(jToken.underlying, "harnessSetBalance", [jToken._address, cash]);
-    await send(jToken, "harnessSetBlockTimestamp", [avaxUnsigned(1e6)]);
-    await send(jToken, "harnessSetAccrualBlockTimestamp", [avaxUnsigned(1e6)]);
+    await send(gToken.underlying, "harnessSetBalance", [gToken._address, cash]);
+    await send(gToken, "harnessSetBlockTimestamp", [avaxUnsigned(1e6)]);
+    await send(gToken, "harnessSetAccrualBlockTimestamp", [avaxUnsigned(1e6)]);
   });
 
   it("flashloan and mint", async () => {
@@ -210,7 +207,7 @@ describe("Flashloan re-entry test", () => {
     const borrowAmount = 100;
     const result = send(flashloanAndMint, "doFlashloan", [
       flashloanLender._address,
-      jToken._address,
+      gToken._address,
       borrowAmount,
     ]);
     await expect(result).rejects.toRevert("revert re-entered");
@@ -223,7 +220,7 @@ describe("Flashloan re-entry test", () => {
     const borrowAmount = 100;
     const result = send(flashloanAndRepayBorrow, "doFlashloan", [
       flashloanLender._address,
-      jToken._address,
+      gToken._address,
       borrowAmount,
     ]);
     await expect(result).rejects.toRevert("revert re-entered");
@@ -236,7 +233,7 @@ describe("Flashloan re-entry test", () => {
     const borrowAmount = 100;
     const result = send(flashloanTwice, "doFlashloan", [
       flashloanLender._address,
-      jToken._address,
+      gToken._address,
       borrowAmount,
     ]);
     await expect(result).rejects.toRevert("revert re-entered");

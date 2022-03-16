@@ -14,17 +14,17 @@ describe("GToken", function () {
   });
 
   describe("_setInterestRateModelFresh", () => {
-    let jToken, oldModel;
+    let gToken, oldModel;
     beforeEach(async () => {
-      jToken = await makeGToken();
-      oldModel = jToken.interestRateModel;
+      gToken = await makeGToken();
+      oldModel = gToken.interestRateModel;
       expect(oldModel._address).not.toEqual(newModel._address);
     });
 
     it("fails if called by non-admin", async () => {
       expect(
         await send(
-          jToken,
+          gToken,
           "harnessSetInterestRateModelFresh",
           [newModel._address],
           { from: accounts[0] }
@@ -33,33 +33,33 @@ describe("GToken", function () {
         "UNAUTHORIZED",
         "SET_INTEREST_RATE_MODEL_OWNER_CHECK"
       );
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         oldModel._address
       );
     });
 
     it("fails if market not fresh", async () => {
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
       expect(
-        await send(jToken, "harnessSetInterestRateModelFresh", [
+        await send(gToken, "harnessSetInterestRateModelFresh", [
           newModel._address,
         ])
       ).toHaveTokenFailure(
         "MARKET_NOT_FRESH",
         "SET_INTEREST_RATE_MODEL_FRESH_CHECK"
       );
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         oldModel._address
       );
     });
 
     it("reverts if passed a contract that doesn't implement isInterestRateModel", async () => {
       await expect(
-        send(jToken, "harnessSetInterestRateModelFresh", [
-          jToken.underlying._address,
+        send(gToken, "harnessSetInterestRateModelFresh", [
+          gToken.underlying._address,
         ])
       ).rejects.toRevert();
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         oldModel._address
       );
     });
@@ -68,26 +68,26 @@ describe("GToken", function () {
       // extremely unlikely to occur, of course, but let's be exhaustive
       const badModel = await makeInterestRateModel({ kind: "false-marker" });
       await expect(
-        send(jToken, "harnessSetInterestRateModelFresh", [badModel._address])
+        send(gToken, "harnessSetInterestRateModelFresh", [badModel._address])
       ).rejects.toRevert("revert marker method returned false");
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         oldModel._address
       );
     });
 
     it("accepts new valid interest rate model", async () => {
       expect(
-        await send(jToken, "harnessSetInterestRateModelFresh", [
+        await send(gToken, "harnessSetInterestRateModelFresh", [
           newModel._address,
         ])
       ).toSucceed();
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         newModel._address
       );
     });
 
     it("emits expected log when accepting a new valid interest rate model", async () => {
-      const result = await send(jToken, "harnessSetInterestRateModelFresh", [
+      const result = await send(gToken, "harnessSetInterestRateModelFresh", [
         newModel._address,
       ]);
       expect(result).toSucceed();
@@ -95,33 +95,33 @@ describe("GToken", function () {
         oldInterestRateModel: oldModel._address,
         newInterestRateModel: newModel._address,
       });
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         newModel._address
       );
     });
   });
 
   describe("_setInterestRateModel", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken();
+      gToken = await makeGToken();
     });
 
     beforeEach(async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
     });
 
     it("emits a set market interest rate model failure if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-      await fastForward(jToken, 1);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+      await fastForward(gToken, 1);
       await expect(
-        send(jToken, "_setInterestRateModel", [newModel._address])
+        send(gToken, "_setInterestRateModel", [newModel._address])
       ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from _setInterestRateModelFresh without emitting any extra logs", async () => {
       const { reply, receipt } = await both(
-        jToken,
+        gToken,
         "_setInterestRateModel",
         [newModel._address],
         { from: accounts[0] }
@@ -134,12 +134,12 @@ describe("GToken", function () {
     });
 
     it("reports success when _setInterestRateModelFresh succeeds", async () => {
-      const { reply, receipt } = await both(jToken, "_setInterestRateModel", [
+      const { reply, receipt } = await both(gToken, "_setInterestRateModel", [
         newModel._address,
       ]);
       expect(reply).toEqualNumber(0);
       expect(receipt).toSucceed();
-      expect(await call(jToken, "interestRateModel")).toEqual(
+      expect(await call(gToken, "interestRateModel")).toEqual(
         newModel._address
       );
     });

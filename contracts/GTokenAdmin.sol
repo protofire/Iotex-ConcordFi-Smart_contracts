@@ -40,104 +40,104 @@ contract GTokenAdmin {
     }
 
     /**
-     * @notice Get jToken admin
-     * @param jToken The jToken address
+     * @notice Get gToken admin
+     * @param gToken The gToken address
      */
-    function getGTokenAdmin(address jToken) public view returns (address) {
-        return GToken(jToken).admin();
+    function getGTokenAdmin(address gToken) public view returns (address) {
+        return GToken(gToken).admin();
     }
 
     /**
-     * @notice Set jToken pending admin
-     * @param jToken The jToken address
+     * @notice Set gToken pending admin
+     * @param gToken The gToken address
      * @param newPendingAdmin The new pending admin
      */
-    function _setPendingAdmin(address jToken, address payable newPendingAdmin) external onlyAdmin returns (uint256) {
-        return GTokenInterface(jToken)._setPendingAdmin(newPendingAdmin);
+    function _setPendingAdmin(address gToken, address payable newPendingAdmin) external onlyAdmin returns (uint256) {
+        return GTokenInterface(gToken)._setPendingAdmin(newPendingAdmin);
     }
 
     /**
-     * @notice Accept jToken admin
-     * @param jToken The jToken address
+     * @notice Accept gToken admin
+     * @param gToken The gToken address
      */
-    function _acceptAdmin(address jToken) external onlyAdmin returns (uint256) {
-        return GTokenInterface(jToken)._acceptAdmin();
+    function _acceptAdmin(address gToken) external onlyAdmin returns (uint256) {
+        return GTokenInterface(gToken)._acceptAdmin();
     }
 
     /**
-     * @notice Set jToken gTroller
-     * @param jToken The jToken address
+     * @notice Set gToken gTroller
+     * @param gToken The gToken address
      * @param newGtroller The new gTroller address
      */
-    function _setGtroller(address jToken, GtrollerInterface newGtroller) external onlyAdmin returns (uint256) {
-        return GTokenInterface(jToken)._setGtroller(newGtroller);
+    function _setGtroller(address gToken, GtrollerInterface newGtroller) external onlyAdmin returns (uint256) {
+        return GTokenInterface(gToken)._setGtroller(newGtroller);
     }
 
     /**
-     * @notice Set jToken reserve factor
-     * @param jToken The jToken address
+     * @notice Set gToken reserve factor
+     * @param gToken The gToken address
      * @param newReserveFactorMantissa The new reserve factor
      */
-    function _setReserveFactor(address jToken, uint256 newReserveFactorMantissa) external onlyAdmin returns (uint256) {
-        return GTokenInterface(jToken)._setReserveFactor(newReserveFactorMantissa);
+    function _setReserveFactor(address gToken, uint256 newReserveFactorMantissa) external onlyAdmin returns (uint256) {
+        return GTokenInterface(gToken)._setReserveFactor(newReserveFactorMantissa);
     }
 
     /**
-     * @notice Reduce jToken reserve
-     * @param jToken The jToken address
+     * @notice Reduce gToken reserve
+     * @param gToken The gToken address
      * @param reduceAmount The amount of reduction
      */
-    function _reduceReserves(address jToken, uint256 reduceAmount) external onlyAdmin returns (uint256) {
-        return GTokenInterface(jToken)._reduceReserves(reduceAmount);
+    function _reduceReserves(address gToken, uint256 reduceAmount) external onlyAdmin returns (uint256) {
+        return GTokenInterface(gToken)._reduceReserves(reduceAmount);
     }
 
     /**
-     * @notice Set jToken IRM
-     * @param jToken The jToken address
+     * @notice Set gToken IRM
+     * @param gToken The gToken address
      * @param newInterestRateModel The new IRM address
      */
-    function _setInterestRateModel(address jToken, InterestRateModel newInterestRateModel)
+    function _setInterestRateModel(address gToken, InterestRateModel newInterestRateModel)
         external
         onlyAdmin
         returns (uint256)
     {
-        return GTokenInterface(jToken)._setInterestRateModel(newInterestRateModel);
+        return GTokenInterface(gToken)._setInterestRateModel(newInterestRateModel);
     }
 
     /**
-     * @notice Set jToken collateral cap
-     * @dev It will revert if the jToken is not JCollateralCap.
-     * @param jToken The jToken address
+     * @notice Set gToken collateral cap
+     * @dev It will revert if the gToken is not JCollateralCap.
+     * @param gToken The gToken address
      * @param newCollateralCap The new collateral cap
      */
-    function _setCollateralCap(address jToken, uint256 newCollateralCap) external onlyAdmin {
-        GCollateralCapXrc20Interface(jToken)._setCollateralCap(newCollateralCap);
+    function _setCollateralCap(address gToken, uint256 newCollateralCap) external onlyAdmin {
+        GCollateralCapXrc20Interface(gToken)._setCollateralCap(newCollateralCap);
     }
 
     /**
-     * @notice Set jToken new implementation
-     * @param jToken The jToken address
+     * @notice Set gToken new implementation
+     * @param gToken The gToken address
      * @param implementation The new implementation
      * @param becomeImplementationData The payload data
      */
     function _setImplementation(
-        address jToken,
+        address gToken,
         address implementation,
         bool allowResign,
         bytes calldata becomeImplementationData
     ) external onlyAdmin {
-        JDelegatorInterface(jToken)._setImplementation(implementation, allowResign, becomeImplementationData);
+        JDelegatorInterface(gToken)._setImplementation(implementation, allowResign, becomeImplementationData);
     }
 
     /**
      * @notice Extract reserves by the reserve manager
-     * @param jToken The jToken address
+     * @param gToken The gToken address
      * @param reduceAmount The amount of reduction
      */
-    function extractReserves(address jToken, uint256 reduceAmount) external onlyReserveManager {
-        require(GTokenInterface(jToken)._reduceReserves(reduceAmount) == 0, "failed to reduce reserves");
+    function extractReserves(address gToken, uint256 reduceAmount) external onlyReserveManager {
+        require(GTokenInterface(gToken)._reduceReserves(reduceAmount) == 0, "failed to reduce reserves");
 
-        address underlying = GXrc20(jToken).underlying();
+        address underlying = GXrc20(gToken).underlying();
         _transferToken(underlying, reserveManager, reduceAmount);
     }
 

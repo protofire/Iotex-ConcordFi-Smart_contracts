@@ -91,12 +91,12 @@ interface ERC3156FlashLenderInterface {
 
 contract PriceOracle {
     /**
-     * @notice Get the underlying price of a jToken asset
-     * @param jToken The jToken to get the underlying price of
+     * @notice Get the underlying price of a gToken asset
+     * @param gToken The gToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18).
      *  Zero means the price is unavailable.
      */
-    function getUnderlyingPrice(GToken jToken) external view returns (uint256);
+    function getUnderlyingPrice(GToken gToken) external view returns (uint256);
 }
 
 contract UnitrollerAdminStorage {
@@ -164,7 +164,7 @@ contract GtrollerV1Storage is UnitrollerAdminStorage {
     }
 
     /**
-     * @notice Official mapping of jTokens -> Market metadata
+     * @notice Official mapping of gTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -188,13 +188,13 @@ contract GtrollerV1Storage is UnitrollerAdminStorage {
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    // @notice Borrow caps enforced by borrowAllowed for each jToken address. Defaults to zero which corresponds to unlimited borrowing.
+    // @notice Borrow caps enforced by borrowAllowed for each gToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint256) public borrowCaps;
 
     // @notice The supplyCapGuardian can set supplyCaps to any number for any market. Lowering the supply cap could disable supplying to the given market.
     address public supplyCapGuardian;
 
-    // @notice Supply caps enforced by mintAllowed for each jToken address. Defaults to zero which corresponds to unlimited supplying.
+    // @notice Supply caps enforced by mintAllowed for each gToken address. Defaults to zero which corresponds to unlimited supplying.
     mapping(address => uint256) public supplyCaps;
 
     // @notice creditLimits allowed specific protocols to borrow and repay without collateral.
@@ -213,59 +213,59 @@ contract GtrollerInterface {
 
     /*** Assets You Are In ***/
 
-    function enterMarkets(address[] calldata jTokens) external returns (uint256[] memory);
+    function enterMarkets(address[] calldata gTokens) external returns (uint256[] memory);
 
-    function exitMarket(address jToken) external returns (uint256);
+    function exitMarket(address gToken) external returns (uint256);
 
     /*** Policy Hooks ***/
 
     function mintAllowed(
-        address jToken,
+        address gToken,
         address minter,
         uint256 mintAmount
     ) external returns (uint256);
 
     function mintVerify(
-        address jToken,
+        address gToken,
         address minter,
         uint256 mintAmount,
         uint256 mintTokens
     ) external;
 
     function redeemAllowed(
-        address jToken,
+        address gToken,
         address redeemer,
         uint256 redeemTokens
     ) external returns (uint256);
 
     function redeemVerify(
-        address jToken,
+        address gToken,
         address redeemer,
         uint256 redeemAmount,
         uint256 redeemTokens
     ) external;
 
     function borrowAllowed(
-        address jToken,
+        address gToken,
         address borrower,
         uint256 borrowAmount
     ) external returns (uint256);
 
     function borrowVerify(
-        address jToken,
+        address gToken,
         address borrower,
         uint256 borrowAmount
     ) external;
 
     function repayBorrowAllowed(
-        address jToken,
+        address gToken,
         address payer,
         address borrower,
         uint256 repayAmount
     ) external returns (uint256);
 
     function repayBorrowVerify(
-        address jToken,
+        address gToken,
         address payer,
         address borrower,
         uint256 repayAmount,
@@ -273,16 +273,16 @@ contract GtrollerInterface {
     ) external;
 
     function liquidateBorrowAllowed(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint256 repayAmount
     ) external returns (uint256);
 
     function liquidateBorrowVerify(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint256 repayAmount,
@@ -290,30 +290,30 @@ contract GtrollerInterface {
     ) external;
 
     function seizeAllowed(
-        address jTokenCollateral,
-        address jTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
     ) external returns (uint256);
 
     function seizeVerify(
-        address jTokenCollateral,
-        address jTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
     ) external;
 
     function transferAllowed(
-        address jToken,
+        address gToken,
         address src,
         address dst,
         uint256 transferTokens
     ) external returns (uint256);
 
     function transferVerify(
-        address jToken,
+        address gToken,
         address src,
         address dst,
         uint256 transferTokens
@@ -322,19 +322,19 @@ contract GtrollerInterface {
     /*** Liquidity/Liquidation Calculations ***/
 
     function liquidateCalculateSeizeTokens(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         uint256 repayAmount
     ) external view returns (uint256, uint256);
 }
 
 interface GtrollerInterfaceExtension {
-    function checkMembership(address account, GToken jToken) external view returns (bool);
+    function checkMembership(address account, GToken gToken) external view returns (bool);
 
-    function updateGTokenVersion(address jToken, GtrollerV1Storage.Version version) external;
+    function updateGTokenVersion(address gToken, GtrollerV1Storage.Version version) external;
 
     function flashloanAllowed(
-        address jToken,
+        address gToken,
         address receiver,
         uint256 amount,
         bytes calldata params
@@ -384,7 +384,7 @@ contract GTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @notice Contract which oversees inter-jToken operations
+     * @notice Contract which oversees inter-gToken operations
      */
     GtrollerInterface public gTroller;
 
@@ -544,7 +544,7 @@ contract GTokenInterface is GTokenStorage {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        address jTokenCollateral,
+        address gTokenCollateral,
         uint256 seizeTokens
     );
 
@@ -685,7 +685,7 @@ contract GXrc20Interface is GXrc20Storage {
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral
+        GTokenInterface gTokenCollateral
     ) external returns (uint256);
 
     function _addReserves(uint256 addAmount) external returns (uint256);
@@ -718,7 +718,7 @@ contract GWrappedNativeInterface is GXrc20Interface {
 
     function repayBorrowBehalfNative(address borrower) external payable returns (uint256);
 
-    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface gTokenCollateral)
         external
         payable
         returns (uint256);
@@ -1836,11 +1836,11 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
             uint256
         )
     {
-        uint256 jTokenBalance = getGTokenBalanceInternal(account);
+        uint256 gTokenBalance = getGTokenBalanceInternal(account);
         uint256 borrowBalance = borrowBalanceStoredInternal(account);
         uint256 exchangeRateMantissa = exchangeRateStoredInternal();
 
-        return (uint256(Error.NO_ERROR), jTokenBalance, borrowBalance, exchangeRateMantissa);
+        return (uint256(Error.NO_ERROR), gTokenBalance, borrowBalance, exchangeRateMantissa);
     }
 
     /**
@@ -1852,7 +1852,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Returns the current per-sec borrow interest rate for this jToken
+     * @notice Returns the current per-sec borrow interest rate for this gToken
      * @return The borrow interest rate per sec, scaled by 1e18
      */
     function borrowRatePerSecond() external view returns (uint256) {
@@ -1860,7 +1860,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Returns the current per-sec supply interest rate for this jToken
+     * @notice Returns the current per-sec supply interest rate for this gToken
      * @return The supply interest rate per sec, scaled by 1e18
      */
     function supplyRatePerSecond() external view returns (uint256) {
@@ -1868,7 +1868,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Returns the estimated per-sec borrow interest rate for this jToken after some change
+     * @notice Returns the estimated per-sec borrow interest rate for this gToken after some change
      * @return The borrow interest rate per sec, scaled by 1e18
      */
     function estimateBorrowRatePerSecondAfterChange(uint256 change, bool repay) external view returns (uint256) {
@@ -1886,7 +1886,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Returns the estimated per-sec supply interest rate for this jToken after some change
+     * @notice Returns the estimated per-sec supply interest rate for this gToken after some change
      * @return The supply interest rate per sec, scaled by 1e18
      */
     function estimateSupplyRatePerSecondAfterChange(uint256 change, bool repay) external view returns (uint256) {
@@ -2000,7 +2000,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Get cash balance of this jToken in the underlying asset
+     * @notice Get cash balance of this gToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external view returns (uint256) {
@@ -2071,7 +2071,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @param isNative The amount is in native or not
@@ -2088,9 +2088,9 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -2105,9 +2105,9 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemAmount The amount of underlying to receive from redeeming jTokens
+     * @param redeemAmount The amount of underlying to receive from redeeming gTokens
      * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -2197,8 +2197,8 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
 
         /*
          * We invoke doTransferOut for the borrower and the borrowAmount.
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the jToken borrowAmount less of cash.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the gToken borrowAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
         doTransferOut(borrower, borrowAmount, isNative);
@@ -2321,8 +2321,8 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
 
         /*
          * We call doTransferIn for the payer and the repayAmount
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the jToken holds an additional repayAmount of cash.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the gToken holds an additional repayAmount of cash.
          *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
          *   it returns the amount actually transferred, in case of a fee.
          */
@@ -2354,16 +2354,16 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this jToken to be liquidated
+     * @param borrower The borrower of this gToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
      */
     function liquidateBorrowInternal(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral,
+        GTokenInterface gTokenCollateral,
         bool isNative
     ) internal nonReentrant returns (uint256, uint256) {
         uint256 error = accrueInterest();
@@ -2372,22 +2372,22 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
             return (fail(Error(error), FailureInfo.LIQUIDATE_ACCRUE_BORROW_INTEREST_FAILED), 0);
         }
 
-        error = jTokenCollateral.accrueInterest();
+        error = gTokenCollateral.accrueInterest();
         if (error != uint256(Error.NO_ERROR)) {
             // accrueInterest emits logs on errors, but we still want to log the fact that an attempted liquidation failed
             return (fail(Error(error), FailureInfo.LIQUIDATE_ACCRUE_COLLATERAL_INTEREST_FAILED), 0);
         }
 
         // liquidateBorrowFresh emits borrow-specific logs on errors, so we don't need to
-        return liquidateBorrowFresh(msg.sender, borrower, repayAmount, jTokenCollateral, isNative);
+        return liquidateBorrowFresh(msg.sender, borrower, repayAmount, gTokenCollateral, isNative);
     }
 
     /**
      * @notice The liquidator liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this jToken to be liquidated
+     * @param borrower The borrower of this gToken to be liquidated
      * @param liquidator The address repaying the borrow and seizing collateral
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @param isNative The amount is in native or not
      * @return (uint, uint) An error code (0=success, otherwise a failure, see ErrorReporter.sol), and the actual repayment amount.
@@ -2396,13 +2396,13 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral,
+        GTokenInterface gTokenCollateral,
         bool isNative
     ) internal returns (uint256, uint256) {
         /* Fail if liquidate not allowed */
         uint256 allowed = gTroller.liquidateBorrowAllowed(
             address(this),
-            address(jTokenCollateral),
+            address(gTokenCollateral),
             liquidator,
             borrower,
             repayAmount
@@ -2416,8 +2416,8 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.LIQUIDATE_FRESHNESS_CHECK), 0);
         }
 
-        /* Verify jTokenCollateral market's block timestamp equals current block timestamp */
-        if (jTokenCollateral.accrualBlockTimestamp() != getBlockTimestamp()) {
+        /* Verify gTokenCollateral market's block timestamp equals current block timestamp */
+        if (gTokenCollateral.accrualBlockTimestamp() != getBlockTimestamp()) {
             return (fail(Error.MARKET_NOT_FRESH, FailureInfo.LIQUIDATE_COLLATERAL_FRESHNESS_CHECK), 0);
         }
 
@@ -2454,42 +2454,42 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
         /* We calculate the number of collateral tokens that will be seized */
         (uint256 amountSeizeError, uint256 seizeTokens) = gTroller.liquidateCalculateSeizeTokens(
             address(this),
-            address(jTokenCollateral),
+            address(gTokenCollateral),
             actualRepayAmount
         );
         require(amountSeizeError == uint256(Error.NO_ERROR), "LIQUIDATE_JOETROLLER_CALCULATE_AMOUNT_SEIZE_FAILED");
 
         /* Revert if borrower collateral token balance < seizeTokens */
-        require(jTokenCollateral.balanceOf(borrower) >= seizeTokens, "LIQUIDATE_SEIZE_TOO_MUCH");
+        require(gTokenCollateral.balanceOf(borrower) >= seizeTokens, "LIQUIDATE_SEIZE_TOO_MUCH");
 
         // If this is also the collateral, run seizeInternal to avoid re-entrancy, otherwise make an external call
         uint256 seizeError;
-        if (address(jTokenCollateral) == address(this)) {
+        if (address(gTokenCollateral) == address(this)) {
             seizeError = seizeInternal(address(this), liquidator, borrower, seizeTokens);
         } else {
-            seizeError = jTokenCollateral.seize(liquidator, borrower, seizeTokens);
+            seizeError = gTokenCollateral.seize(liquidator, borrower, seizeTokens);
         }
 
         /* Revert if seize tokens fails (since we cannot be sure of side effects) */
         require(seizeError == uint256(Error.NO_ERROR), "token seizure failed");
 
         /* We emit a LiquidateBorrow event */
-        emit LiquidateBorrow(liquidator, borrower, actualRepayAmount, address(jTokenCollateral), seizeTokens);
+        emit LiquidateBorrow(liquidator, borrower, actualRepayAmount, address(gTokenCollateral), seizeTokens);
 
         /* We call the defense hook */
         // unused function
-        // gTroller.liquidateBorrowVerify(address(this), address(jTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
+        // gTroller.liquidateBorrowVerify(address(this), address(gTokenCollateral), liquidator, borrower, actualRepayAmount, seizeTokens);
 
         return (uint256(Error.NO_ERROR), actualRepayAmount);
     }
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another jToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed jToken and not a parameter.
+     * @dev Will fail unless called by another gToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed gToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of jTokens to seize
+     * @param seizeTokens The number of gTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(
@@ -2662,8 +2662,8 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
 
         /*
          * We call doTransferIn for the caller and the addAmount
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the jToken holds an additional addAmount of cash.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the gToken holds an additional addAmount of cash.
          *  doTransferIn reverts if anything goes wrong, since we can't be sure if side effects occurred.
          *  it returns the amount actually transferred, in case of a fee.
          */
@@ -2838,12 +2838,12 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     ) internal returns (uint256);
 
     /**
-     * @notice Get the account's jToken balances
+     * @notice Get the account's gToken balances
      */
     function getGTokenBalanceInternal(address account) internal view returns (uint256);
 
     /**
-     * @notice User supplies assets into the market and receives jTokens in exchange
+     * @notice User supplies assets into the market and receives gTokens in exchange
      * @dev Assumes interest has already been accrued up to the current timestamp
      */
     function mintFresh(
@@ -2853,7 +2853,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     ) internal returns (uint256, uint256);
 
     /**
-     * @notice User redeems jTokens in exchange for the underlying asset
+     * @notice User redeems gTokens in exchange for the underlying asset
      * @dev Assumes interest has already been accrued up to the current timestamp
      */
     function redeemFresh(
@@ -2866,7 +2866,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
-     *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
+     *  Its absolutely critical to use msg.sender as the seizer gToken and not a parameter.
      */
     function seizeInternal(
         address seizerToken,
@@ -2934,7 +2934,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for backward joeatibility
      * @param mintAmount The amount of the underlying asset to supply
@@ -2946,7 +2946,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -2957,10 +2957,10 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for backward joeatibility
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint256 redeemTokens) external returns (uint256) {
@@ -2968,10 +2968,10 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemNative(uint256 redeemTokens) external returns (uint256) {
@@ -2979,7 +2979,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for backward joeatibility
      * @param redeemAmount The amount of underlying to redeem
@@ -2990,7 +2990,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
      * @param redeemAmount The amount of underlying to redeem
@@ -3071,17 +3071,17 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
      *  The collateral seized is transferred to the liquidator.
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for backward joeatibility
-     * @param borrower The borrower of this jToken to be liquidated
+     * @param borrower The borrower of this gToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral
+        GTokenInterface gTokenCollateral
     ) external returns (uint256) {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, gTokenCollateral, false);
         require(err == 0, "liquidate borrow failed");
     }
 
@@ -3090,16 +3090,16 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
      *  The collateral seized is transferred to the liquidator.
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      *  Keep return in the function signature for consistency
-     * @param borrower The borrower of this jToken to be liquidated
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this gToken to be liquidated
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface gTokenCollateral)
         external
         payable
         returns (uint256)
     {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, jTokenCollateral, true);
+        (uint256 err, ) = liquidateBorrowInternal(borrower, msg.value, gTokenCollateral, true);
         require(err == 0, "liquidate borrow native failed");
     }
 
@@ -3370,7 +3370,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice Get the account's jToken balances
+     * @notice Get the account's gToken balances
      * @param account The address of the account
      */
     function getGTokenBalanceInternal(address account) internal view returns (uint256) {
@@ -3384,7 +3384,7 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice User supplies assets into the market and receives jTokens in exchange
+     * @notice User supplies assets into the market and receives gTokens in exchange
      * @dev Assumes interest has already been accrued up to the current timestamp
      * @param minter The address of the account which is supplying the assets
      * @param mintAmount The amount of the underlying asset to supply
@@ -3425,22 +3425,22 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
 
         /*
          *  We call `doTransferIn` for the minter and the mintAmount.
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
          *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
          *  side-effects occurred. The function returns the amount actually transferred,
-         *  in case of a fee. On success, the jToken holds an additional `actualMintAmount`
+         *  in case of a fee. On success, the gToken holds an additional `actualMintAmount`
          *  of cash.
          */
         vars.actualMintAmount = doTransferIn(minter, mintAmount, isNative);
 
         /*
-         * We get the current exchange rate and calculate the number of jTokens to be minted:
+         * We get the current exchange rate and calculate the number of gTokens to be minted:
          *  mintTokens = actualMintAmount / exchangeRate
          */
         vars.mintTokens = div_ScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
 
         /*
-         * We calculate the new total supply of jTokens and minter token balance, checking for overflow:
+         * We calculate the new total supply of gTokens and minter token balance, checking for overflow:
          *  totalSupply = totalSupply + mintTokens
          *  accountTokens[minter] = accountTokens[minter] + mintTokens
          */
@@ -3463,11 +3463,11 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     }
 
     /**
-     * @notice User redeems jTokens in exchange for the underlying asset
+     * @notice User redeems gTokens in exchange for the underlying asset
      * @dev Assumes interest has already been accrued up to the current timestamp. Only one of redeemTokensIn or redeemAmountIn may be non-zero and it would do nothing if both are zero.
      * @param redeemer The address of the account which is redeeming the tokens
-     * @param redeemTokensIn The number of jTokens to redeem into underlying
-     * @param redeemAmountIn The number of underlying tokens to receive from redeeming jTokens
+     * @param redeemTokensIn The number of gTokens to redeem into underlying
+     * @param redeemAmountIn The number of underlying tokens to receive from redeeming gTokens
      * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -3541,8 +3541,8 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
 
         /*
          * We invoke doTransferOut for the redeemer and the redeemAmount.
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the jToken has redeemAmount less of cash.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the gToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
         doTransferOut(redeemer, vars.redeemAmount, isNative);
@@ -3564,11 +3564,11 @@ contract GWrappedNative is GToken, GWrappedNativeInterface {
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
-     *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
-     * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
+     *  Its absolutely critical to use msg.sender as the seizer gToken and not a parameter.
+     * @param seizerToken The contract seizing the collateral (i.e. borrowed gToken)
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of jTokens to seize
+     * @param seizeTokens The number of gTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seizeInternal(

@@ -19,37 +19,37 @@ const exchangeRate = 50e3;
 const mintAmount = avaxUnsigned(10e4);
 const mintTokens = mintAmount.div(exchangeRate);
 
-async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await preApprove(jToken, minter, mintAmount);
-  await send(jToken.gTroller, "setMintAllowed", [true]);
-  await send(jToken.gTroller, "setMintVerify", [true]);
-  await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
-  await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
+async function preMint(gToken, minter, mintAmount, mintTokens, exchangeRate) {
+  await preApprove(gToken, minter, mintAmount);
+  await send(gToken.gTroller, "setMintAllowed", [true]);
+  await send(gToken.gTroller, "setMintVerify", [true]);
+  await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
+  await send(gToken.underlying, "harnessSetFailTransferFromAddress", [
     minter,
     false,
   ]);
-  await send(jToken, "harnessSetBalance", [minter, 0]);
-  await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
+  await send(gToken, "harnessSetBalance", [minter, 0]);
+  await send(gToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
 }
 
-async function mintFresh(jToken, minter, mintAmount) {
-  return send(jToken, "harnessMintFresh", [minter, mintAmount]);
+async function mintFresh(gToken, minter, mintAmount) {
+  return send(gToken, "harnessMintFresh", [minter, mintAmount]);
 }
 
-async function redeemFreshTokens(jToken, redeemer, redeemTokens, redeemAmount) {
-  return send(jToken, "harnessRedeemFresh", [redeemer, redeemTokens, 0]);
+async function redeemFreshTokens(gToken, redeemer, redeemTokens, redeemAmount) {
+  return send(gToken, "harnessRedeemFresh", [redeemer, redeemTokens, 0]);
 }
 
-async function redeemFreshAmount(jToken, redeemer, redeemTokens, redeemAmount) {
-  return send(jToken, "harnessRedeemFresh", [redeemer, 0, redeemAmount]);
+async function redeemFreshAmount(gToken, redeemer, redeemTokens, redeemAmount) {
+  return send(gToken, "harnessRedeemFresh", [redeemer, 0, redeemAmount]);
 }
 
 describe("GToken", function () {
   let root, minter, accounts;
-  let jToken;
+  let gToken;
   beforeEach(async () => {
     [root, minter, ...accounts] = saddle.accounts;
-    jToken = await makeGToken({
+    gToken = await makeGToken({
       kind: "jjtoken",
       gTrollerOpts: { kind: "bool" },
       exchangeRate,
@@ -58,77 +58,77 @@ describe("GToken", function () {
 
   describe("mintFresh", () => {
     beforeEach(async () => {
-      await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
+      await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
     });
 
     it("fails if gTroller tells it to", async () => {
-      await send(jToken.gTroller, "setMintAllowed", [false]);
-      expect(await mintFresh(jToken, minter, mintAmount)).toHaveTrollReject(
+      await send(gToken.gTroller, "setMintAllowed", [false]);
+      expect(await mintFresh(gToken, minter, mintAmount)).toHaveTrollReject(
         "MINT_JOETROLLER_REJECTION",
         "MATH_ERROR"
       );
     });
 
     it("proceeds if gTroller tells it to", async () => {
-      await expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
+      await expect(await mintFresh(gToken, minter, mintAmount)).toSucceed();
     });
 
     it("fails if not fresh", async () => {
-      await fastForward(jToken);
-      expect(await mintFresh(jToken, minter, mintAmount)).toHaveTokenFailure(
+      await fastForward(gToken);
+      expect(await mintFresh(gToken, minter, mintAmount)).toHaveTokenFailure(
         "MARKET_NOT_FRESH",
         "MINT_FRESHNESS_CHECK"
       );
     });
 
     it("continues if fresh", async () => {
-      expect(await send(jToken, "accrueInterest")).toSucceed();
-      expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
+      expect(await send(gToken, "accrueInterest")).toSucceed();
+      expect(await mintFresh(gToken, minter, mintAmount)).toSucceed();
     });
 
     it("fails if insufficient approval", async () => {
       expect(
-        await send(jToken.underlying, "approve", [jToken._address, 1], {
+        await send(gToken.underlying, "approve", [gToken._address, 1], {
           from: minter,
         })
       ).toSucceed();
-      await expect(mintFresh(jToken, minter, mintAmount)).rejects.toRevert(
+      await expect(mintFresh(gToken, minter, mintAmount)).rejects.toRevert(
         "revert Insufficient allowance"
       );
     });
 
     it("fails if insufficient balance", async () => {
-      await setBalance(jToken.underlying, minter, 1);
-      await expect(mintFresh(jToken, minter, mintAmount)).rejects.toRevert(
+      await setBalance(gToken.underlying, minter, 1);
+      await expect(mintFresh(gToken, minter, mintAmount)).rejects.toRevert(
         "revert Insufficient balance"
       );
     });
 
     it("proceeds if sufficient approval and balance", async () => {
-      expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
+      expect(await mintFresh(gToken, minter, mintAmount)).toSucceed();
     });
 
     it("fails if exchange calculation fails", async () => {
-      expect(await send(jToken, "harnessSetExchangeRate", [0])).toSucceed();
-      await expect(mintFresh(jToken, minter, mintAmount)).rejects.toRevert(
+      expect(await send(gToken, "harnessSetExchangeRate", [0])).toSucceed();
+      await expect(mintFresh(gToken, minter, mintAmount)).rejects.toRevert(
         "revert divide by zero"
       );
     });
 
     it("fails if transferring in fails", async () => {
-      await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
+      await send(gToken.underlying, "harnessSetFailTransferFromAddress", [
         minter,
         true,
       ]);
-      await expect(mintFresh(jToken, minter, mintAmount)).rejects.toRevert(
+      await expect(mintFresh(gToken, minter, mintAmount)).rejects.toRevert(
         "revert TOKEN_TRANSFER_IN_FAILED"
       );
     });
 
     it("transfers the underlying cash, tokens, and emits Mint, Transfer events", async () => {
-      const beforeBalances = await getBalances([jToken], [minter]);
-      const result = await mintFresh(jToken, minter, mintAmount);
-      const afterBalances = await getBalances([jToken], [minter]);
+      const beforeBalances = await getBalances([gToken], [minter]);
+      const result = await mintFresh(gToken, minter, mintAmount);
+      const afterBalances = await getBalances([gToken], [minter]);
       expect(result).toSucceed();
       expect(result).toHaveLog("Mint", {
         minter,
@@ -136,16 +136,16 @@ describe("GToken", function () {
         mintTokens: mintTokens.toString(),
       });
       expect(result).toHaveLog(["Transfer", 1], {
-        from: jToken._address,
+        from: gToken._address,
         to: minter,
         amount: mintTokens.toString(),
       });
       expect(afterBalances).toEqual(
         await adjustBalances(beforeBalances, [
-          [jToken, minter, "cash", -mintAmount],
-          [jToken, minter, "tokens", mintTokens],
-          [jToken, "cash", mintAmount],
-          [jToken, "tokens", mintTokens],
+          [gToken, minter, "cash", -mintAmount],
+          [gToken, minter, "tokens", mintTokens],
+          [gToken, "cash", mintAmount],
+          [gToken, "tokens", mintTokens],
         ])
       );
     });
@@ -153,31 +153,31 @@ describe("GToken", function () {
 
   describe("mint", () => {
     beforeEach(async () => {
-      await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
+      await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
     });
 
     it("emits a mint failure if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-      await expect(quickMint(jToken, minter, mintAmount)).rejects.toRevert(
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+      await expect(quickMint(gToken, minter, mintAmount)).rejects.toRevert(
         "revert INTEREST_RATE_MODEL_ERROR"
       );
     });
 
     it("returns error from mintFresh without emitting any extra logs", async () => {
-      await send(jToken.underlying, "harnessSetBalance", [minter, 1]);
-      await expect(mintFresh(jToken, minter, mintAmount)).rejects.toRevert(
+      await send(gToken.underlying, "harnessSetBalance", [minter, 1]);
+      await expect(mintFresh(gToken, minter, mintAmount)).rejects.toRevert(
         "revert Insufficient balance"
       );
     });
 
     it("returns success from mintFresh and mints the correct number of tokens", async () => {
-      expect(await quickMint(jToken, minter, mintAmount)).toSucceed();
+      expect(await quickMint(gToken, minter, mintAmount)).toSucceed();
       expect(mintTokens).not.toEqualNumber(0);
-      expect(await balanceOf(jToken, minter)).toEqualNumber(mintTokens);
+      expect(await balanceOf(gToken, minter)).toEqualNumber(mintTokens);
     });
 
     it("emits an AccrueInterest event", async () => {
-      expect(await quickMint(jToken, minter, mintAmount)).toHaveLog(
+      expect(await quickMint(gToken, minter, mintAmount)).toHaveLog(
         "AccrueInterest",
         {
           borrowIndex: "1000000000000000000",
@@ -192,35 +192,35 @@ describe("GToken", function () {
   [redeemFreshTokens, redeemFreshAmount].forEach((redeemFresh) => {
     describe(redeemFresh.name, () => {
       beforeEach(async () => {
-        await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
-        expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
+        await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
+        expect(await mintFresh(gToken, minter, mintAmount)).toSucceed();
       });
 
       it("fails if gTroller tells it to", async () => {
-        await send(jToken.gTroller, "setRedeemAllowed", [false]);
+        await send(gToken.gTroller, "setRedeemAllowed", [false]);
         expect(
-          await redeemFresh(jToken, minter, mintTokens, mintAmount)
+          await redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).toHaveTrollReject("REDEEM_JOETROLLER_REJECTION");
       });
 
       it("fails if not fresh", async () => {
-        await fastForward(jToken);
+        await fastForward(gToken);
         expect(
-          await redeemFresh(jToken, minter, mintTokens, mintAmount)
+          await redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).toHaveTokenFailure("MARKET_NOT_FRESH", "REDEEM_FRESHNESS_CHECK");
       });
 
       it("continues if fresh", async () => {
-        expect(await send(jToken, "accrueInterest")).toSucceed();
+        expect(await send(gToken, "accrueInterest")).toSucceed();
         expect(
-          await redeemFresh(jToken, minter, mintTokens, mintAmount)
+          await redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).toSucceed();
       });
 
       it("fails if insufficient protocol cash to transfer out", async () => {
-        await send(jToken, "harnessSetInternalCash", [1]);
+        await send(gToken, "harnessSetInternalCash", [1]);
         expect(
-          await redeemFresh(jToken, minter, mintTokens, mintAmount)
+          await redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).toHaveTokenFailure(
           "TOKEN_INSUFFICIENT_CASH",
           "REDEEM_TRANSFER_OUT_NOT_POSSIBLE"
@@ -230,52 +230,52 @@ describe("GToken", function () {
       it("fails if exchange calculation fails", async () => {
         if (redeemFresh == redeemFreshTokens) {
           expect(
-            await send(jToken, "harnessSetExchangeRate", [UInt256Max()])
+            await send(gToken, "harnessSetExchangeRate", [UInt256Max()])
           ).toSucceed();
           await expect(
-            redeemFresh(jToken, minter, mintTokens, mintAmount)
+            redeemFresh(gToken, minter, mintTokens, mintAmount)
           ).rejects.toRevert("revert multiplication overflow");
         } else {
-          expect(await send(jToken, "harnessSetExchangeRate", [0])).toSucceed();
+          expect(await send(gToken, "harnessSetExchangeRate", [0])).toSucceed();
           await expect(
-            redeemFresh(jToken, minter, mintTokens, mintAmount)
+            redeemFresh(gToken, minter, mintTokens, mintAmount)
           ).rejects.toRevert("revert divide by zero");
         }
       });
 
       it("fails if transferring out fails", async () => {
-        await send(jToken.underlying, "harnessSetFailTransferToAddress", [
+        await send(gToken.underlying, "harnessSetFailTransferToAddress", [
           minter,
           true,
         ]);
         await expect(
-          redeemFresh(jToken, minter, mintTokens, mintAmount)
+          redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).rejects.toRevert("revert TOKEN_TRANSFER_OUT_FAILED");
       });
 
       it("fails if total supply < redemption amount", async () => {
-        await send(jToken, "harnessExchangeRateDetails", [0, 0, 0]);
+        await send(gToken, "harnessExchangeRateDetails", [0, 0, 0]);
         await expect(
-          redeemFresh(jToken, minter, mintTokens, mintAmount)
+          redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).rejects.toRevert("revert subtraction underflow");
       });
 
       it("reverts if new account balance underflows", async () => {
-        await send(jToken, "harnessSetBalance", [minter, 0]);
+        await send(gToken, "harnessSetBalance", [minter, 0]);
         await expect(
-          redeemFresh(jToken, minter, mintTokens, mintAmount)
+          redeemFresh(gToken, minter, mintTokens, mintAmount)
         ).rejects.toRevert("revert subtraction underflow");
       });
 
       it("transfers the underlying cash, tokens, and emits Redeem, Transfer events", async () => {
-        const beforeBalances = await getBalances([jToken], [minter]);
+        const beforeBalances = await getBalances([gToken], [minter]);
         const result = await redeemFresh(
-          jToken,
+          gToken,
           minter,
           mintTokens,
           mintAmount
         );
-        const afterBalances = await getBalances([jToken], [minter]);
+        const afterBalances = await getBalances([gToken], [minter]);
         expect(result).toSucceed();
         expect(result).toHaveLog("Redeem", {
           redeemer: minter,
@@ -284,15 +284,15 @@ describe("GToken", function () {
         });
         expect(result).toHaveLog(["Transfer", 1], {
           from: minter,
-          to: jToken._address,
+          to: gToken._address,
           amount: mintTokens.toString(),
         });
         expect(afterBalances).toEqual(
           await adjustBalances(beforeBalances, [
-            [jToken, minter, "cash", mintAmount],
-            [jToken, minter, "tokens", -mintTokens],
-            [jToken, "cash", -mintAmount],
-            [jToken, "tokens", -mintTokens],
+            [gToken, minter, "cash", mintAmount],
+            [gToken, minter, "tokens", -mintTokens],
+            [gToken, "cash", -mintAmount],
+            [gToken, "tokens", -mintTokens],
           ])
         );
       });
@@ -301,22 +301,22 @@ describe("GToken", function () {
 
   describe("redeem", () => {
     beforeEach(async () => {
-      await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
-      expect(await mintFresh(jToken, minter, mintAmount)).toSucceed();
+      await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
+      expect(await mintFresh(gToken, minter, mintAmount)).toSucceed();
     });
 
     it("emits a redeem failure if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-      await fastForward(jToken, 1);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+      await fastForward(gToken, 1);
       await expect(
-        send(jToken, "redeem", [mintTokens], { from: minter })
+        send(gToken, "redeem", [mintTokens], { from: minter })
       ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from redeemFresh without emitting any extra logs", async () => {
-      await send(jToken, "harnessSetInternalCash", [0]);
+      await send(gToken, "harnessSetInternalCash", [0]);
       expect(
-        await send(jToken, "redeem", [mintTokens], { from: minter })
+        await send(gToken, "redeem", [mintTokens], { from: minter })
       ).toHaveTokenFailure(
         "TOKEN_INSUFFICIENT_CASH",
         "REDEEM_TRANSFER_OUT_NOT_POSSIBLE"
@@ -325,24 +325,24 @@ describe("GToken", function () {
 
     it("returns success from redeemFresh and redeems the right amount", async () => {
       expect(
-        await send(jToken, "redeem", [mintTokens], { from: minter })
+        await send(gToken, "redeem", [mintTokens], { from: minter })
       ).toSucceed();
-      expect(await balanceOf(jToken.underlying, minter)).toEqualNumber(
+      expect(await balanceOf(gToken.underlying, minter)).toEqualNumber(
         mintAmount
       );
     });
 
     it("returns success from redeemFresh and redeems the right amount of underlying", async () => {
       expect(
-        await send(jToken, "redeemUnderlying", [mintAmount], { from: minter })
+        await send(gToken, "redeemUnderlying", [mintAmount], { from: minter })
       ).toSucceed();
-      expect(await balanceOf(jToken.underlying, minter)).toEqualNumber(
+      expect(await balanceOf(gToken.underlying, minter)).toEqualNumber(
         mintAmount
       );
     });
 
     it("emits an AccrueInterest event", async () => {
-      expect(await quickMint(jToken, minter, mintAmount)).toHaveLog(
+      expect(await quickMint(gToken, minter, mintAmount)).toHaveLog(
         "AccrueInterest",
         {
           borrowIndex: "1000000000000000000",

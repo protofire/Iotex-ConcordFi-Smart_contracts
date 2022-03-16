@@ -21,30 +21,30 @@ describe("Spinarama", () => {
 
   describe("#mintMint", () => {
     it("should succeed", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
-      await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
+      const gToken = await makeGToken({ supportMarket: true });
+      await send(gToken.underlying, "harnessSetBalance", [from, 100], { from });
       await send(
-        jToken.underlying,
+        gToken.underlying,
         "approve",
-        [jToken._address, UInt256Max()],
+        [gToken._address, UInt256Max()],
         { from }
       );
       await minerStop();
-      const p1 = send(jToken, "mint", [1], { from });
-      const p2 = send(jToken, "mint", [2], { from });
+      const p1 = send(gToken, "mint", [1], { from });
+      const p2 = send(gToken, "mint", [2], { from });
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
-      expect(await balanceOf(jToken, from)).toEqualNumber(3);
+      expect(await balanceOf(gToken, from)).toEqualNumber(3);
     });
 
     it("should partial succeed", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
-      await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
-      await send(jToken.underlying, "approve", [jToken._address, 10], { from });
+      const gToken = await makeGToken({ supportMarket: true });
+      await send(gToken.underlying, "harnessSetBalance", [from, 100], { from });
+      await send(gToken.underlying, "approve", [gToken._address, 10], { from });
       await minerStop();
-      const p1 = send(jToken, "mint", [11], { from });
-      const p2 = send(jToken, "mint", [10], { from });
+      const p1 = send(gToken, "mint", [11], { from });
+      const p2 = send(gToken, "mint", [10], { from });
       await expect(minerStart()).rejects.toRevert(
         "revert Insufficient allowance"
       );
@@ -55,78 +55,78 @@ describe("Spinarama", () => {
         expect(err.toString()).toContain("reverted by the EVM");
       }
       await expect(p2).resolves.toSucceed();
-      expect(await balanceOf(jToken, from)).toEqualNumber(10);
+      expect(await balanceOf(gToken, from)).toEqualNumber(10);
     });
   });
 
   describe("#mintRedeem", () => {
     it("should succeed", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
-      await send(jToken.underlying, "harnessSetBalance", [from, 100], { from });
-      await send(jToken.underlying, "approve", [jToken._address, 10], { from });
+      const gToken = await makeGToken({ supportMarket: true });
+      await send(gToken.underlying, "harnessSetBalance", [from, 100], { from });
+      await send(gToken.underlying, "approve", [gToken._address, 10], { from });
       await minerStop();
-      const p1 = send(jToken, "mint", [10], { from });
-      const p2 = send(jToken, "redeemUnderlying", [10], { from });
+      const p1 = send(gToken, "mint", [10], { from });
+      const p2 = send(gToken, "redeemUnderlying", [10], { from });
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
-      expect(await balanceOf(jToken, from)).toEqualNumber(0);
+      expect(await balanceOf(gToken, from)).toEqualNumber(0);
     });
   });
 
   describe("#redeemMint", () => {
     it("should succeed", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
-      await send(jToken, "harnessSetTotalSupply", [10]);
-      await send(jToken, "harnessSetExchangeRate", [avaxMantissa(1)]);
-      await send(jToken, "harnessSetBalance", [from, 10]);
-      await send(jToken.underlying, "harnessSetBalance", [jToken._address, 10]);
-      await send(jToken.underlying, "approve", [jToken._address, 10], { from });
+      const gToken = await makeGToken({ supportMarket: true });
+      await send(gToken, "harnessSetTotalSupply", [10]);
+      await send(gToken, "harnessSetExchangeRate", [avaxMantissa(1)]);
+      await send(gToken, "harnessSetBalance", [from, 10]);
+      await send(gToken.underlying, "harnessSetBalance", [gToken._address, 10]);
+      await send(gToken.underlying, "approve", [gToken._address, 10], { from });
       await minerStop();
-      const p1 = send(jToken, "redeem", [10], { from });
-      const p2 = send(jToken, "mint", [10], { from });
+      const p1 = send(gToken, "redeem", [10], { from });
+      const p2 = send(gToken, "mint", [10], { from });
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
-      expect(await balanceOf(jToken, from)).toEqualNumber(10);
+      expect(await balanceOf(gToken, from)).toEqualNumber(10);
     });
   });
 
   describe("#repayRepay", () => {
     it("should succeed", async () => {
-      const jToken1 = await makeGToken({
+      const gToken1 = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
         collateralFactor: 0.5,
       });
-      const jToken2 = await makeGToken({
+      const gToken2 = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
-        gTroller: jToken1.gTroller,
+        gTroller: gToken1.gTroller,
       });
-      await send(jToken1.underlying, "harnessSetBalance", [from, 10]);
-      await send(jToken1.underlying, "approve", [jToken1._address, 10], {
+      await send(gToken1.underlying, "harnessSetBalance", [from, 10]);
+      await send(gToken1.underlying, "approve", [gToken1._address, 10], {
         from,
       });
-      await send(jToken2.underlying, "harnessSetBalance", [
-        jToken2._address,
+      await send(gToken2.underlying, "harnessSetBalance", [
+        gToken2._address,
         10,
       ]);
-      await send(jToken2, "harnessSetTotalSupply", [100]);
-      await send(jToken2.underlying, "approve", [jToken2._address, 10], {
+      await send(gToken2, "harnessSetTotalSupply", [100]);
+      await send(gToken2.underlying, "approve", [gToken2._address, 10], {
         from,
       });
-      await send(jToken2, "harnessSetExchangeRate", [avaxMantissa(1)]);
-      expect(await enterMarkets([jToken1, jToken2], from)).toSucceed();
-      expect(await send(jToken1, "mint", [10], { from })).toSucceed();
-      expect(await send(jToken2, "borrow", [2], { from })).toSucceed();
+      await send(gToken2, "harnessSetExchangeRate", [avaxMantissa(1)]);
+      expect(await enterMarkets([gToken1, gToken2], from)).toSucceed();
+      expect(await send(gToken1, "mint", [10], { from })).toSucceed();
+      expect(await send(gToken2, "borrow", [2], { from })).toSucceed();
       await minerStop();
-      const p1 = send(jToken2, "repayBorrow", [1], { from });
-      const p2 = send(jToken2, "repayBorrow", [1], { from });
+      const p1 = send(gToken2, "repayBorrow", [1], { from });
+      const p2 = send(gToken2, "repayBorrow", [1], { from });
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
-      expect((await borrowSnapshot(jToken2, from)).principal).toEqualNumber(0);
+      expect((await borrowSnapshot(gToken2, from)).principal).toEqualNumber(0);
     });
 
     // XXX not yet converted below this point...moving on to certora

@@ -81,7 +81,7 @@ describe("assetListTest", () => {
       const result1 = await enterAndCheckMarkets([OMG], [OMG]);
       const result2 = await enterAndCheckMarkets([OMG], [OMG]);
       expect(result1).toHaveLog("MarketEntered", {
-        jToken: OMG._address,
+        gToken: OMG._address,
         account: customer,
       });
       expect(result2.events).toEqual({});
@@ -189,7 +189,7 @@ describe("assetListTest", () => {
         send(gTroller, "borrowAllowed", [BAT._address, customer, 1], {
           from: customer,
         })
-      ).rejects.toRevert("revert sender must be jToken");
+      ).rejects.toRevert("revert sender must be gToken");
 
       const assetsIn = await call(gTroller, "getAssetsIn", [customer]);
 

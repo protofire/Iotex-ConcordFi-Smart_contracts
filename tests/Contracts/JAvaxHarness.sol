@@ -88,10 +88,10 @@ contract GIotxHarness is GIotx {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -128,9 +128,9 @@ contract GIotxHarness is GIotx {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral);
         return err;
     }
 

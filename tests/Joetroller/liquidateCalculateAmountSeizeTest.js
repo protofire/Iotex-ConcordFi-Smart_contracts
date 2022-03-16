@@ -11,13 +11,13 @@ const repayAmount = avaxUnsigned(1e18);
 
 async function calculateSeizeTokens(
   gTroller,
-  jTokenBorrowed,
-  jTokenCollateral,
+  gTokenBorrowed,
+  gTokenCollateral,
   repayAmount
 ) {
   return call(gTroller, "liquidateCalculateSeizeTokens", [
-    jTokenBorrowed._address,
-    jTokenCollateral._address,
+    gTokenBorrowed._address,
+    gTokenCollateral._address,
     repayAmount,
   ]);
 }
@@ -28,45 +28,45 @@ function rando(min, max) {
 
 describe("Gtroller", () => {
   let root, accounts;
-  let gTroller, jTokenBorrowed, jTokenCollateral;
+  let gTroller, gTokenBorrowed, gTokenCollateral;
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
     gTroller = await makeGtroller();
-    jTokenBorrowed = await makeGToken({
+    gTokenBorrowed = await makeGToken({
       gTroller: gTroller,
       underlyingPrice: 0,
     });
-    jTokenCollateral = await makeGToken({
+    gTokenCollateral = await makeGToken({
       gTroller: gTroller,
       underlyingPrice: 0,
     });
   });
 
   beforeEach(async () => {
-    await setOraclePrice(jTokenBorrowed, borrowedPrice);
-    await setOraclePrice(jTokenCollateral, collateralPrice);
-    await send(jTokenCollateral, "harnessExchangeRateDetails", [8e10, 4e10, 0]);
+    await setOraclePrice(gTokenBorrowed, borrowedPrice);
+    await setOraclePrice(gTokenCollateral, collateralPrice);
+    await send(gTokenCollateral, "harnessExchangeRateDetails", [8e10, 4e10, 0]);
   });
 
   describe("liquidateCalculateAmountSeize", () => {
     it("fails if either asset price is 0", async () => {
-      await setOraclePrice(jTokenBorrowed, 0);
+      await setOraclePrice(gTokenBorrowed, 0);
       expect(
         await calculateSeizeTokens(
           gTroller,
-          jTokenBorrowed,
-          jTokenCollateral,
+          gTokenBorrowed,
+          gTokenCollateral,
           repayAmount
         )
       ).toHaveTrollErrorTuple(["PRICE_ERROR", 0]);
 
-      await setOraclePrice(jTokenCollateral, 0);
+      await setOraclePrice(gTokenCollateral, 0);
       expect(
         await calculateSeizeTokens(
           gTroller,
-          jTokenBorrowed,
-          jTokenCollateral,
+          gTokenBorrowed,
+          gTokenCollateral,
           repayAmount
         )
       ).toHaveTrollErrorTuple(["PRICE_ERROR", 0]);
@@ -76,31 +76,31 @@ describe("Gtroller", () => {
       await expect(
         calculateSeizeTokens(
           gTroller,
-          jTokenBorrowed,
-          jTokenCollateral,
+          gTokenBorrowed,
+          gTokenCollateral,
           UInt256Max()
         )
       ).rejects.toRevert("revert multiplication overflow");
     });
 
     it("fails if the borrowed asset price causes overflow ", async () => {
-      await setOraclePrice(jTokenBorrowed, -1);
+      await setOraclePrice(gTokenBorrowed, -1);
       await expect(
         calculateSeizeTokens(
           gTroller,
-          jTokenBorrowed,
-          jTokenCollateral,
+          gTokenBorrowed,
+          gTokenCollateral,
           repayAmount
         )
       ).rejects.toRevert("revert multiplication overflow");
     });
 
     it("reverts if it fails to calculate the exchange rate", async () => {
-      await send(jTokenCollateral, "harnessExchangeRateDetails", [1, 0, 10]); // (1 - 10) -> underflow
+      await send(gTokenCollateral, "harnessExchangeRateDetails", [1, 0, 10]); // (1 - 10) -> underflow
       await expect(
         send(gTroller, "liquidateCalculateSeizeTokens", [
-          jTokenBorrowed._address,
-          jTokenCollateral._address,
+          gTokenBorrowed._address,
+          gTokenCollateral._address,
           repayAmount,
         ])
       ).rejects.toRevert("revert subtraction underflow");
@@ -132,12 +132,12 @@ describe("Gtroller", () => {
           repayAmount,
         ] = testCase.map(avaxUnsigned);
 
-        await setOraclePrice(jTokenCollateral, collateralPrice);
-        await setOraclePrice(jTokenBorrowed, borrowedPrice);
+        await setOraclePrice(gTokenCollateral, collateralPrice);
+        await setOraclePrice(gTokenBorrowed, borrowedPrice);
         await send(gTroller, "_setLiquidationIncentive", [
           liquidationIncentive,
         ]);
-        await send(jTokenCollateral, "harnessSetExchangeRate", [exchangeRate]);
+        await send(gTokenCollateral, "harnessSetExchangeRate", [exchangeRate]);
 
         const seizeAmount = repayAmount
           .multipliedBy(liquidationIncentive)
@@ -148,8 +148,8 @@ describe("Gtroller", () => {
         expect(
           await calculateSeizeTokens(
             gTroller,
-            jTokenBorrowed,
-            jTokenCollateral,
+            gTokenBorrowed,
+            gTokenCollateral,
             repayAmount
           )
         ).toHaveTrollErrorTuple(

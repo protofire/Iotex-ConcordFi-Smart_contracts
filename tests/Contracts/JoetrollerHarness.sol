@@ -57,13 +57,13 @@ contract BankerJoeGtrollerHarness is GtrollerHarness {
 
     function claimG(
         address[] memory holders,
-        GToken[] memory jTokens,
+        GToken[] memory gTokens,
         bool borrowers,
         bool suppliers
     ) public {
         // unused
         holders;
-        jTokens;
+        gTokens;
         borrowers;
         suppliers;
     }
@@ -112,43 +112,43 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
 
     /*** Assets You Are In ***/
 
-    function enterMarkets(address[] memory _jTokens) public returns (uint256[] memory) {
-        _jTokens;
+    function enterMarkets(address[] memory _gTokens) public returns (uint256[] memory) {
+        _gTokens;
         uint256[] memory ret;
         return ret;
     }
 
-    function exitMarket(address _jToken) external returns (uint256) {
-        _jToken;
+    function exitMarket(address _gToken) external returns (uint256) {
+        _gToken;
         return noError;
     }
 
-    function checkMembership(address _account, GToken _jToken) external view returns (bool) {
+    function checkMembership(address _account, GToken _gToken) external view returns (bool) {
         _account;
-        _jToken;
+        _gToken;
         return true;
     }
 
     /*** Policy Hooks ***/
 
     function mintAllowed(
-        address _jToken,
+        address _gToken,
         address _minter,
         uint256 _mintAmount
     ) public returns (uint256) {
-        _jToken;
+        _gToken;
         _minter;
         _mintAmount;
         return allowMint ? noError : opaqueError;
     }
 
     function mintVerify(
-        address _jToken,
+        address _gToken,
         address _minter,
         uint256 _mintAmount,
         uint256 _mintTokens
     ) external {
-        _jToken;
+        _gToken;
         _minter;
         _mintAmount;
         _mintTokens;
@@ -156,23 +156,23 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function redeemAllowed(
-        address _jToken,
+        address _gToken,
         address _redeemer,
         uint256 _redeemTokens
     ) public returns (uint256) {
-        _jToken;
+        _gToken;
         _redeemer;
         _redeemTokens;
         return allowRedeem ? noError : opaqueError;
     }
 
     function redeemVerify(
-        address _jToken,
+        address _gToken,
         address _redeemer,
         uint256 _redeemAmount,
         uint256 _redeemTokens
     ) external {
-        _jToken;
+        _gToken;
         _redeemer;
         _redeemAmount;
         _redeemTokens;
@@ -180,34 +180,34 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function borrowAllowed(
-        address _jToken,
+        address _gToken,
         address _borrower,
         uint256 _borrowAmount
     ) public returns (uint256) {
-        _jToken;
+        _gToken;
         _borrower;
         _borrowAmount;
         return allowBorrow ? noError : opaqueError;
     }
 
     function borrowVerify(
-        address _jToken,
+        address _gToken,
         address _borrower,
         uint256 _borrowAmount
     ) external {
-        _jToken;
+        _gToken;
         _borrower;
         _borrowAmount;
         require(verifyBorrow, "borrowVerify rejected borrow");
     }
 
     function repayBorrowAllowed(
-        address _jToken,
+        address _gToken,
         address _payer,
         address _borrower,
         uint256 _repayAmount
     ) public returns (uint256) {
-        _jToken;
+        _gToken;
         _payer;
         _borrower;
         _repayAmount;
@@ -215,13 +215,13 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function repayBorrowVerify(
-        address _jToken,
+        address _gToken,
         address _payer,
         address _borrower,
         uint256 _repayAmount,
         uint256 _borrowerIndex
     ) external {
-        _jToken;
+        _gToken;
         _payer;
         _borrower;
         _repayAmount;
@@ -230,14 +230,14 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function liquidateBorrowAllowed(
-        address _jTokenBorrowed,
-        address _jTokenCollateral,
+        address _gTokenBorrowed,
+        address _gTokenCollateral,
         address _liquidator,
         address _borrower,
         uint256 _repayAmount
     ) public returns (uint256) {
-        _jTokenBorrowed;
-        _jTokenCollateral;
+        _gTokenBorrowed;
+        _gTokenCollateral;
         _liquidator;
         _borrower;
         _repayAmount;
@@ -245,15 +245,15 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function liquidateBorrowVerify(
-        address _jTokenBorrowed,
-        address _jTokenCollateral,
+        address _gTokenBorrowed,
+        address _gTokenCollateral,
         address _liquidator,
         address _borrower,
         uint256 _repayAmount,
         uint256 _seizeTokens
     ) external {
-        _jTokenBorrowed;
-        _jTokenCollateral;
+        _gTokenBorrowed;
+        _gTokenCollateral;
         _liquidator;
         _borrower;
         _repayAmount;
@@ -262,14 +262,14 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function seizeAllowed(
-        address _jTokenCollateral,
-        address _jTokenBorrowed,
+        address _gTokenCollateral,
+        address _gTokenBorrowed,
         address _borrower,
         address _liquidator,
         uint256 _seizeTokens
     ) public returns (uint256) {
-        _jTokenCollateral;
-        _jTokenBorrowed;
+        _gTokenCollateral;
+        _gTokenBorrowed;
         _liquidator;
         _borrower;
         _seizeTokens;
@@ -277,14 +277,14 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function seizeVerify(
-        address _jTokenCollateral,
-        address _jTokenBorrowed,
+        address _gTokenCollateral,
+        address _gTokenBorrowed,
         address _liquidator,
         address _borrower,
         uint256 _seizeTokens
     ) external {
-        _jTokenCollateral;
-        _jTokenBorrowed;
+        _gTokenCollateral;
+        _gTokenBorrowed;
         _liquidator;
         _borrower;
         _seizeTokens;
@@ -292,12 +292,12 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function transferAllowed(
-        address _jToken,
+        address _gToken,
         address _src,
         address _dst,
         uint256 _transferTokens
     ) public returns (uint256) {
-        _jToken;
+        _gToken;
         _src;
         _dst;
         _transferTokens;
@@ -305,12 +305,12 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     }
 
     function transferVerify(
-        address _jToken,
+        address _gToken,
         address _src,
         address _dst,
         uint256 _transferTokens
     ) external {
-        _jToken;
+        _gToken;
         _src;
         _dst;
         _transferTokens;
@@ -320,18 +320,18 @@ contract BoolGtroller is GtrollerInterface, Gtroller {
     /*** Special Liquidation Calculation ***/
 
     function liquidateCalculateSeizeTokens(
-        address _jTokenBorrowed,
-        address _jTokenCollateral,
+        address _gTokenBorrowed,
+        address _gTokenCollateral,
         uint256 _repayAmount
     ) public view returns (uint256, uint256) {
-        _jTokenBorrowed;
-        _jTokenCollateral;
+        _gTokenBorrowed;
+        _gTokenCollateral;
         _repayAmount;
         return failCalculateSeizeTokens ? (opaqueError, 0) : (noError, calculatedSeizeTokens);
     }
 
-    function updateGTokenVersion(address _jToken, GtrollerV1Storage.Version _version) external {
-        _jToken;
+    function updateGTokenVersion(address _gToken, GtrollerV1Storage.Version _version) external {
+        _gToken;
         _version;
     }
 

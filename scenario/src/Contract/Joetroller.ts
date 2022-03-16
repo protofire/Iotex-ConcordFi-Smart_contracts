@@ -11,7 +11,7 @@ interface GtrollerMethods {
     borrowAmount: encodedNumber
   ): Callable<{ 0: number; 1: number; 2: number }>;
   membershipLength(string): Callable<string>;
-  checkMembership(user: string, jToken: string): Callable<string>;
+  checkMembership(user: string, gToken: string): Callable<string>;
   getAssetsIn(string): Callable<string[]>;
   admin(): Callable<string>;
   oracle(): Callable<string>;
@@ -30,7 +30,7 @@ interface GtrollerMethods {
   _setCloseFactor(encodedNumber): Sendable<number>;
   enterMarkets(markets: string[]): Sendable<number>;
   exitMarket(market: string): Sendable<number>;
-  updateGTokenVersion(jToken: string, version: encodedNumber): Sendable<void>;
+  updateGTokenVersion(gToken: string, version: encodedNumber): Sendable<void>;
   fastForward(encodedNumber): Sendable<number>;
   _setPendingImplementation(string): Sendable<number>;
   gTrollerImplementation(): Callable<string>;
@@ -52,14 +52,14 @@ interface GtrollerMethods {
   mintGuardianPaused(market: string): Callable<boolean>;
   borrowGuardianPaused(market: string): Callable<boolean>;
   _setMarketSupplyCaps(
-    jTokens: string[],
+    gTokens: string[],
     supplyCaps: encodedNumber[]
   ): Sendable<void>;
   _setSupplyCapGuardian(string): Sendable<void>;
   supplyCapGuardian(): Callable<string>;
   supplyCaps(string): Callable<string>;
   _setMarketBorrowCaps(
-    jTokens: string[],
+    gTokens: string[],
     borrowCaps: encodedNumber[]
   ): Sendable<void>;
   _setBorrowCapGuardian(string): Sendable<void>;

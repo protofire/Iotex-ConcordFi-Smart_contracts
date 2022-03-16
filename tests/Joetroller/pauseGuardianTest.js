@@ -2,7 +2,7 @@ const { address, both, avaxMantissa } = require("../Utils/Avalanche");
 const { makeGtroller, makeGToken } = require("../Utils/BankerJoe");
 
 describe("Gtroller", () => {
-  let gTroller, jToken;
+  let gTroller, gToken;
   let root, accounts;
 
   beforeEach(async () => {
@@ -62,8 +62,8 @@ describe("Gtroller", () => {
 
   describe("setting paused", () => {
     beforeEach(async () => {
-      jToken = await makeGToken({ supportMarket: true });
-      gTroller = jToken.gTroller;
+      gToken = await makeGToken({ supportMarket: true });
+      gTroller = gToken.gTroller;
     });
 
     let globalMethods = ["Transfer", "Seize"];
@@ -168,12 +168,12 @@ describe("Gtroller", () => {
       marketMethods.forEach(async (method) => {
         it(`only pause guardian or admin can pause ${method}`, async () => {
           await expect(
-            send(gTroller, `_set${method}Paused`, [jToken._address, true], {
+            send(gTroller, `_set${method}Paused`, [gToken._address, true], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
           await expect(
-            send(gTroller, `_set${method}Paused`, [jToken._address, false], {
+            send(gTroller, `_set${method}Paused`, [gToken._address, false], {
               from: accounts[2],
             })
           ).rejects.toRevert("revert only pause guardian and admin can pause");
@@ -183,11 +183,11 @@ describe("Gtroller", () => {
           result = await send(
             gTroller,
             `_set${method}Paused`,
-            [jToken._address, true],
+            [gToken._address, true],
             { from: pauseGuardian }
           );
           expect(result).toHaveLog(`ActionPaused`, {
-            jToken: jToken._address,
+            gToken: gToken._address,
             action: method,
             pauseState: true,
           });
@@ -195,34 +195,34 @@ describe("Gtroller", () => {
           let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
           state = await call(gTroller, `${camelCase}GuardianPaused`, [
-            jToken._address,
+            gToken._address,
           ]);
           expect(state).toEqual(true);
 
           await expect(
-            send(gTroller, `_set${method}Paused`, [jToken._address, false], {
+            send(gTroller, `_set${method}Paused`, [gToken._address, false], {
               from: pauseGuardian,
             })
           ).rejects.toRevert("revert only admin can unpause");
           result = await send(gTroller, `_set${method}Paused`, [
-            jToken._address,
+            gToken._address,
             false,
           ]);
 
           expect(result).toHaveLog(`ActionPaused`, {
-            jToken: jToken._address,
+            gToken: gToken._address,
             action: method,
             pauseState: false,
           });
 
           state = await call(gTroller, `${camelCase}GuardianPaused`, [
-            jToken._address,
+            gToken._address,
           ]);
           expect(state).toEqual(false);
         });
 
         it(`pauses ${method}`, async () => {
-          await send(gTroller, `_set${method}Paused`, [jToken._address, true], {
+          await send(gTroller, `_set${method}Paused`, [gToken._address, true], {
             from: pauseGuardian,
           });
           switch (method) {
@@ -231,7 +231,7 @@ describe("Gtroller", () => {
                 await call(gTroller, "mintAllowed", [address(1), address(2), 1])
               ).toHaveTrollError("MARKET_NOT_LISTED");
               await expect(
-                send(gTroller, "mintAllowed", [jToken._address, address(2), 1])
+                send(gTroller, "mintAllowed", [gToken._address, address(2), 1])
               ).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
               break;
 
@@ -245,7 +245,7 @@ describe("Gtroller", () => {
               ).toHaveTrollError("MARKET_NOT_LISTED");
               await expect(
                 send(gTroller, "borrowAllowed", [
-                  jToken._address,
+                  gToken._address,
                   address(2),
                   1,
                 ])

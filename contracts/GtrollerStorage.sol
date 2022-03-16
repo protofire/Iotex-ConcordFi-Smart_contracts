@@ -70,7 +70,7 @@ contract GtrollerV1Storage is UnitrollerAdminStorage {
     }
 
     /**
-     * @notice Official mapping of jTokens -> Market metadata
+     * @notice Official mapping of gTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -94,13 +94,13 @@ contract GtrollerV1Storage is UnitrollerAdminStorage {
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    // @notice Borrow caps enforced by borrowAllowed for each jToken address. Defaults to zero which corresponds to unlimited borrowing.
+    // @notice Borrow caps enforced by borrowAllowed for each gToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint256) public borrowCaps;
 
     // @notice The supplyCapGuardian can set supplyCaps to any number for any market. Lowering the supply cap could disable supplying to the given market.
     address public supplyCapGuardian;
 
-    // @notice Supply caps enforced by mintAllowed for each jToken address. Defaults to zero which corresponds to unlimited supplying.
+    // @notice Supply caps enforced by mintAllowed for each gToken address. Defaults to zero which corresponds to unlimited supplying.
     mapping(address => uint256) public supplyCaps;
 
     // @notice creditLimits allowed specific protocols to borrow and repay without collateral.

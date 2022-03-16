@@ -9,8 +9,8 @@ contract FixedPriceOracle is PriceOracle {
         price = _price;
     }
 
-    function getUnderlyingPrice(GToken jToken) public view returns (uint256) {
-        jToken;
+    function getUnderlyingPrice(GToken gToken) public view returns (uint256) {
+        gToken;
         return price;
     }
 

@@ -42,18 +42,18 @@ describe("PriceOracleProxy", () => {
   });
 
   describe("getUnderlyingPrice", () => {
-    let setPrice = async (jToken, source) => {
-      await send(oracle, "_setAggregators", [[jToken], [source]]);
+    let setPrice = async (gToken, source) => {
+      await send(oracle, "_setAggregators", [[gToken], [source]]);
     };
 
-    let setAndVerifyBackingPrice = async (jToken, price) => {
+    let setAndVerifyBackingPrice = async (gToken, price) => {
       const mockAggregator = await makeMockAggregator({
         answer: avaxMantissa(price),
       });
-      await setPrice(jToken._address, mockAggregator._address);
+      await setPrice(gToken._address, mockAggregator._address);
 
       let oraclePrice = await call(oracle, "getUnderlyingPrice", [
-        jToken._address,
+        gToken._address,
       ]);
 
       expect(Number(oraclePrice)).toEqual(price * 1e18);

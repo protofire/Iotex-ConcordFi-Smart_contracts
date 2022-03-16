@@ -15,44 +15,44 @@ describe("GToken", function () {
   });
 
   describe("_setReserveFactorFresh", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken();
+      gToken = await makeGToken();
     });
 
     it("rejects change by non-admin", async () => {
       expect(
-        await send(jToken, "harnessSetReserveFactorFresh", [factor], {
+        await send(gToken, "harnessSetReserveFactorFresh", [factor], {
           from: accounts[0],
         })
       ).toHaveTokenFailure("UNAUTHORIZED", "SET_RESERVE_FACTOR_ADMIN_CHECK");
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
 
     it("rejects change if market not fresh", async () => {
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
       expect(
-        await send(jToken, "harnessSetReserveFactorFresh", [factor])
+        await send(gToken, "harnessSetReserveFactorFresh", [factor])
       ).toHaveTokenFailure(
         "MARKET_NOT_FRESH",
         "SET_RESERVE_FACTOR_FRESH_CHECK"
       );
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
 
     it("rejects newReserveFactor that descales to 1", async () => {
       expect(
-        await send(jToken, "harnessSetReserveFactorFresh", [avaxMantissa(1.01)])
+        await send(gToken, "harnessSetReserveFactorFresh", [avaxMantissa(1.01)])
       ).toHaveTokenFailure("BAD_INPUT", "SET_RESERVE_FACTOR_BOUNDS_CHECK");
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
 
     it("accepts newReserveFactor in valid range and emits log", async () => {
-      const result = await send(jToken, "harnessSetReserveFactorFresh", [
+      const result = await send(gToken, "harnessSetReserveFactorFresh", [
         factor,
       ]);
       expect(result).toSucceed();
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(factor);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(factor);
       expect(result).toHaveLog("NewReserveFactor", {
         oldReserveFactorMantissa: "0",
         newReserveFactorMantissa: factor.toString(),
@@ -60,42 +60,42 @@ describe("GToken", function () {
     });
 
     it("accepts a change back to zero", async () => {
-      const result1 = await send(jToken, "harnessSetReserveFactorFresh", [
+      const result1 = await send(gToken, "harnessSetReserveFactorFresh", [
         factor,
       ]);
-      const result2 = await send(jToken, "harnessSetReserveFactorFresh", [0]);
+      const result2 = await send(gToken, "harnessSetReserveFactorFresh", [0]);
       expect(result1).toSucceed();
       expect(result2).toSucceed();
       expect(result2).toHaveLog("NewReserveFactor", {
         oldReserveFactorMantissa: factor.toString(),
         newReserveFactorMantissa: "0",
       });
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
   });
 
   describe("_setReserveFactor", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken();
+      gToken = await makeGToken();
     });
 
     beforeEach(async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
-      await send(jToken, "_setReserveFactor", [0]);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
+      await send(gToken, "_setReserveFactor", [0]);
     });
 
     it("emits a reserve factor failure if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-      await fastForward(jToken, 1);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+      await fastForward(gToken, 1);
       await expect(
-        send(jToken, "_setReserveFactor", [factor])
+        send(gToken, "_setReserveFactor", [factor])
       ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
 
     it("returns error from setReserveFactorFresh without emitting any extra logs", async () => {
-      const { reply, receipt } = await both(jToken, "_setReserveFactor", [
+      const { reply, receipt } = await both(gToken, "_setReserveFactor", [
         avaxMantissa(2),
       ]);
       expect(reply).toHaveTokenError("BAD_INPUT");
@@ -103,27 +103,27 @@ describe("GToken", function () {
         "BAD_INPUT",
         "SET_RESERVE_FACTOR_BOUNDS_CHECK"
       );
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
     });
 
     it("returns success from setReserveFactorFresh", async () => {
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(0);
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
-      expect(await send(jToken, "_setReserveFactor", [factor])).toSucceed();
-      expect(await call(jToken, "reserveFactorMantissa")).toEqualNumber(factor);
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(0);
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
+      expect(await send(gToken, "_setReserveFactor", [factor])).toSucceed();
+      expect(await call(gToken, "reserveFactorMantissa")).toEqualNumber(factor);
     });
   });
 
   describe("_reduceReservesFresh", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken();
+      gToken = await makeGToken();
       expect(
-        await send(jToken, "harnessSetTotalReserves", [reserves])
+        await send(gToken, "harnessSetTotalReserves", [reserves])
       ).toSucceed();
       expect(
-        await send(jToken.underlying, "harnessSetBalance", [
-          jToken._address,
+        await send(gToken.underlying, "harnessSetBalance", [
+          gToken._address,
           cash,
         ])
       ).toSucceed();
@@ -131,58 +131,58 @@ describe("GToken", function () {
 
     it("fails if called by non-admin", async () => {
       expect(
-        await send(jToken, "harnessReduceReservesFresh", [reduction], {
+        await send(gToken, "harnessReduceReservesFresh", [reduction], {
           from: accounts[0],
         })
       ).toHaveTokenFailure("UNAUTHORIZED", "REDUCE_RESERVES_ADMIN_CHECK");
-      expect(await call(jToken, "totalReserves")).toEqualNumber(reserves);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(reserves);
     });
 
     it("fails if market not fresh", async () => {
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
       expect(
-        await send(jToken, "harnessReduceReservesFresh", [reduction])
+        await send(gToken, "harnessReduceReservesFresh", [reduction])
       ).toHaveTokenFailure("MARKET_NOT_FRESH", "REDUCE_RESERVES_FRESH_CHECK");
-      expect(await call(jToken, "totalReserves")).toEqualNumber(reserves);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(reserves);
     });
 
     it("fails if amount exceeds reserves", async () => {
       expect(
-        await send(jToken, "harnessReduceReservesFresh", [reserves.plus(1)])
+        await send(gToken, "harnessReduceReservesFresh", [reserves.plus(1)])
       ).toHaveTokenFailure("BAD_INPUT", "REDUCE_RESERVES_VALIDATION");
-      expect(await call(jToken, "totalReserves")).toEqualNumber(reserves);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(reserves);
     });
 
     it("fails if amount exceeds available cash", async () => {
       const cashLessThanReserves = reserves.minus(2);
-      await send(jToken.underlying, "harnessSetBalance", [
-        jToken._address,
+      await send(gToken.underlying, "harnessSetBalance", [
+        gToken._address,
         cashLessThanReserves,
       ]);
       expect(
-        await send(jToken, "harnessReduceReservesFresh", [reserves])
+        await send(gToken, "harnessReduceReservesFresh", [reserves])
       ).toHaveTokenFailure(
         "TOKEN_INSUFFICIENT_CASH",
         "REDUCE_RESERVES_CASH_NOT_AVAILABLE"
       );
-      expect(await call(jToken, "totalReserves")).toEqualNumber(reserves);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(reserves);
     });
 
     it("increases admin balance and reduces reserves on success", async () => {
       const balance = avaxUnsigned(
-        await call(jToken.underlying, "balanceOf", [root])
+        await call(gToken.underlying, "balanceOf", [root])
       );
       expect(
-        await send(jToken, "harnessReduceReservesFresh", [reserves])
+        await send(gToken, "harnessReduceReservesFresh", [reserves])
       ).toSucceed();
-      expect(await call(jToken.underlying, "balanceOf", [root])).toEqualNumber(
+      expect(await call(gToken.underlying, "balanceOf", [root])).toEqualNumber(
         balance.plus(reserves)
       );
-      expect(await call(jToken, "totalReserves")).toEqualNumber(0);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(0);
     });
 
     it("emits an event on success", async () => {
-      const result = await send(jToken, "harnessReduceReservesFresh", [
+      const result = await send(gToken, "harnessReduceReservesFresh", [
         reserves,
       ]);
       expect(result).toHaveLog("ReservesReduced", {
@@ -194,32 +194,32 @@ describe("GToken", function () {
   });
 
   describe("_reduceReserves", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken();
-      await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
+      gToken = await makeGToken();
+      await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
       expect(
-        await send(jToken, "harnessSetTotalReserves", [reserves])
+        await send(gToken, "harnessSetTotalReserves", [reserves])
       ).toSucceed();
       expect(
-        await send(jToken.underlying, "harnessSetBalance", [
-          jToken._address,
+        await send(gToken.underlying, "harnessSetBalance", [
+          gToken._address,
           cash,
         ])
       ).toSucceed();
     });
 
     it("emits a reserve-reduction failure if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-      await fastForward(jToken, 1);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+      await fastForward(gToken, 1);
       await expect(
-        send(jToken, "_reduceReserves", [reduction])
+        send(gToken, "_reduceReserves", [reduction])
       ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns error from _reduceReservesFresh without emitting any extra logs", async () => {
       const { reply, receipt } = await both(
-        jToken,
+        gToken,
         "harnessReduceReservesFresh",
         [reserves.plus(1)]
       );
@@ -231,25 +231,25 @@ describe("GToken", function () {
     });
 
     it("returns success code from _reduceReservesFresh and reduces the correct amount", async () => {
-      expect(await call(jToken, "totalReserves")).toEqualNumber(reserves);
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
-      expect(await send(jToken, "_reduceReserves", [reduction])).toSucceed();
+      expect(await call(gToken, "totalReserves")).toEqualNumber(reserves);
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
+      expect(await send(gToken, "_reduceReserves", [reduction])).toSucceed();
     });
   });
 
   describe("gulp", () => {
-    let jToken;
+    let gToken;
     beforeEach(async () => {
-      jToken = await makeGToken({ kind: "jcapable" });
+      gToken = await makeGToken({ kind: "jcapable" });
     });
 
     it("absorbs excess cash into reserves", async () => {
       expect(
-        await send(jToken.underlying, "transfer", [jToken._address, cash])
+        await send(gToken.underlying, "transfer", [gToken._address, cash])
       ).toSucceed();
-      expect(await send(jToken, "gulp")).toSucceed();
-      expect(await call(jToken, "getCash")).toEqualNumber(cash);
-      expect(await call(jToken, "totalReserves")).toEqualNumber(cash);
+      expect(await send(gToken, "gulp")).toSucceed();
+      expect(await call(gToken, "getCash")).toEqualNumber(cash);
+      expect(await call(gToken, "totalReserves")).toEqualNumber(cash);
     });
   });
 });

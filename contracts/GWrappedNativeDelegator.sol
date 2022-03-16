@@ -86,7 +86,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -97,7 +97,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -106,9 +106,9 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint256 redeemTokens) external returns (uint256) {
@@ -117,9 +117,9 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemNative(uint256 redeemTokens) external returns (uint256) {
@@ -128,7 +128,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -139,7 +139,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -212,36 +212,36 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this jToken to be liquidated
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this gToken to be liquidated
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral
+        GTokenInterface gTokenCollateral
     ) external returns (uint256) {
         borrower;
         repayAmount;
-        jTokenCollateral; // Shh
+        gTokenCollateral; // Shh
         delegateAndReturn();
     }
 
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this jToken to be liquidated
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this gToken to be liquidated
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface gTokenCollateral)
         external
         payable
         returns (uint256)
     {
         borrower;
-        jTokenCollateral; // Shh
+        gTokenCollateral; // Shh
         delegateAndReturn();
     }
 
@@ -363,7 +363,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Returns the current per-sec borrow interest rate for this jToken
+     * @notice Returns the current per-sec borrow interest rate for this gToken
      * @return The borrow interest rate per sec, scaled by 1e18
      */
     function borrowRatePerSecond() external view returns (uint256) {
@@ -371,7 +371,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Returns the current per-sec supply interest rate for this jToken
+     * @notice Returns the current per-sec supply interest rate for this gToken
      * @return The supply interest rate per sec, scaled by 1e18
      */
     function supplyRatePerSecond() external view returns (uint256) {
@@ -424,7 +424,7 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
     }
 
     /**
-     * @notice Get cash balance of this jToken in the underlying asset
+     * @notice Get cash balance of this gToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external view returns (uint256) {
@@ -442,11 +442,11 @@ contract GWrappedNativeDelegator is GTokenInterface, GWrappedNativeInterface, JD
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another jToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed jToken and not a parameter.
+     * @dev Will fail unless called by another gToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed gToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of jTokens to seize
+     * @param seizeTokens The number of gTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(

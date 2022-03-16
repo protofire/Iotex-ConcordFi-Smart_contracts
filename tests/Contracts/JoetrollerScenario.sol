@@ -21,11 +21,11 @@ contract GtrollerScenario is Gtroller {
         return blockTimestamp;
     }
 
-    function membershipLength(GToken jToken) public view returns (uint256) {
-        return accountAssets[address(jToken)].length;
+    function membershipLength(GToken gToken) public view returns (uint256) {
+        return accountAssets[address(gToken)].length;
     }
 
-    function unlist(GToken jToken) public {
-        markets[address(jToken)].isListed = false;
+    function unlist(GToken gToken) public {
+        markets[address(gToken)].isListed = false;
     }
 }

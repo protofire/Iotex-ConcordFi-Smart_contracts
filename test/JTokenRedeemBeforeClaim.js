@@ -91,14 +91,14 @@ describe("RewardDistributor", function () {
     ](0, this.gTroller.address, this.joe.address, USDC_LENDER);
     expect(rewardsBefore).to.be.gt("0");
 
-    const jTokenBalanceBefore = await this.jUsdc.balanceOf(USDC_LENDER);
-    expect(jTokenBalanceBefore).to.be.gt("0");
+    const gTokenBalanceBefore = await this.jUsdc.balanceOf(USDC_LENDER);
+    expect(gTokenBalanceBefore).to.be.gt("0");
 
     // Redeem all
-    await this.jUsdc.connect(this.usdcLender).redeem(jTokenBalanceBefore);
+    await this.jUsdc.connect(this.usdcLender).redeem(gTokenBalanceBefore);
 
-    const jTokenBalanceAfter = await this.jUsdc.balanceOf(USDC_LENDER);
-    expect(jTokenBalanceAfter).to.be.equal("0");
+    const gTokenBalanceAfter = await this.jUsdc.balanceOf(USDC_LENDER);
+    expect(gTokenBalanceAfter).to.be.equal("0");
 
     const rewardsAfter = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"
@@ -118,14 +118,14 @@ describe("RewardDistributor", function () {
       .connect(this.admin)
       ._setImplementation(this.jUsdcDelegateNew.address, false, "0x");
 
-    const jTokenBalanceBefore = await this.jUsdc.balanceOf(USDC_LENDER);
-    expect(jTokenBalanceBefore).to.be.gt("0");
+    const gTokenBalanceBefore = await this.jUsdc.balanceOf(USDC_LENDER);
+    expect(gTokenBalanceBefore).to.be.gt("0");
 
     // Redeem all
-    await this.jUsdc.connect(this.usdcLender).redeem(jTokenBalanceBefore);
+    await this.jUsdc.connect(this.usdcLender).redeem(gTokenBalanceBefore);
 
-    const jTokenBalanceAfter = await this.jUsdc.balanceOf(USDC_LENDER);
-    expect(jTokenBalanceAfter).to.be.equal("0");
+    const gTokenBalanceAfter = await this.jUsdc.balanceOf(USDC_LENDER);
+    expect(gTokenBalanceAfter).to.be.equal("0");
 
     const rewardsAfter = await this.joeLens.callStatic[
       "getClaimableRewards(uint8,address,address,address)"

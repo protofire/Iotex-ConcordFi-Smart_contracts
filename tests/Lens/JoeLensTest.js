@@ -24,17 +24,17 @@ function cullTuple(tuple) {
   }, {});
 }
 
-async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await preApprove(jToken, minter, mintAmount);
-  await send(jToken.gTroller, "setMintAllowed", [true]);
-  await send(jToken.gTroller, "setMintVerify", [true]);
-  await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
-  await send(jToken.underlying, "harnessSetFailTransferFromAddress", [
+async function preMint(gToken, minter, mintAmount, mintTokens, exchangeRate) {
+  await preApprove(gToken, minter, mintAmount);
+  await send(gToken.gTroller, "setMintAllowed", [true]);
+  await send(gToken.gTroller, "setMintVerify", [true]);
+  await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
+  await send(gToken.underlying, "harnessSetFailTransferFromAddress", [
     minter,
     false,
   ]);
-  await send(jToken, "harnessSetBalance", [minter, 0]);
-  await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
+  await send(gToken, "harnessSetBalance", [minter, 0]);
+  await send(gToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
 }
 
 describe("JoeLens", () => {
@@ -46,7 +46,7 @@ describe("JoeLens", () => {
     acct = accounts[0];
   });
 
-  describe("jTokenMetadata", () => {
+  describe("gTokenMetadata", () => {
     its("returns correct values from reward lens", async () => {
       let rewardLens = await makeRewardLens();
       let jCollateralCapErc20 = await makeGToken({
@@ -64,10 +64,10 @@ describe("JoeLens", () => {
 
       expect(
         cullTuple(
-          await call(joeLens, "jTokenMetadata", [jCollateralCapErc20._address])
+          await call(joeLens, "gTokenMetadata", [jCollateralCapErc20._address])
         )
       ).toEqual({
-        jToken: jCollateralCapErc20._address,
+        gToken: jCollateralCapErc20._address,
         exchangeRateCurrent: "1000000000000000000",
         supplyRatePerSecond: "0",
         borrowRatePerSecond: "0",
@@ -84,7 +84,7 @@ describe("JoeLens", () => {
           "underlying",
           []
         ),
-        jTokenDecimals: "8",
+        gTokenDecimals: "8",
         underlyingDecimals: "18",
         version: "1",
         collateralCap: "0",
@@ -114,9 +114,9 @@ describe("JoeLens", () => {
       await send(jErc20.gTroller, "_setMintPaused", [jErc20._address, true]);
       await send(jErc20.gTroller, "_setBorrowPaused", [jErc20._address, true]);
       expect(
-        cullTuple(await call(joeLens, "jTokenMetadata", [jErc20._address]))
+        cullTuple(await call(joeLens, "gTokenMetadata", [jErc20._address]))
       ).toEqual({
-        jToken: jErc20._address,
+        gToken: jErc20._address,
         exchangeRateCurrent: "1000000000000000000",
         supplyRatePerSecond: "0",
         borrowRatePerSecond: "0",
@@ -129,7 +129,7 @@ describe("JoeLens", () => {
         isListed: true,
         collateralFactorMantissa: "0",
         underlyingAssetAddress: await call(jErc20, "underlying", []),
-        jTokenDecimals: "8",
+        gTokenDecimals: "8",
         underlyingDecimals: "18",
         version: "0",
         collateralCap: "0",
@@ -151,11 +151,11 @@ describe("JoeLens", () => {
       });
 
       expect(
-        cullTuple(await call(joeLens, "jTokenMetadata", [jAvax._address]))
+        cullTuple(await call(joeLens, "gTokenMetadata", [jAvax._address]))
       ).toEqual({
         borrowRatePerSecond: "0",
-        jToken: jAvax._address,
-        jTokenDecimals: "8",
+        gToken: jAvax._address,
+        gTokenDecimals: "8",
         collateralFactorMantissa: "0",
         exchangeRateCurrent: "1000000000000000000",
         isListed: false,
@@ -189,10 +189,10 @@ describe("JoeLens", () => {
       });
       expect(
         cullTuple(
-          await call(joeLens, "jTokenMetadata", [jCollateralCapErc20._address])
+          await call(joeLens, "gTokenMetadata", [jCollateralCapErc20._address])
         )
       ).toEqual({
-        jToken: jCollateralCapErc20._address,
+        gToken: jCollateralCapErc20._address,
         exchangeRateCurrent: "1000000000000000000",
         supplyRatePerSecond: "0",
         borrowRatePerSecond: "0",
@@ -209,7 +209,7 @@ describe("JoeLens", () => {
           "underlying",
           []
         ),
-        jTokenDecimals: "8",
+        gTokenDecimals: "8",
         underlyingDecimals: "18",
         version: "1",
         collateralCap: "0",
@@ -235,10 +235,10 @@ describe("JoeLens", () => {
       ).toSucceed();
       expect(
         cullTuple(
-          await call(joeLens, "jTokenMetadata", [jCollateralCapErc20._address])
+          await call(joeLens, "gTokenMetadata", [jCollateralCapErc20._address])
         )
       ).toEqual({
-        jToken: jCollateralCapErc20._address,
+        gToken: jCollateralCapErc20._address,
         exchangeRateCurrent: "1000000000000000000",
         supplyRatePerSecond: "0",
         borrowRatePerSecond: "0",
@@ -255,7 +255,7 @@ describe("JoeLens", () => {
           "underlying",
           []
         ),
-        jTokenDecimals: "8",
+        gTokenDecimals: "8",
         underlyingDecimals: "18",
         version: "1",
         collateralCap: "100",
@@ -278,10 +278,10 @@ describe("JoeLens", () => {
       });
       expect(
         cullTuple(
-          await call(joeLens, "jTokenMetadata", [jWrappedNative._address])
+          await call(joeLens, "gTokenMetadata", [jWrappedNative._address])
         )
       ).toEqual({
-        jToken: jWrappedNative._address,
+        gToken: jWrappedNative._address,
         exchangeRateCurrent: "1000000000000000000",
         supplyRatePerSecond: "0",
         borrowRatePerSecond: "0",
@@ -294,7 +294,7 @@ describe("JoeLens", () => {
         isListed: true,
         collateralFactorMantissa: "0",
         underlyingAssetAddress: await call(jWrappedNative, "underlying", []),
-        jTokenDecimals: "8",
+        gTokenDecimals: "8",
         underlyingDecimals: "18",
         version: "2",
         collateralCap: "0",
@@ -311,7 +311,7 @@ describe("JoeLens", () => {
     });
   });
 
-  describe("jTokenMetadataAll", () => {
+  describe("gTokenMetadataAll", () => {
     it("is correct for a jErc20 and jAvax", async () => {
       let gTroller = await makeGtroller();
       let jErc20 = await makeGToken({ gTroller: gTroller });
@@ -331,7 +331,7 @@ describe("JoeLens", () => {
       ).toSucceed();
       expect(
         (
-          await call(joeLens, "jTokenMetadataAll", [
+          await call(joeLens, "gTokenMetadataAll", [
             [
               jErc20._address,
               jAvax._address,
@@ -342,7 +342,7 @@ describe("JoeLens", () => {
         ).map(cullTuple)
       ).toEqual([
         {
-          jToken: jErc20._address,
+          gToken: jErc20._address,
           exchangeRateCurrent: "1000000000000000000",
           supplyRatePerSecond: "0",
           borrowRatePerSecond: "0",
@@ -355,7 +355,7 @@ describe("JoeLens", () => {
           isListed: false,
           collateralFactorMantissa: "0",
           underlyingAssetAddress: await call(jErc20, "underlying", []),
-          jTokenDecimals: "8",
+          gTokenDecimals: "8",
           underlyingDecimals: "18",
           version: "0",
           collateralCap: "0",
@@ -371,8 +371,8 @@ describe("JoeLens", () => {
         },
         {
           borrowRatePerSecond: "0",
-          jToken: jAvax._address,
-          jTokenDecimals: "8",
+          gToken: jAvax._address,
+          gTokenDecimals: "8",
           collateralFactorMantissa: "0",
           exchangeRateCurrent: "1000000000000000000",
           isListed: false,
@@ -399,8 +399,8 @@ describe("JoeLens", () => {
         },
         {
           borrowRatePerSecond: "0",
-          jToken: jCollateralCapErc20._address,
-          jTokenDecimals: "8",
+          gToken: jCollateralCapErc20._address,
+          gTokenDecimals: "8",
           collateralFactorMantissa: "0",
           exchangeRateCurrent: "1000000000000000000",
           isListed: true,
@@ -430,7 +430,7 @@ describe("JoeLens", () => {
           borrowAvaxRewardsPerSecond: "0",
         },
         {
-          jToken: jWrappedNative._address,
+          gToken: jWrappedNative._address,
           exchangeRateCurrent: "1000000000000000000",
           supplyRatePerSecond: "0",
           borrowRatePerSecond: "0",
@@ -443,7 +443,7 @@ describe("JoeLens", () => {
           isListed: true,
           collateralFactorMantissa: "0",
           underlyingAssetAddress: await call(jWrappedNative, "underlying", []),
-          jTokenDecimals: "8",
+          gTokenDecimals: "8",
           underlyingDecimals: "18",
           version: "2",
           collateralCap: "0",
@@ -476,7 +476,7 @@ describe("JoeLens", () => {
         gTroller: gTroller2,
       }); // different gTroller
       await expect(
-        call(joeLens, "jTokenMetadataAll", [
+        call(joeLens, "gTokenMetadataAll", [
           [
             jErc20._address,
             jAvax._address,
@@ -488,28 +488,28 @@ describe("JoeLens", () => {
     });
 
     it("fails for invalid input", async () => {
-      await expect(call(joeLens, "jTokenMetadataAll", [[]])).rejects.toRevert(
+      await expect(call(joeLens, "gTokenMetadataAll", [[]])).rejects.toRevert(
         "revert invalid input"
       );
     });
   });
 
-  describe("jTokenBalances", () => {
+  describe("gTokenBalances", () => {
     it("is correct for jERC20", async () => {
       let jErc20 = await makeGToken();
       let avaxBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(
-          await call(joeLens, "jTokenBalances", [jErc20._address, acct], {
+          await call(joeLens, "gTokenBalances", [jErc20._address, acct], {
             gasPrice: "0",
           })
         )
       ).toEqual({
-        jTokenBalance: "0",
+        gTokenBalance: "0",
         balanceOfUnderlyingCurrent: "0",
         borrowBalanceCurrent: "0",
         borrowValueUSD: "0",
-        jToken: jErc20._address,
+        gToken: jErc20._address,
         underlyingTokenAllowance: "0",
         underlyingTokenBalance: "10000000000000000000000000",
         collateralEnabled: false,
@@ -523,16 +523,16 @@ describe("JoeLens", () => {
       let avaxBalance = await web3.eth.getBalance(acct);
       expect(
         cullTuple(
-          await call(joeLens, "jTokenBalances", [jAvax._address, acct], {
+          await call(joeLens, "gTokenBalances", [jAvax._address, acct], {
             gasPrice: "0",
           })
         )
       ).toEqual({
-        jTokenBalance: "0",
+        gTokenBalance: "0",
         balanceOfUnderlyingCurrent: "0",
         borrowBalanceCurrent: "0",
         borrowValueUSD: "0",
-        jToken: jAvax._address,
+        gToken: jAvax._address,
         underlyingTokenAllowance: avaxBalance,
         underlyingTokenBalance: avaxBalance,
         collateralEnabled: false,
@@ -559,17 +559,17 @@ describe("JoeLens", () => {
         cullTuple(
           await call(
             joeLens,
-            "jTokenBalances",
+            "gTokenBalances",
             [jCollateralCapErc20._address, acct],
             { gasPrice: "0" }
           )
         )
       ).toEqual({
-        jTokenBalance: "2",
+        gTokenBalance: "2",
         balanceOfUnderlyingCurrent: "2",
         borrowBalanceCurrent: "0",
         borrowValueUSD: "0",
-        jToken: jCollateralCapErc20._address,
+        gToken: jCollateralCapErc20._address,
         underlyingTokenAllowance: "0",
         underlyingTokenBalance: "10000000000000000000000000",
         collateralEnabled: true,
@@ -580,7 +580,7 @@ describe("JoeLens", () => {
     });
   });
 
-  describe("jTokenBalancesAll", () => {
+  describe("gTokenBalancesAll", () => {
     it("is correct for jAvax and jErc20", async () => {
       let jErc20 = await makeGToken();
       let jAvax = await makeGToken({ kind: "javax" });
@@ -590,18 +590,18 @@ describe("JoeLens", () => {
         (
           await call(
             joeLens,
-            "jTokenBalancesAll",
+            "gTokenBalancesAll",
             [[jErc20._address, jAvax._address], acct],
             { gasPrice: "0" }
           )
         ).map(cullTuple)
       ).toEqual([
         {
-          jTokenBalance: "0",
+          gTokenBalance: "0",
           balanceOfUnderlyingCurrent: "0",
           borrowBalanceCurrent: "0",
           borrowValueUSD: "0",
-          jToken: jErc20._address,
+          gToken: jErc20._address,
           underlyingTokenAllowance: "0",
           underlyingTokenBalance: "10000000000000000000000000",
           collateralEnabled: false,
@@ -609,11 +609,11 @@ describe("JoeLens", () => {
           supplyValueUSD: "0",
         },
         {
-          jTokenBalance: "0",
+          gTokenBalance: "0",
           balanceOfUnderlyingCurrent: "0",
           borrowBalanceCurrent: "0",
           borrowValueUSD: "0",
-          jToken: jAvax._address,
+          gToken: jAvax._address,
           underlyingTokenAllowance: avaxBalance,
           underlyingTokenBalance: avaxBalance,
           collateralEnabled: false,
@@ -645,19 +645,19 @@ describe("JoeLens", () => {
 
   describe("getClaimableRewards", () => {
     let root, minter, accounts;
-    let jToken;
+    let gToken;
     beforeEach(async () => {
       [root, minter, ...accounts] = saddle.accounts;
-      jToken = await makeGToken({
+      gToken = await makeGToken({
         gTrollerOpts: { kind: "bool" },
         exchangeRate,
         supportMarket: true,
       });
-      await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
+      await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
     });
 
     it("gets claimable rewards", async () => {
-      const gTroller = jToken.gTroller;
+      const gTroller = gToken.gTroller;
       const rewardDistributorAddress = await call(
         gTroller,
         "rewardDistributor"
@@ -669,16 +669,16 @@ describe("JoeLens", () => {
       const joeAddress = await call(rewardDistributor, "joeAddress");
       await send(rewardDistributor, "_setRewardSpeed", [
         0,
-        jToken._address,
+        gToken._address,
         "1000000000000000000",
       ]);
 
-      expect(await quickMint(jToken, minter, mintAmount)).toSucceed();
+      expect(await quickMint(gToken, minter, mintAmount)).toSucceed();
 
       await fastForward(rewardDistributor, 10);
       const pendingRewards = await call(joeLens, "getClaimableRewards", [
         "0",
-        jToken.gTroller._address,
+        gToken.gTroller._address,
         joeAddress,
         minter,
       ]);

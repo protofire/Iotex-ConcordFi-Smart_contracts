@@ -17,7 +17,7 @@
   },
   "Xrc20Delegator": {
     "USDT": {
-      "underlying_": "0x1655Bb6179F618C09435d7dbC82E3D1179F7b077",
+      "underlying_": "0x3D2EE1A607C88474ecc76Ea76cE3F40386a956d3",
       "initialExchangeRateMantissa_": "50",
       "name": "cUSD Tether",
       "symbol": "cUSDT",

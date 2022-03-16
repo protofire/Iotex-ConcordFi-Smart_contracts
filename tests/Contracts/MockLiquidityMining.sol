@@ -9,15 +9,15 @@ contract MockLiquidityMining is LiquidityMiningInterface {
         gTroller = _gTroller;
     }
 
-    function updateSupplyIndex(address jToken, address[] calldata accounts) external {
+    function updateSupplyIndex(address gToken, address[] calldata accounts) external {
         // Do nothing.
-        jToken;
+        gToken;
         accounts;
     }
 
-    function updateBorrowIndex(address jToken, address[] calldata accounts) external {
+    function updateBorrowIndex(address gToken, address[] calldata accounts) external {
         // Do nothing.
-        jToken;
+        gToken;
         accounts;
     }
 }

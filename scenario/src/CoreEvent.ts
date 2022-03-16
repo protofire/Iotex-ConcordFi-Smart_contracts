@@ -24,9 +24,9 @@ import {
   gTrollerImplCommands,
   processGtrollerImplEvent,
 } from "./Event/GtrollerImplEvent";
-import { jTokenCommands, processGTokenEvent } from "./Event/GTokenEvent";
+import { gTokenCommands, processGTokenEvent } from "./Event/GTokenEvent";
 import {
-  jTokenDelegateCommands,
+  gTokenDelegateCommands,
   processGTokenDelegateEvent,
 } from "./Event/GTokenDelegateEvent";
 import { erc20Commands, processErc20Event } from "./Event/Erc20Event";
@@ -758,7 +758,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       "GToken",
       [new Arg("event", getEventV, { variadic: true })],
       (world, from, { event }) => processGTokenEvent(world, event.val, from),
-      { subExpressions: jTokenCommands() }
+      { subExpressions: gTokenCommands() }
     ),
 
     new Command<{ event: EventV }>(
@@ -772,7 +772,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] =
       [new Arg("event", getEventV, { variadic: true })],
       (world, from, { event }) =>
         processGTokenDelegateEvent(world, event.val, from),
-      { subExpressions: jTokenDelegateCommands() }
+      { subExpressions: gTokenDelegateCommands() }
     ),
 
     new Command<{ event: EventV }>(

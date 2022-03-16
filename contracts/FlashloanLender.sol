@@ -11,7 +11,7 @@ interface CERC20Interface {
 
 contract FlashloanLender is ERC3156FlashLenderInterface {
     /**
-     * @notice underlying token to jToken mapping
+     * @notice underlying token to gToken mapping
      */
     mapping(address => address) public underlyingToGToken;
 
@@ -37,18 +37,18 @@ contract FlashloanLender is ERC3156FlashLenderInterface {
     }
 
     function maxFlashLoan(address token) external view returns (uint256) {
-        address jToken = underlyingToGToken[token];
+        address gToken = underlyingToGToken[token];
         uint256 amount = 0;
-        if (jToken != address(0)) {
-            amount = GCollateralCapXrc20(jToken).maxFlashLoan();
+        if (gToken != address(0)) {
+            amount = GCollateralCapXrc20(gToken).maxFlashLoan();
         }
         return amount;
     }
 
     function flashFee(address token, uint256 amount) external view returns (uint256) {
-        address jToken = underlyingToGToken[token];
-        require(jToken != address(0), "cannot find jToken of this underlying in the mapping");
-        return GCollateralCapXrc20(jToken).flashFee(amount);
+        address gToken = underlyingToGToken[token];
+        require(gToken != address(0), "cannot find gToken of this underlying in the mapping");
+        return GCollateralCapXrc20(gToken).flashFee(amount);
     }
 
     function flashLoan(
@@ -57,26 +57,26 @@ contract FlashloanLender is ERC3156FlashLenderInterface {
         uint256 amount,
         bytes calldata data
     ) external returns (bool) {
-        address jToken = underlyingToGToken[token];
-        require(jToken != address(0), "cannot find jToken of this underlying in the mapping");
-        return GCollateralCapXrc20(jToken).flashLoan(receiver, msg.sender, amount, data);
+        address gToken = underlyingToGToken[token];
+        require(gToken != address(0), "cannot find gToken of this underlying in the mapping");
+        return GCollateralCapXrc20(gToken).flashLoan(receiver, msg.sender, amount, data);
     }
 
-    function updateUnderlyingMapping(GToken[] calldata jTokens) external onlyOwner returns (bool) {
-        uint256 jTokenLength = jTokens.length;
-        for (uint256 i = 0; i < jTokenLength; i++) {
-            GToken jToken = jTokens[i];
-            address underlying = GXrc20(address(jToken)).underlying();
-            underlyingToGToken[underlying] = address(jToken);
+    function updateUnderlyingMapping(GToken[] calldata gTokens) external onlyOwner returns (bool) {
+        uint256 gTokenLength = gTokens.length;
+        for (uint256 i = 0; i < gTokenLength; i++) {
+            GToken gToken = gTokens[i];
+            address underlying = GXrc20(address(gToken)).underlying();
+            underlyingToGToken[underlying] = address(gToken);
         }
         return true;
     }
 
-    function removeUnderlyingMapping(GToken[] calldata jTokens) external onlyOwner returns (bool) {
-        uint256 jTokenLength = jTokens.length;
-        for (uint256 i = 0; i < jTokenLength; i++) {
-            GToken jToken = jTokens[i];
-            address underlying = GXrc20(address(jToken)).underlying();
+    function removeUnderlyingMapping(GToken[] calldata gTokens) external onlyOwner returns (bool) {
+        uint256 gTokenLength = gTokens.length;
+        for (uint256 i = 0; i < gTokenLength; i++) {
+            GToken gToken = gTokens[i];
+            address underlying = GXrc20(address(gToken)).underlying();
             underlyingToGToken[underlying] = address(0);
         }
         return true;
@@ -89,15 +89,15 @@ contract FlashloanLender is ERC3156FlashLenderInterface {
     }
 
     function initialiseUnderlyingMapping() internal {
-        GToken[] memory jTokens = Gtroller(gTroller).getAllMarkets();
-        uint256 jTokenLength = jTokens.length;
-        for (uint256 i = 0; i < jTokenLength; i++) {
-            GToken jToken = jTokens[i];
-            if (compareStrings(jToken.symbol(), "crETH")) {
+        GToken[] memory gTokens = Gtroller(gTroller).getAllMarkets();
+        uint256 gTokenLength = gTokens.length;
+        for (uint256 i = 0; i < gTokenLength; i++) {
+            GToken gToken = gTokens[i];
+            if (compareStrings(gToken.symbol(), "crETH")) {
                 continue;
             }
-            address underlying = GXrc20(address(jToken)).underlying();
-            underlyingToGToken[underlying] = address(jToken);
+            address underlying = GXrc20(address(gToken)).underlying();
+            underlyingToGToken[underlying] = address(gToken);
         }
     }
 }

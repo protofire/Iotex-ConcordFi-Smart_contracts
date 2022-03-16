@@ -27,9 +27,9 @@ import {
   getUnitrollerValue,
   unitrollerFetchers,
 } from "./Value/UnitrollerValue";
-import { jTokenFetchers, getGTokenValue } from "./Value/GTokenValue";
+import { gTokenFetchers, getGTokenValue } from "./Value/GTokenValue";
 import {
-  jTokenDelegateFetchers,
+  gTokenDelegateFetchers,
   getGTokenDelegateValue,
 } from "./Value/GTokenDelegateValue";
 import { erc20Fetchers, getErc20Value } from "./Value/Erc20Value";
@@ -945,23 +945,23 @@ const fetchers = [
     `
       #### GToken
 
-      * "GToken ...jTokenArgs" - Returns jToken value
+      * "GToken ...gTokenArgs" - Returns gToken value
     `,
     "GToken",
     [new Arg("res", getGTokenValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: jTokenFetchers() }
+    { subExpressions: gTokenFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
       #### GTokenDelegate
 
-      * "GTokenDelegate ...jTokenDelegateArgs" - Returns jToken delegate value
+      * "GTokenDelegate ...gTokenDelegateArgs" - Returns gToken delegate value
     `,
     "GTokenDelegate",
     [new Arg("res", getGTokenDelegateValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: jTokenDelegateFetchers() }
+    { subExpressions: gTokenDelegateFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `

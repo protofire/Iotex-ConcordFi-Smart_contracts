@@ -53,15 +53,15 @@ async function setPrice(
   world: World,
   from: string,
   priceOracle: PriceOracle,
-  jToken: string,
+  gToken: string,
   amount: NumberV
 ): Promise<World> {
   return addAction(
     world,
-    `Set price oracle price for ${jToken} to ${amount.show()}`,
+    `Set price oracle price for ${gToken} to ${amount.show()}`,
     await invoke(
       world,
-      priceOracle.methods.setUnderlyingPrice(jToken, amount.encode()),
+      priceOracle.methods.setUnderlyingPrice(gToken, amount.encode()),
       from
     )
   );
@@ -137,23 +137,23 @@ export function priceOracleCommands() {
 
     new Command<{
       priceOracle: PriceOracle;
-      jToken: AddressV;
+      gToken: AddressV;
       amount: NumberV;
     }>(
       `
         #### SetPrice
 
-        * "SetPrice <GToken> <Amount>" - Sets the per-ether price for the given jToken
+        * "SetPrice <GToken> <Amount>" - Sets the per-ether price for the given gToken
           * E.g. "PriceOracle SetPrice cZRX 1.0"
       `,
       "SetPrice",
       [
         new Arg("priceOracle", getPriceOracle, { implicit: true }),
-        new Arg("jToken", getAddressV),
+        new Arg("gToken", getAddressV),
         new Arg("amount", getExpNumberV),
       ],
-      (world, from, { priceOracle, jToken, amount }) =>
-        setPrice(world, from, priceOracle, jToken.val, amount)
+      (world, from, { priceOracle, gToken, amount }) =>
+        setPrice(world, from, priceOracle, gToken.val, amount)
     ),
 
     new Command<{
@@ -164,7 +164,7 @@ export function priceOracleCommands() {
       `
         #### SetDirectPrice
 
-        * "SetDirectPrice <Address> <Amount>" - Sets the per-ether price for the given jToken
+        * "SetDirectPrice <Address> <Amount>" - Sets the per-ether price for the given gToken
           * E.g. "PriceOracle SetDirectPrice (Address Zero) 1.0"
       `,
       "SetDirectPrice",

@@ -40,7 +40,7 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives jTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -51,9 +51,9 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of jTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint256 redeemTokens) external returns (uint256) {
@@ -61,7 +61,7 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     }
 
     /**
-     * @notice Sender redeems jTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -103,17 +103,17 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this jToken to be liquidated
+     * @param borrower The borrower of this gToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param jTokenCollateral The market in which to seize collateral from the borrower
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral
+        GTokenInterface gTokenCollateral
     ) external returns (uint256) {
-        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowInternal(borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -274,7 +274,7 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     }
 
     /**
-     * @notice Get the account's jToken balances
+     * @notice Get the account's gToken balances
      * @param account The address of the account
      */
     function getGTokenBalanceInternal(address account) internal view returns (uint256) {
@@ -288,7 +288,7 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     }
 
     /**
-     * @notice User supplies assets into the market and receives jTokens in exchange
+     * @notice User supplies assets into the market and receives gTokens in exchange
      * @dev Assumes interest has already been accrued up to the current timestamp
      * @param minter The address of the account which is supplying the assets
      * @param mintAmount The amount of the underlying asset to supply
@@ -329,22 +329,22 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
 
         /*
          *  We call `doTransferIn` for the minter and the mintAmount.
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
          *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
          *  side-effects occurred. The function returns the amount actually transferred,
-         *  in case of a fee. On success, the jToken holds an additional `actualMintAmount`
+         *  in case of a fee. On success, the gToken holds an additional `actualMintAmount`
          *  of cash.
          */
         vars.actualMintAmount = doTransferIn(minter, mintAmount, isNative);
 
         /*
-         * We get the current exchange rate and calculate the number of jTokens to be minted:
+         * We get the current exchange rate and calculate the number of gTokens to be minted:
          *  mintTokens = actualMintAmount / exchangeRate
          */
         vars.mintTokens = div_ScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
 
         /*
-         * We calculate the new total supply of jTokens and minter token balance, checking for overflow:
+         * We calculate the new total supply of gTokens and minter token balance, checking for overflow:
          *  totalSupply = totalSupply + mintTokens
          *  accountTokens[minter] = accountTokens[minter] + mintTokens
          */
@@ -371,11 +371,11 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     }
 
     /**
-     * @notice User redeems jTokens in exchange for the underlying asset
+     * @notice User redeems gTokens in exchange for the underlying asset
      * @dev Assumes interest has already been accrued up to the current timestamp. Only one of redeemTokensIn or redeemAmountIn may be non-zero and it would do nothing if both are zero.
      * @param redeemer The address of the account which is redeeming the tokens
-     * @param redeemTokensIn The number of jTokens to redeem into underlying
-     * @param redeemAmountIn The number of underlying tokens to receive from redeeming jTokens
+     * @param redeemTokensIn The number of gTokens to redeem into underlying
+     * @param redeemAmountIn The number of underlying tokens to receive from redeeming gTokens
      * @param isNative The amount is in native or not
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
@@ -449,8 +449,8 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
 
         /*
          * We invoke doTransferOut for the redeemer and the redeemAmount.
-         *  Note: The jToken must handle variations between ERC-20 and ETH underlying.
-         *  On success, the jToken has redeemAmount less of cash.
+         *  Note: The gToken must handle variations between ERC-20 and ETH underlying.
+         *  On success, the gToken has redeemAmount less of cash.
          *  doTransferOut reverts if anything goes wrong, since we can't be sure if side effects occurred.
          */
         doTransferOut(redeemer, vars.redeemAmount, isNative);
@@ -472,11 +472,11 @@ contract GXrc20 is GToken, GXrc20Interface, GProtocolSeizeShareStorage {
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
      * @dev Called only during an in-kind liquidation, or by liquidateBorrow during the liquidation of another GToken.
-     *  Its absolutely critical to use msg.sender as the seizer jToken and not a parameter.
-     * @param seizerToken The contract seizing the collateral (i.e. borrowed jToken)
+     *  Its absolutely critical to use msg.sender as the seizer gToken and not a parameter.
+     * @param seizerToken The contract seizing the collateral (i.e. borrowed gToken)
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of jTokens to seize
+     * @param seizeTokens The number of gTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seizeInternal(

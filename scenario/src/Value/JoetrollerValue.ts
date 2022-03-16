@@ -115,10 +115,10 @@ async function getPendingAdmin(
 async function getCollateralFactor(
   world: World,
   gTroller: Gtroller,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
   let { 0: _isListed, 1: collateralFactorMantissa } = await gTroller.methods
-    .markets(jToken._address)
+    .markets(gToken._address)
     .call();
   return new NumberV(collateralFactorMantissa, 1e18);
 }
@@ -135,10 +135,10 @@ async function checkMembership(
   world: World,
   gTroller: Gtroller,
   user: string,
-  jToken: GToken
+  gToken: GToken
 ): Promise<BoolV> {
   return new BoolV(
-    await gTroller.methods.checkMembership(user, jToken._address).call()
+    await gTroller.methods.checkMembership(user, gToken._address).call()
   );
 }
 
@@ -155,10 +155,10 @@ async function getAssetsIn(
 async function checkListed(
   world: World,
   gTroller: Gtroller,
-  jToken: GToken
+  gToken: GToken
 ): Promise<BoolV> {
   let { 0: isListed, 1: _collateralFactorMantissa } = await gTroller.methods
-    .markets(jToken._address)
+    .markets(gToken._address)
     .call();
 
   return new BoolV(isListed);
@@ -167,13 +167,13 @@ async function checkListed(
 async function checkGTokenVersion(
   world: World,
   gTroller: Gtroller,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
   let {
     0: isListed,
     1: _collateralFactorMantissa,
     2: version,
-  } = await gTroller.methods.markets(jToken._address).call();
+  } = await gTroller.methods.markets(gToken._address).call();
   return new NumberV(version);
 }
 
@@ -210,7 +210,7 @@ export function gTrollerFetchers() {
         account: AddressV;
         action: StringV;
         amount: NumberV;
-        jToken: GToken;
+        gToken: GToken;
       },
       NumberV
     >(
@@ -227,9 +227,9 @@ export function gTrollerFetchers() {
         new Arg("account", getAddressV),
         new Arg("action", getStringV),
         new Arg("amount", getNumberV),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      async (world, { gTroller, account, action, jToken, amount }) => {
+      async (world, { gTroller, account, action, gToken, amount }) => {
         let redeemTokens: NumberV;
         let borrowAmount: NumberV;
 
@@ -250,7 +250,7 @@ export function gTrollerFetchers() {
           world,
           gTroller,
           account.val,
-          jToken._address,
+          gToken._address,
           redeemTokens.encode(),
           borrowAmount.encode()
         );
@@ -333,7 +333,7 @@ export function gTrollerFetchers() {
       [new Arg("gTroller", getGtroller, { implicit: true })],
       (world, { gTroller }) => getBlockTimestamp(world, gTroller)
     ),
-    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; gToken: GToken }, NumberV>(
       `
         #### CollateralFactor
 
@@ -343,10 +343,10 @@ export function gTrollerFetchers() {
       "CollateralFactor",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, { gTroller, jToken }) =>
-        getCollateralFactor(world, gTroller, jToken)
+      (world, { gTroller, gToken }) =>
+        getCollateralFactor(world, gTroller, gToken)
     ),
     new Fetcher<{ gTroller: Gtroller; account: AddressV }, NumberV>(
       `
@@ -364,7 +364,7 @@ export function gTrollerFetchers() {
         membershipLength(world, gTroller, account.val)
     ),
     new Fetcher<
-      { gTroller: Gtroller; account: AddressV; jToken: GToken },
+      { gTroller: Gtroller; account: AddressV; gToken: GToken },
       BoolV
     >(
       `
@@ -377,10 +377,10 @@ export function gTrollerFetchers() {
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
         new Arg("account", getAddressV),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, { gTroller, account, jToken }) =>
-        checkMembership(world, gTroller, account.val, jToken)
+      (world, { gTroller, account, gToken }) =>
+        checkMembership(world, gTroller, account.val, gToken)
     ),
     new Fetcher<{ gTroller: Gtroller; account: AddressV }, ListV>(
       `
@@ -397,7 +397,7 @@ export function gTrollerFetchers() {
       (world, { gTroller, account }) =>
         getAssetsIn(world, gTroller, account.val)
     ),
-    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; gToken: GToken }, BoolV>(
       `
         #### CheckListed
 
@@ -407,11 +407,11 @@ export function gTrollerFetchers() {
       "CheckListed",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, { gTroller, jToken }) => checkListed(world, gTroller, jToken)
+      (world, { gTroller, gToken }) => checkListed(world, gTroller, gToken)
     ),
-    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, NumberV>(
+    new Fetcher<{ gTroller: Gtroller; gToken: GToken }, NumberV>(
       `
         #### CheckGTokenVersion
 
@@ -421,10 +421,10 @@ export function gTrollerFetchers() {
       "CheckGTokenVersion",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, { gTroller, jToken }) =>
-        checkGTokenVersion(world, gTroller, jToken)
+      (world, { gTroller, gToken }) =>
+        checkGTokenVersion(world, gTroller, gToken)
     ),
     new Fetcher<{ gTroller: Gtroller }, AddressV>(
       `
@@ -489,7 +489,7 @@ export function gTrollerFetchers() {
         new BoolV(await gTroller.methods.seizeGuardianPaused().call())
     ),
 
-    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; gToken: GToken }, BoolV>(
       `
         #### MintGuardianMarketPaused
 
@@ -499,14 +499,14 @@ export function gTrollerFetchers() {
       "MintGuardianMarketPaused",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      async (world, { gTroller, jToken }) =>
+      async (world, { gTroller, gToken }) =>
         new BoolV(
-          await gTroller.methods.mintGuardianPaused(jToken._address).call()
+          await gTroller.methods.mintGuardianPaused(gToken._address).call()
         )
     ),
-    new Fetcher<{ gTroller: Gtroller; jToken: GToken }, BoolV>(
+    new Fetcher<{ gTroller: Gtroller; gToken: GToken }, BoolV>(
       `
         #### BorrowGuardianMarketPaused
 
@@ -516,11 +516,11 @@ export function gTrollerFetchers() {
       "BorrowGuardianMarketPaused",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      async (world, { gTroller, jToken }) =>
+      async (world, { gTroller, gToken }) =>
         new BoolV(
-          await gTroller.methods.borrowGuardianPaused(jToken._address).call()
+          await gTroller.methods.borrowGuardianPaused(gToken._address).call()
         )
     ),
     new Fetcher<

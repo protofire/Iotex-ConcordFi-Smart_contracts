@@ -101,13 +101,13 @@ async function makeGToken(opts = {}) {
   const name = opts.name || `GToken ${symbol}`;
   const admin = opts.admin || root;
 
-  let jToken, underlying;
+  let gToken, underlying;
   let jDelegator, jDelegatee;
   let version = 0;
 
   switch (kind) {
     case "javax":
-      jToken = await deploy("GIotxHarness", [
+      gToken = await deploy("GIotxHarness", [
         gTroller._address,
         interestRateModel._address,
         exchangeRate,
@@ -133,7 +133,7 @@ async function makeGToken(opts = {}) {
         jDelegatee._address,
         "0x0",
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "GCapableXrc20Delegate",
         jDelegator._address
       );
@@ -154,7 +154,7 @@ async function makeGToken(opts = {}) {
         jDelegatee._address,
         "0x0",
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "GCollateralCapXrc20DelegateHarness",
         jDelegator._address
       );
@@ -184,7 +184,7 @@ async function makeGToken(opts = {}) {
           [masterChef._address, joeBar._address, 0]
         ), // pid = 0
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "JJLPDelegateHarness",
         jDelegator._address
       ); // XXXS at
@@ -205,7 +205,7 @@ async function makeGToken(opts = {}) {
         jDelegatee._address,
         "0x0",
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "JGTokenDelegateHarness",
         jDelegator._address
       ); // XXXS at
@@ -226,7 +226,7 @@ async function makeGToken(opts = {}) {
         jDelegatee._address,
         "0x0",
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "GWrappedNativeDelegateHarness",
         jDelegator._address
       ); // XXXS at
@@ -249,7 +249,7 @@ async function makeGToken(opts = {}) {
         jDelegatee._address,
         "0x0",
       ]);
-      jToken = await saddle.getContractAt(
+      gToken = await saddle.getContractAt(
         "GXrc20DelegateHarness",
         jDelegator._address
       ); // XXXS at
@@ -257,13 +257,13 @@ async function makeGToken(opts = {}) {
   }
 
   if (opts.supportMarket) {
-    await send(gTroller, "_supportMarket", [jToken._address, version]);
+    await send(gTroller, "_supportMarket", [gToken._address, version]);
   }
 
   if (opts.underlyingPrice) {
     const price = avaxMantissa(opts.underlyingPrice);
     await send(gTroller.priceOracle, "setUnderlyingPrice", [
-      jToken._address,
+      gToken._address,
       price,
     ]);
   }
@@ -271,11 +271,11 @@ async function makeGToken(opts = {}) {
   if (opts.collateralFactor) {
     const factor = avaxMantissa(opts.collateralFactor);
     expect(
-      await send(gTroller, "_setCollateralFactor", [jToken._address, factor])
+      await send(gTroller, "_setCollateralFactor", [gToken._address, factor])
     ).toSucceed();
   }
 
-  return Object.assign(jToken, {
+  return Object.assign(gToken, {
     name,
     symbol,
     underlying,
@@ -367,15 +367,15 @@ async function makeToken(opts = {}) {
     const name = opts.name || `Banker Joe ${symbol}`;
 
     const gTroller = await makeGtroller({ kind: "banker-joe" });
-    const jToken = await deploy("GTokenHarness", [
+    const gToken = await deploy("GTokenHarness", [
       quantity,
       name,
       decimals,
       symbol,
       gTroller._address,
     ]);
-    await send(gTroller, "_supportMarket", [jToken._address, 0]);
-    return jToken;
+    await send(gTroller, "_supportMarket", [gToken._address, 0]);
+    return gToken;
   } else if (kind == "curveToken") {
     const quantity = avaxUnsigned(dfn(opts.quantity, 1e25));
     const decimals = avaxUnsigned(dfn(opts.decimals, 18));
@@ -525,9 +525,9 @@ async function totalCollateralTokens(token) {
   return avaxUnsigned(await call(token, "totalCollateralTokens"));
 }
 
-async function borrowSnapshot(jToken, account) {
+async function borrowSnapshot(gToken, account) {
   const { principal, interestIndex } = await call(
-    jToken,
+    gToken,
     "harnessAccountBorrows",
     [account]
   );
@@ -537,29 +537,29 @@ async function borrowSnapshot(jToken, account) {
   };
 }
 
-async function totalBorrows(jToken) {
-  return avaxUnsigned(await call(jToken, "totalBorrows"));
+async function totalBorrows(gToken) {
+  return avaxUnsigned(await call(gToken, "totalBorrows"));
 }
 
-async function totalReserves(jToken) {
-  return avaxUnsigned(await call(jToken, "totalReserves"));
+async function totalReserves(gToken) {
+  return avaxUnsigned(await call(gToken, "totalReserves"));
 }
 
-async function enterMarkets(jTokens, from) {
+async function enterMarkets(gTokens, from) {
   return await send(
-    jTokens[0].gTroller,
+    gTokens[0].gTroller,
     "enterMarkets",
-    [jTokens.map((c) => c._address)],
+    [gTokens.map((c) => c._address)],
     { from }
   );
 }
 
-async function fastForward(jToken, blocks = 5) {
-  return await send(jToken, "harnessFastForward", [blocks]);
+async function fastForward(gToken, blocks = 5) {
+  return await send(gToken, "harnessFastForward", [blocks]);
 }
 
-async function setBalance(jToken, account, balance) {
-  return await send(jToken, "harnessSetBalance", [account, balance]);
+async function setBalance(gToken, account, balance) {
+  return await send(gToken, "harnessSetBalance", [account, balance]);
 }
 
 async function setAvaxBalance(jAvax, balance) {
@@ -575,25 +575,25 @@ async function setAvaxBalance(jAvax, balance) {
   ).toSucceed();
 }
 
-async function getBalances(jTokens, accounts) {
+async function getBalances(gTokens, accounts) {
   const balances = {};
-  for (let jToken of jTokens) {
-    const jBalances = (balances[jToken._address] = {});
+  for (let gToken of gTokens) {
+    const jBalances = (balances[gToken._address] = {});
     for (let account of accounts) {
       jBalances[account] = {
         avax: await avaxBalance(account),
         cash:
-          jToken.underlying && (await balanceOf(jToken.underlying, account)),
-        tokens: await balanceOf(jToken, account),
-        borrows: (await borrowSnapshot(jToken, account)).principal,
+          gToken.underlying && (await balanceOf(gToken.underlying, account)),
+        tokens: await balanceOf(gToken, account),
+        borrows: (await borrowSnapshot(gToken, account)).principal,
       };
     }
-    jBalances[jToken._address] = {
-      avax: await avaxBalance(jToken._address),
-      cash: await cash(jToken),
-      tokens: await totalSupply(jToken),
-      borrows: await totalBorrows(jToken),
-      reserves: await totalReserves(jToken),
+    jBalances[gToken._address] = {
+      avax: await avaxBalance(gToken._address),
+      cash: await cash(gToken),
+      tokens: await totalSupply(gToken),
+      borrows: await totalBorrows(gToken),
+      reserves: await totalReserves(gToken),
     };
   }
   return balances;
@@ -601,105 +601,105 @@ async function getBalances(jTokens, accounts) {
 
 async function adjustBalances(balances, deltas) {
   for (let delta of deltas) {
-    let jToken, account, key, diff;
+    let gToken, account, key, diff;
     if (delta.length == 4) {
-      [jToken, account, key, diff] = delta;
+      [gToken, account, key, diff] = delta;
     } else {
-      [jToken, key, diff] = delta;
-      account = jToken._address;
+      [gToken, key, diff] = delta;
+      account = gToken._address;
     }
-    balances[jToken._address][account][key] =
-      balances[jToken._address][account][key].plus(diff);
+    balances[gToken._address][account][key] =
+      balances[gToken._address][account][key].plus(diff);
   }
   return balances;
 }
 
-async function preApprove(jToken, from, amount, opts = {}) {
+async function preApprove(gToken, from, amount, opts = {}) {
   if (dfn(opts.faucet, true)) {
     expect(
-      await send(jToken.underlying, "harnessSetBalance", [from, amount], {
+      await send(gToken.underlying, "harnessSetBalance", [from, amount], {
         from,
       })
     ).toSucceed();
   }
 
-  return send(jToken.underlying, "approve", [jToken._address, amount], {
+  return send(gToken.underlying, "approve", [gToken._address, amount], {
     from,
   });
 }
 
-async function quickMint(jToken, minter, mintAmount, opts = {}) {
+async function quickMint(gToken, minter, mintAmount, opts = {}) {
   // make sure to accrue interest
-  await fastForward(jToken, 1);
+  await fastForward(gToken, 1);
 
   if (dfn(opts.approve, true)) {
-    expect(await preApprove(jToken, minter, mintAmount, opts)).toSucceed();
+    expect(await preApprove(gToken, minter, mintAmount, opts)).toSucceed();
   }
   if (dfn(opts.exchangeRate)) {
     expect(
-      await send(jToken, "harnessSetExchangeRate", [
+      await send(gToken, "harnessSetExchangeRate", [
         avaxMantissa(opts.exchangeRate),
       ])
     ).toSucceed();
   }
-  return send(jToken, "mint", [mintAmount], { from: minter });
+  return send(gToken, "mint", [mintAmount], { from: minter });
 }
 
-async function preSupply(jToken, account, tokens, opts = {}) {
+async function preSupply(gToken, account, tokens, opts = {}) {
   if (dfn(opts.total, true)) {
-    expect(await send(jToken, "harnessSetTotalSupply", [tokens])).toSucceed();
+    expect(await send(gToken, "harnessSetTotalSupply", [tokens])).toSucceed();
   }
   if (dfn(opts.totalCollateralTokens)) {
     expect(
-      await send(jToken, "harnessSetTotalCollateralTokens", [tokens])
+      await send(gToken, "harnessSetTotalCollateralTokens", [tokens])
     ).toSucceed();
   }
-  return send(jToken, "harnessSetBalance", [account, tokens]);
+  return send(gToken, "harnessSetBalance", [account, tokens]);
 }
 
-async function quickRedeem(jToken, redeemer, redeemTokens, opts = {}) {
-  await fastForward(jToken, 1);
+async function quickRedeem(gToken, redeemer, redeemTokens, opts = {}) {
+  await fastForward(gToken, 1);
 
   if (dfn(opts.supply, true)) {
-    expect(await preSupply(jToken, redeemer, redeemTokens, opts)).toSucceed();
+    expect(await preSupply(gToken, redeemer, redeemTokens, opts)).toSucceed();
   }
   if (dfn(opts.exchangeRate)) {
     expect(
-      await send(jToken, "harnessSetExchangeRate", [
+      await send(gToken, "harnessSetExchangeRate", [
         avaxMantissa(opts.exchangeRate),
       ])
     ).toSucceed();
   }
-  return send(jToken, "redeem", [redeemTokens], { from: redeemer });
+  return send(gToken, "redeem", [redeemTokens], { from: redeemer });
 }
 
 async function quickRedeemUnderlying(
-  jToken,
+  gToken,
   redeemer,
   redeemAmount,
   opts = {}
 ) {
-  await fastForward(jToken, 1);
+  await fastForward(gToken, 1);
 
   if (dfn(opts.exchangeRate)) {
     expect(
-      await send(jToken, "harnessSetExchangeRate", [
+      await send(gToken, "harnessSetExchangeRate", [
         avaxMantissa(opts.exchangeRate),
       ])
     ).toSucceed();
   }
-  return send(jToken, "redeemUnderlying", [redeemAmount], { from: redeemer });
+  return send(gToken, "redeemUnderlying", [redeemAmount], { from: redeemer });
 }
 
-async function setOraclePrice(jToken, price) {
-  return send(jToken.gTroller.priceOracle, "setUnderlyingPrice", [
-    jToken._address,
+async function setOraclePrice(gToken, price) {
+  return send(gToken.gTroller.priceOracle, "setUnderlyingPrice", [
+    gToken._address,
     avaxMantissa(price),
   ]);
 }
 
-async function setBorrowRate(jToken, rate) {
-  return send(jToken.interestRateModel, "setBorrowRate", [avaxMantissa(rate)]);
+async function setBorrowRate(gToken, rate) {
+  return send(gToken.interestRateModel, "setBorrowRate", [avaxMantissa(rate)]);
 }
 
 async function getBorrowRate(interestRateModel, cash, borrows, reserves) {
@@ -725,24 +725,24 @@ async function getSupplyRate(
 }
 
 async function pretendBorrow(
-  jToken,
+  gToken,
   borrower,
   accountIndex,
   marketIndex,
   principalRaw,
   blockTimestamp = 2e7
 ) {
-  await send(jToken, "harnessSetTotalBorrows", [avaxUnsigned(principalRaw)]);
-  await send(jToken, "harnessSetAccountBorrows", [
+  await send(gToken, "harnessSetTotalBorrows", [avaxUnsigned(principalRaw)]);
+  await send(gToken, "harnessSetAccountBorrows", [
     borrower,
     avaxUnsigned(principalRaw),
     avaxMantissa(accountIndex),
   ]);
-  await send(jToken, "harnessSetBorrowIndex", [avaxMantissa(marketIndex)]);
-  await send(jToken, "harnessSetAccrualBlockTimestamp", [
+  await send(gToken, "harnessSetBorrowIndex", [avaxMantissa(marketIndex)]);
+  await send(gToken, "harnessSetAccrualBlockTimestamp", [
     avaxUnsigned(blockTimestamp),
   ]);
-  await send(jToken, "harnessSetBlockTimestamp", [
+  await send(gToken, "harnessSetBlockTimestamp", [
     avaxUnsigned(blockTimestamp),
   ]);
 }

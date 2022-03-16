@@ -5,10 +5,10 @@ const { makeGToken, preJJLP } = require("../Utils/BankerJoe");
 const amount = avaxUnsigned(10e4);
 
 describe("GToken", function () {
-  let jToken, root, admin, accounts;
+  let gToken, root, admin, accounts;
   beforeEach(async () => {
     [root, admin, ...accounts] = saddle.accounts;
-    jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
+    gToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
   });
 
   describe("_setImplementation", () => {
@@ -19,10 +19,10 @@ describe("GToken", function () {
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
+        gToken = await saddle.getContractAt("GXrc20Delegator", gToken._address);
         await expect(
           send(
-            jToken,
+            gToken,
             "_setImplementation",
             [jCapableDelegate._address, true, "0x0"],
             { from: accounts[0] }
@@ -33,25 +33,25 @@ describe("GToken", function () {
       });
 
       it("succeeds to have internal cash", async () => {
-        await send(jToken.underlying, "harnessSetBalance", [
-          jToken._address,
+        await send(gToken.underlying, "harnessSetBalance", [
+          gToken._address,
           amount,
         ]);
 
-        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
+        gToken = await saddle.getContractAt("GXrc20Delegator", gToken._address);
         expect(
-          await send(jToken, "_setImplementation", [
+          await send(gToken, "_setImplementation", [
             jCapableDelegate._address,
             true,
             "0x0",
           ])
         ).toSucceed();
 
-        jToken = await saddle.getContractAt(
+        gToken = await saddle.getContractAt(
           "GCapableXrc20Delegate",
-          jToken._address
+          gToken._address
         );
-        const result = await call(jToken, "getCash");
+        const result = await call(gToken, "getCash");
         expect(result).toEqualNumber(amount);
       });
     });
@@ -60,14 +60,14 @@ describe("GToken", function () {
       let jjlpDelegate, data;
       beforeEach(async () => {
         jjlpDelegate = await deploy("JJLPDelegateHarness");
-        data = await preJJLP(jToken.underlying._address);
+        data = await preJJLP(gToken.underlying._address);
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
+        gToken = await saddle.getContractAt("GXrc20Delegator", gToken._address);
         await expect(
           send(
-            jToken,
+            gToken,
             "_setImplementation",
             [jjlpDelegate._address, true, data],
             { from: accounts[0] }
@@ -87,10 +87,10 @@ describe("GToken", function () {
       });
 
       it("fails due to non admin", async () => {
-        jToken = await saddle.getContractAt("GXrc20Delegator", jToken._address);
+        gToken = await saddle.getContractAt("GXrc20Delegator", gToken._address);
         await expect(
           send(
-            jToken,
+            gToken,
             "_setImplementation",
             [jjtokenDelegate._address, true, "0x0"],
             { from: accounts[0] }

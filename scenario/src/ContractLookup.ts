@@ -90,16 +90,16 @@ export async function getGtrollerImpl(
   ]);
 }
 
-export function getGTokenAddress(world: World, jTokenArg: string): string {
-  return getContractDataString(world, [["jTokens", jTokenArg, "address"]]);
+export function getGTokenAddress(world: World, gTokenArg: string): string {
+  return getContractDataString(world, [["gTokens", gTokenArg, "address"]]);
 }
 
 export function getGTokenDelegateAddress(
   world: World,
-  jTokenDelegateArg: string
+  gTokenDelegateArg: string
 ): string {
   return getContractDataString(world, [
-    ["GTokenDelegate", jTokenDelegateArg, "address"],
+    ["GTokenDelegate", gTokenDelegateArg, "address"],
   ]);
 }
 
@@ -167,26 +167,26 @@ export async function getErc20Data(
 
 export async function getGTokenData(
   world: World,
-  jTokenArg: string
+  gTokenArg: string
 ): Promise<[GToken, string, Map<string, string>]> {
   let contract = getWorldContract<GToken>(world, [
-    ["jTokens", jTokenArg, "address"],
+    ["gTokens", gTokenArg, "address"],
   ]);
-  let data = getContractData(world, [["GTokens", jTokenArg]]);
+  let data = getContractData(world, [["GTokens", gTokenArg]]);
 
-  return [contract, jTokenArg, <Map<string, string>>(<any>data)];
+  return [contract, gTokenArg, <Map<string, string>>(<any>data)];
 }
 
 export async function getGTokenDelegateData(
   world: World,
-  jTokenDelegateArg: string
+  gTokenDelegateArg: string
 ): Promise<[GXrc20Delegate, string, Map<string, string>]> {
   let contract = getWorldContract<GXrc20Delegate>(world, [
-    ["GTokenDelegate", jTokenDelegateArg, "address"],
+    ["GTokenDelegate", gTokenDelegateArg, "address"],
   ]);
-  let data = getContractData(world, [["GTokenDelegate", jTokenDelegateArg]]);
+  let data = getContractData(world, [["GTokenDelegate", gTokenDelegateArg]]);
 
-  return [contract, jTokenDelegateArg, <Map<string, string>>(<any>data)];
+  return [contract, gTokenDelegateArg, <Map<string, string>>(<any>data)];
 }
 
 export async function getGtrollerImplData(
@@ -224,7 +224,7 @@ export function getAddress(world: World, addressArg: string): string {
 
   return getContractDataString(world, [
     ["Contracts", addressArg],
-    ["jTokens", addressArg, "address"],
+    ["gTokens", addressArg, "address"],
     ["GTokenDelegate", addressArg, "address"],
     ["Tokens", addressArg, "address"],
     ["Gtroller", addressArg, "address"],

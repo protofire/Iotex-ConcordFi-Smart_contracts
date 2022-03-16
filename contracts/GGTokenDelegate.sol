@@ -13,7 +13,7 @@ interface IGtroller {
 
     function claimG(
         address[] calldata holders,
-        GToken[] calldata jTokens,
+        GToken[] calldata gTokens,
         bool borrowers,
         bool suppliers
     ) external;
@@ -166,11 +166,11 @@ contract GGTokenDelegate is GCapableXrc20Delegate {
     function harvestJoe() internal {
         address[] memory holders = new address[](1);
         holders[0] = address(this);
-        GToken[] memory jTokens = new GToken[](1);
-        jTokens[0] = GToken(underlying);
+        GToken[] memory gTokens = new GToken[](1);
+        gTokens[0] = GToken(underlying);
 
         // JGToken contract will never borrow assets from Compound.
-        IGtroller(underlyingGtroller).claimG(holders, jTokens, false, true);
+        IGtroller(underlyingGtroller).claimG(holders, gTokens, false, true);
     }
 
     function updateSupplyIndex() internal {

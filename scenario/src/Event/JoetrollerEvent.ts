@@ -101,24 +101,24 @@ async function oldSupportMarket(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken
+  gToken: GToken
 ): Promise<World> {
   if (world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world.printer.printLine(
-      `Dry run: Supporting market  \`${jToken._address}\``
+      `Dry run: Supporting market  \`${gToken._address}\``
     );
     return world;
   }
 
   let invokation = await invoke(
     world,
-    gTroller.methods._supportMarket(jToken._address),
+    gTroller.methods._supportMarket(gToken._address),
     from,
     GtrollerErrorReporter
   );
 
-  world = addAction(world, `Supported market ${jToken.name}`, invokation);
+  world = addAction(world, `Supported market ${gToken.name}`, invokation);
 
   return world;
 }
@@ -127,25 +127,25 @@ async function supportMarket(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken,
+  gToken: GToken,
   version: NumberV
 ): Promise<World> {
   if (world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
     world.printer.printLine(
-      `Dry run: Supporting market  \`${jToken._address}\``
+      `Dry run: Supporting market  \`${gToken._address}\``
     );
     return world;
   }
 
   let invokation = await invoke(
     world,
-    gTroller.methods._supportMarket(jToken._address, version.encode()),
+    gTroller.methods._supportMarket(gToken._address, version.encode()),
     from,
     GtrollerErrorReporter
   );
 
-  world = addAction(world, `Supported market ${jToken.name}`, invokation);
+  world = addAction(world, `Supported market ${gToken.name}`, invokation);
 
   return world;
 }
@@ -154,16 +154,16 @@ async function unlistMarket(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken
+  gToken: GToken
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    gTroller.methods.unlist(jToken._address),
+    gTroller.methods.unlist(gToken._address),
     from,
     GtrollerErrorReporter
   );
 
-  world = addAction(world, `Unlisted market ${jToken.name}`, invokation);
+  world = addAction(world, `Unlisted market ${gToken.name}`, invokation);
 
   return world;
 }
@@ -216,19 +216,19 @@ async function updateGTokenVersion(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken,
+  gToken: GToken,
   version: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
-    gTroller.methods.updateGTokenVersion(jToken._address, version.encode()),
+    gTroller.methods.updateGTokenVersion(gToken._address, version.encode()),
     from,
     GtrollerErrorReporter
   );
 
   world = addAction(
     world,
-    `Update market ${jToken.name} version to ${version.show()}`,
+    `Update market ${gToken.name} version to ${version.show()}`,
     invokation
   );
 
@@ -264,13 +264,13 @@ async function setCollateralFactor(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken,
+  gToken: GToken,
   collateralFactor: NumberV
 ): Promise<World> {
   let invokation = await invoke(
     world,
     gTroller.methods._setCollateralFactor(
-      jToken._address,
+      gToken._address,
       collateralFactor.encode()
     ),
     from,
@@ -279,7 +279,7 @@ async function setCollateralFactor(
 
   world = addAction(
     world,
-    `Set collateral factor for ${jToken.name} to ${collateralFactor.show()}`,
+    `Set collateral factor for ${gToken.name} to ${collateralFactor.show()}`,
     invokation
   );
 
@@ -464,7 +464,7 @@ async function setGuardianMarketPaused(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jToken: GToken,
+  gToken: GToken,
   action: string,
   state: boolean
 ): Promise<World> {
@@ -479,7 +479,7 @@ async function setGuardianMarketPaused(
   }
   let invokation = await invoke(
     world,
-    fun(jToken._address, state),
+    fun(gToken._address, state),
     from,
     GtrollerErrorReporter
   );
@@ -497,13 +497,13 @@ async function setMarketSupplyCaps(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jTokens: GToken[],
+  gTokens: GToken[],
   supplyCaps: NumberV[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
     gTroller.methods._setMarketSupplyCaps(
-      jTokens.map((c) => c._address),
+      gTokens.map((c) => c._address),
       supplyCaps.map((c) => c.encode())
     ),
     from,
@@ -512,7 +512,7 @@ async function setMarketSupplyCaps(
 
   world = addAction(
     world,
-    `Supply caps on ${jTokens} set to ${supplyCaps}`,
+    `Supply caps on ${gTokens} set to ${supplyCaps}`,
     invokation
   );
 
@@ -548,13 +548,13 @@ async function setMarketBorrowCaps(
   world: World,
   from: string,
   gTroller: Gtroller,
-  jTokens: GToken[],
+  gTokens: GToken[],
   borrowCaps: NumberV[]
 ): Promise<World> {
   let invokation = await invoke(
     world,
     gTroller.methods._setMarketBorrowCaps(
-      jTokens.map((c) => c._address),
+      gTokens.map((c) => c._address),
       borrowCaps.map((c) => c.encode())
     ),
     from,
@@ -563,7 +563,7 @@ async function setMarketBorrowCaps(
 
   world = addAction(
     world,
-    `Borrow caps on ${jTokens} set to ${borrowCaps}`,
+    `Borrow caps on ${gTokens} set to ${borrowCaps}`,
     invokation
   );
 
@@ -656,7 +656,7 @@ export function gTrollerCommands() {
       `
         #### SetPaused
 
-        * "Gtroller SetPaused <Action> <Bool>" - Pauses or unpaused given jToken function
+        * "Gtroller SetPaused <Action> <Bool>" - Pauses or unpaused given gToken function
           * E.g. "Gtroller SetPaused "Mint" True"
       `,
       "SetPaused",
@@ -668,38 +668,38 @@ export function gTrollerCommands() {
       (world, from, { gTroller, action, isPaused }) =>
         setPaused(world, from, gTroller, action.val, isPaused.val)
     ),
-    new Command<{ gTroller: Gtroller; jToken: GToken }>(
+    new Command<{ gTroller: Gtroller; gToken: GToken }>(
       `
         #### OldSupportMarket
 
-        * "Gtroller OldSupportMarket <GToken>" - Adds support in the Gtroller for the given jToken
+        * "Gtroller OldSupportMarket <GToken>" - Adds support in the Gtroller for the given gToken
           * E.g. "Gtroller OldSupportMarket cZRX"
       `,
       "OldSupportMarket",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, from, { gTroller, jToken }) =>
-        oldSupportMarket(world, from, gTroller, jToken)
+      (world, from, { gTroller, gToken }) =>
+        oldSupportMarket(world, from, gTroller, gToken)
     ),
-    new Command<{ gTroller: Gtroller; jToken: GToken; version: NumberV }>(
+    new Command<{ gTroller: Gtroller; gToken: GToken; version: NumberV }>(
       `
         #### SupportMarket
 
-        * "Gtroller SupportMarket <GToken> <Number>" - Adds support in the Gtroller for the given jToken
+        * "Gtroller SupportMarket <GToken> <Number>" - Adds support in the Gtroller for the given gToken
           * E.g. "Gtroller SupportMarket cZRX 0"
       `,
       "SupportMarket",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg("version", getNumberV),
       ],
-      (world, from, { gTroller, jToken, version }) =>
-        supportMarket(world, from, gTroller, jToken, version)
+      (world, from, { gTroller, gToken, version }) =>
+        supportMarket(world, from, gTroller, gToken, version)
     ),
-    new Command<{ gTroller: Gtroller; jToken: GToken }>(
+    new Command<{ gTroller: Gtroller; gToken: GToken }>(
       `
         #### UnList
 
@@ -709,12 +709,12 @@ export function gTrollerCommands() {
       "UnList",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, from, { gTroller, jToken }) =>
-        unlistMarket(world, from, gTroller, jToken)
+      (world, from, { gTroller, gToken }) =>
+        unlistMarket(world, from, gTroller, gToken)
     ),
-    new Command<{ gTroller: Gtroller; jTokens: GToken[] }>(
+    new Command<{ gTroller: Gtroller; gTokens: GToken[] }>(
       `
         #### EnterMarkets
 
@@ -724,17 +724,17 @@ export function gTrollerCommands() {
       "EnterMarkets",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jTokens", getGTokenV, { mapped: true }),
+        new Arg("gTokens", getGTokenV, { mapped: true }),
       ],
-      (world, from, { gTroller, jTokens }) =>
+      (world, from, { gTroller, gTokens }) =>
         enterMarkets(
           world,
           from,
           gTroller,
-          jTokens.map((c) => c._address)
+          gTokens.map((c) => c._address)
         )
     ),
-    new Command<{ gTroller: Gtroller; jToken: GToken }>(
+    new Command<{ gTroller: Gtroller; gToken: GToken }>(
       `
         #### ExitMarket
 
@@ -744,12 +744,12 @@ export function gTrollerCommands() {
       "ExitMarket",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
       ],
-      (world, from, { gTroller, jToken }) =>
-        exitMarket(world, from, gTroller, jToken._address)
+      (world, from, { gTroller, gToken }) =>
+        exitMarket(world, from, gTroller, gToken._address)
     ),
-    new Command<{ gTroller: Gtroller; jToken: GToken; version: NumberV }>(
+    new Command<{ gTroller: Gtroller; gToken: GToken; version: NumberV }>(
       `
         #### UpdateGTokenVersion
 
@@ -759,11 +759,11 @@ export function gTrollerCommands() {
       "UpdateGTokenVersion",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg("version", getNumberV),
       ],
-      (world, from, { gTroller, jToken, version }) =>
-        updateGTokenVersion(world, from, gTroller, jToken, version)
+      (world, from, { gTroller, gToken, version }) =>
+        updateGTokenVersion(world, from, gTroller, gToken, version)
     ),
     new Command<{ gTroller: Gtroller; liquidationIncentive: NumberV }>(
       `
@@ -797,23 +797,23 @@ export function gTrollerCommands() {
     ),
     new Command<{
       gTroller: Gtroller;
-      jToken: GToken;
+      gToken: GToken;
       collateralFactor: NumberV;
     }>(
       `
         #### SetCollateralFactor
 
-        * "Gtroller SetCollateralFactor <GToken> <Number>" - Sets the collateral factor for given jToken to number
+        * "Gtroller SetCollateralFactor <GToken> <Number>" - Sets the collateral factor for given gToken to number
           * E.g. "Gtroller SetCollateralFactor cZRX 0.1"
       `,
       "SetCollateralFactor",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg("collateralFactor", getExpNumberV),
       ],
-      (world, from, { gTroller, jToken, collateralFactor }) =>
-        setCollateralFactor(world, from, gTroller, jToken, collateralFactor)
+      (world, from, { gTroller, gToken, collateralFactor }) =>
+        setCollateralFactor(world, from, gTroller, gToken, collateralFactor)
     ),
     new Command<{ gTroller: Gtroller; closeFactor: NumberV }>(
       `
@@ -876,7 +876,7 @@ export function gTrollerCommands() {
       `
         #### SetGuardianPaused
 
-        * "Gtroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given jToken function
+        * "Gtroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given gToken function
         * E.g. "Gtroller SetGuardianPaused "Transfer" True"
         `,
       "SetGuardianPaused",
@@ -891,29 +891,29 @@ export function gTrollerCommands() {
 
     new Command<{
       gTroller: Gtroller;
-      jToken: GToken;
+      gToken: GToken;
       action: StringV;
       isPaused: BoolV;
     }>(
       `
         #### SetGuardianMarketPaused
 
-        * "Gtroller SetGuardianMarketPaused <GToken> <Action> <Bool>" - Pauses or unpaused given jToken function
+        * "Gtroller SetGuardianMarketPaused <GToken> <Action> <Bool>" - Pauses or unpaused given gToken function
         * E.g. "Gtroller SetGuardianMarketPaused cREP "Mint" True"
         `,
       "SetGuardianMarketPaused",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg("action", getStringV),
         new Arg("isPaused", getBoolV),
       ],
-      (world, from, { gTroller, jToken, action, isPaused }) =>
+      (world, from, { gTroller, gToken, action, isPaused }) =>
         setGuardianMarketPaused(
           world,
           from,
           gTroller,
-          jToken,
+          gToken,
           action.val,
           isPaused.val
         )
@@ -960,7 +960,7 @@ export function gTrollerCommands() {
     ),
     new Command<{
       gTroller: Gtroller;
-      jTokens: GToken[];
+      gTokens: GToken[];
       supplyCaps: NumberV[];
     }>(
       `
@@ -972,11 +972,11 @@ export function gTrollerCommands() {
       "SetMarketSupplyCaps",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jTokens", getGTokenV, { mapped: true }),
+        new Arg("gTokens", getGTokenV, { mapped: true }),
         new Arg("supplyCaps", getNumberV, { mapped: true }),
       ],
-      (world, from, { gTroller, jTokens, supplyCaps }) =>
-        setMarketSupplyCaps(world, from, gTroller, jTokens, supplyCaps)
+      (world, from, { gTroller, gTokens, supplyCaps }) =>
+        setMarketSupplyCaps(world, from, gTroller, gTokens, supplyCaps)
     ),
     new Command<{ gTroller: Gtroller; newSupplyCapGuardian: AddressV }>(
       `
@@ -995,7 +995,7 @@ export function gTrollerCommands() {
     ),
     new Command<{
       gTroller: Gtroller;
-      jTokens: GToken[];
+      gTokens: GToken[];
       borrowCaps: NumberV[];
     }>(
       `
@@ -1007,11 +1007,11 @@ export function gTrollerCommands() {
       "SetMarketBorrowCaps",
       [
         new Arg("gTroller", getGtroller, { implicit: true }),
-        new Arg("jTokens", getGTokenV, { mapped: true }),
+        new Arg("gTokens", getGTokenV, { mapped: true }),
         new Arg("borrowCaps", getNumberV, { mapped: true }),
       ],
-      (world, from, { gTroller, jTokens, borrowCaps }) =>
-        setMarketBorrowCaps(world, from, gTroller, jTokens, borrowCaps)
+      (world, from, { gTroller, gTokens, borrowCaps }) =>
+        setMarketBorrowCaps(world, from, gTroller, gTokens, borrowCaps)
     ),
     new Command<{ gTroller: Gtroller; newBorrowCapGuardian: AddressV }>(
       `

@@ -4,11 +4,11 @@ const exchangeRate = 50e3;
 
 describe("GToken", function () {
   let root, admin, accounts;
-  let jToken;
+  let gToken;
 
   beforeEach(async () => {
     [root, admin, ...accounts] = saddle.accounts;
-    jToken = await makeGToken({
+    gToken = await makeGToken({
       kind: "jcollateralcap",
       gTrollerOpts: { kind: "bool" },
       exchangeRate,
@@ -16,13 +16,13 @@ describe("GToken", function () {
   });
 
   it("fails to register collateral for non gTroller", async () => {
-    await expect(send(jToken, "registerCollateral", [root])).rejects.toRevert(
+    await expect(send(gToken, "registerCollateral", [root])).rejects.toRevert(
       "revert only gTroller may register collateral for user"
     );
   });
 
   it("fails to unregister collateral for non gTroller", async () => {
-    await expect(send(jToken, "unregisterCollateral", [root])).rejects.toRevert(
+    await expect(send(gToken, "unregisterCollateral", [root])).rejects.toRevert(
       "revert only gTroller may unregister collateral for user"
     );
   });

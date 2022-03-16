@@ -120,10 +120,10 @@ contract GXrc20Harness is GXrc20Immutable {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -160,9 +160,9 @@ contract GXrc20Harness is GXrc20Immutable {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -464,10 +464,10 @@ contract GXrc20DelegateHarness is GXrc20Delegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -504,9 +504,9 @@ contract GXrc20DelegateHarness is GXrc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -638,10 +638,10 @@ contract JJLPDelegateHarness is JJLPDelegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -678,9 +678,9 @@ contract JJLPDelegateHarness is JJLPDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -796,10 +796,10 @@ contract JGTokenDelegateHarness is JGTokenDelegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -836,9 +836,9 @@ contract JGTokenDelegateHarness is JGTokenDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -986,10 +986,10 @@ contract GCollateralCapXrc20DelegateHarness is GCollateralCapXrc20Delegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
-        return super.redeemFresh(account, jTokenAmount, underlyingAmount, false);
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount, false);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -1026,9 +1026,9 @@ contract GCollateralCapXrc20DelegateHarness is GCollateralCapXrc20Delegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, false);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, false);
         return err;
     }
 
@@ -1167,11 +1167,11 @@ contract GWrappedNativeDelegateHarness is GWrappedNativeDelegate {
 
     function harnessRedeemFresh(
         address payable account,
-        uint256 jTokenAmount,
+        uint256 gTokenAmount,
         uint256 underlyingAmount
     ) public returns (uint256) {
         // isNative is not important for redeem fresh testing.
-        return redeemFresh(account, jTokenAmount, underlyingAmount, true);
+        return redeemFresh(account, gTokenAmount, underlyingAmount, true);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint256 principal, uint256 interestIndex) {
@@ -1210,10 +1210,10 @@ contract GWrappedNativeDelegateHarness is GWrappedNativeDelegate {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        GToken jTokenCollateral
+        GToken gTokenCollateral
     ) public returns (uint256) {
         // isNative is not important for liquidate borrow fresh testing.
-        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, jTokenCollateral, true);
+        (uint256 err, ) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral, true);
         return err;
     }
 

@@ -30,24 +30,24 @@ describe("GToken", function () {
     });
 
     it("succeeds with erc-20 underlying and non-zero exchange rate", async () => {
-      const jToken = await makeGToken();
-      expect(await call(jToken, "underlying")).toEqual(
-        jToken.underlying._address
+      const gToken = await makeGToken();
+      expect(await call(gToken, "underlying")).toEqual(
+        gToken.underlying._address
       );
-      expect(await call(jToken, "admin")).toEqual(root);
+      expect(await call(gToken, "admin")).toEqual(root);
     });
 
     it("succeeds when setting admin to contructor argument", async () => {
-      const jToken = await makeGToken({ admin: admin });
-      expect(await call(jToken, "admin")).toEqual(admin);
+      const gToken = await makeGToken({ admin: admin });
+      expect(await call(gToken, "admin")).toEqual(admin);
     });
   });
 
   describe("name, symbol, decimals", () => {
-    let jToken;
+    let gToken;
 
     beforeEach(async () => {
-      jToken = await makeGToken({
+      gToken = await makeGToken({
         name: "GToken Foo",
         symbol: "cFOO",
         decimals: 10,
@@ -55,23 +55,23 @@ describe("GToken", function () {
     });
 
     it("should return correct name", async () => {
-      expect(await call(jToken, "name")).toEqual("GToken Foo");
+      expect(await call(gToken, "name")).toEqual("GToken Foo");
     });
 
     it("should return correct symbol", async () => {
-      expect(await call(jToken, "symbol")).toEqual("cFOO");
+      expect(await call(gToken, "symbol")).toEqual("cFOO");
     });
 
     it("should return correct decimals", async () => {
-      expect(await call(jToken, "decimals")).toEqualNumber(10);
+      expect(await call(gToken, "decimals")).toEqualNumber(10);
     });
   });
 
   describe("balanceOfUnderlying", () => {
     it("has an underlying balance", async () => {
-      const jToken = await makeGToken({ supportMarket: true, exchangeRate: 2 });
-      await send(jToken, "harnessSetBalance", [root, 100]);
-      expect(await call(jToken, "balanceOfUnderlying", [root])).toEqualNumber(
+      const gToken = await makeGToken({ supportMarket: true, exchangeRate: 2 });
+      await send(gToken, "harnessSetBalance", [root, 100]);
+      expect(await call(gToken, "balanceOfUnderlying", [root])).toEqualNumber(
         200
       );
     });
@@ -79,7 +79,7 @@ describe("GToken", function () {
 
   describe("borrowRatePerSecond", () => {
     it("has a borrow rate", async () => {
-      const jToken = await makeGToken({
+      const gToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -90,14 +90,14 @@ describe("GToken", function () {
           roof: 1,
         },
       });
-      const perSecond = await call(jToken, "borrowRatePerSecond");
+      const perSecond = await call(gToken, "borrowRatePerSecond");
       expect(Math.abs(perSecond * 31536000 - 5e16)).toBeLessThanOrEqual(1e8);
     });
   });
 
   describe("supplyRatePerSecond", () => {
     it("returns 0 if there's no supply", async () => {
-      const jToken = await makeGToken({
+      const gToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -108,7 +108,7 @@ describe("GToken", function () {
           roof: 1,
         },
       });
-      const perSecond = await call(jToken, "supplyRatePerSecond");
+      const perSecond = await call(gToken, "supplyRatePerSecond");
       await expect(perSecond).toEqualNumber(0);
     });
 
@@ -118,7 +118,7 @@ describe("GToken", function () {
       const kink = 0.95;
       const jump = 5 * multiplier;
       const roof = 1;
-      const jToken = await makeGToken({
+      const gToken = await makeGToken({
         supportMarket: true,
         interestRateModelOpts: {
           kind: "jump-rate",
@@ -129,14 +129,14 @@ describe("GToken", function () {
           roof,
         },
       });
-      await send(jToken, "harnessSetReserveFactorFresh", [avaxMantissa(0.01)]);
-      await send(jToken, "harnessExchangeRateDetails", [1, 1, 0]);
-      await send(jToken, "harnessSetExchangeRate", [avaxMantissa(1)]);
+      await send(gToken, "harnessSetReserveFactorFresh", [avaxMantissa(0.01)]);
+      await send(gToken, "harnessExchangeRateDetails", [1, 1, 0]);
+      await send(gToken, "harnessSetExchangeRate", [avaxMantissa(1)]);
       // Full utilization (Over the kink so jump is included), 1% reserves
       const borrowRate = baseRate + multiplier * kink + jump * 0.05;
       const expectedSuplyRate = borrowRate * 0.99;
 
-      const perSecond = await call(jToken, "supplyRatePerSecond");
+      const perSecond = await call(gToken, "supplyRatePerSecond");
       expect(
         Math.abs(perSecond * 31536000 - expectedSuplyRate * 1e18)
       ).toBeLessThanOrEqual(1e8);
@@ -145,71 +145,71 @@ describe("GToken", function () {
 
   describe("borrowBalanceCurrent", () => {
     let borrower;
-    let jToken;
+    let gToken;
 
     beforeEach(async () => {
       borrower = accounts[0];
-      jToken = await makeGToken();
+      gToken = await makeGToken();
     });
 
     beforeEach(async () => {
-      await setBorrowRate(jToken, 0.001);
-      await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
+      await setBorrowRate(gToken, 0.001);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
     });
 
     it("reverts if interest accrual fails", async () => {
-      await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
+      await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
       // make sure we accrue interest
-      await send(jToken, "harnessFastForward", [1]);
+      await send(gToken, "harnessFastForward", [1]);
       await expect(
-        send(jToken, "borrowBalanceCurrent", [borrower])
+        send(gToken, "borrowBalanceCurrent", [borrower])
       ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
     });
 
     it("returns successful result from borrowBalanceStored with no interest", async () => {
-      await setBorrowRate(jToken, 0);
-      await pretendBorrow(jToken, borrower, 1, 1, 5e18);
+      await setBorrowRate(gToken, 0);
+      await pretendBorrow(gToken, borrower, 1, 1, 5e18);
       expect(
-        await call(jToken, "borrowBalanceCurrent", [borrower])
+        await call(gToken, "borrowBalanceCurrent", [borrower])
       ).toEqualNumber(5e18);
     });
 
     it("returns successful result from borrowBalanceCurrent with no interest", async () => {
-      await setBorrowRate(jToken, 0);
-      await pretendBorrow(jToken, borrower, 1, 3, 5e18);
-      expect(await send(jToken, "harnessFastForward", [5])).toSucceed();
+      await setBorrowRate(gToken, 0);
+      await pretendBorrow(gToken, borrower, 1, 3, 5e18);
+      expect(await send(gToken, "harnessFastForward", [5])).toSucceed();
       expect(
-        await call(jToken, "borrowBalanceCurrent", [borrower])
+        await call(gToken, "borrowBalanceCurrent", [borrower])
       ).toEqualNumber(5e18 * 3);
     });
   });
 
   describe("borrowBalanceStored", () => {
     let borrower;
-    let jToken;
+    let gToken;
 
     beforeEach(async () => {
       borrower = accounts[0];
-      jToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
+      gToken = await makeGToken({ gTrollerOpts: { kind: "bool" } });
     });
 
     it("returns 0 for account with no borrows", async () => {
       expect(
-        await call(jToken, "borrowBalanceStored", [borrower])
+        await call(gToken, "borrowBalanceStored", [borrower])
       ).toEqualNumber(0);
     });
 
     it("returns stored principal when account and market indexes are the same", async () => {
-      await pretendBorrow(jToken, borrower, 1, 1, 5e18);
+      await pretendBorrow(gToken, borrower, 1, 1, 5e18);
       expect(
-        await call(jToken, "borrowBalanceStored", [borrower])
+        await call(gToken, "borrowBalanceStored", [borrower])
       ).toEqualNumber(5e18);
     });
 
     it("returns calculated balance when market index is higher than account index", async () => {
-      await pretendBorrow(jToken, borrower, 1, 3, 5e18);
+      await pretendBorrow(gToken, borrower, 1, 3, 5e18);
       expect(
-        await call(jToken, "borrowBalanceStored", [borrower])
+        await call(gToken, "borrowBalanceStored", [borrower])
       ).toEqualNumber(5e18 * 3);
     });
 
@@ -218,102 +218,102 @@ describe("GToken", function () {
     });
 
     it("reverts on overflow of principal", async () => {
-      await pretendBorrow(jToken, borrower, 1, 3, UInt256Max());
+      await pretendBorrow(gToken, borrower, 1, 3, UInt256Max());
       await expect(
-        call(jToken, "borrowBalanceStored", [borrower])
+        call(gToken, "borrowBalanceStored", [borrower])
       ).rejects.toRevert("revert multiplication overflow");
     });
 
     it("reverts on non-zero stored principal with zero account index", async () => {
-      await pretendBorrow(jToken, borrower, 0, 3, 5);
+      await pretendBorrow(gToken, borrower, 0, 3, 5);
       await expect(
-        call(jToken, "borrowBalanceStored", [borrower])
+        call(gToken, "borrowBalanceStored", [borrower])
       ).rejects.toRevert("revert divide by zero");
     });
   });
 
   describe("exchangeRateStored", () => {
-    let jToken,
+    let gToken,
       exchangeRate = 2;
 
     beforeEach(async () => {
-      jToken = await makeGToken({ exchangeRate });
+      gToken = await makeGToken({ exchangeRate });
     });
 
-    it("returns initial exchange rate with zero jTokenSupply", async () => {
-      const result = await call(jToken, "exchangeRateStored");
+    it("returns initial exchange rate with zero gTokenSupply", async () => {
+      const result = await call(gToken, "exchangeRateStored");
       expect(result).toEqualNumber(avaxMantissa(exchangeRate));
     });
 
-    it("calculates with single jTokenSupply and single total borrow", async () => {
-      const jTokenSupply = 1,
+    it("calculates with single gTokenSupply and single total borrow", async () => {
+      const gTokenSupply = 1,
         totalBorrows = 1,
         totalReserves = 0;
-      await send(jToken, "harnessExchangeRateDetails", [
-        jTokenSupply,
+      await send(gToken, "harnessExchangeRateDetails", [
+        gTokenSupply,
         totalBorrows,
         totalReserves,
       ]);
-      const result = await call(jToken, "exchangeRateStored");
+      const result = await call(gToken, "exchangeRateStored");
       expect(result).toEqualNumber(avaxMantissa(1));
     });
 
-    it("calculates with jTokenSupply and total borrows", async () => {
-      const jTokenSupply = 100e18,
+    it("calculates with gTokenSupply and total borrows", async () => {
+      const gTokenSupply = 100e18,
         totalBorrows = 10e18,
         totalReserves = 0;
       await send(
-        jToken,
+        gToken,
         "harnessExchangeRateDetails",
-        [jTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
+        [gTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
       );
-      const result = await call(jToken, "exchangeRateStored");
+      const result = await call(gToken, "exchangeRateStored");
       expect(result).toEqualNumber(avaxMantissa(0.1));
     });
 
-    it("calculates with cash and jTokenSupply", async () => {
-      const jTokenSupply = 5e18,
+    it("calculates with cash and gTokenSupply", async () => {
+      const gTokenSupply = 5e18,
         totalBorrows = 0,
         totalReserves = 0;
       expect(
-        await send(jToken.underlying, "transfer", [
-          jToken._address,
+        await send(gToken.underlying, "transfer", [
+          gToken._address,
           avaxMantissa(500),
         ])
       ).toSucceed();
       await send(
-        jToken,
+        gToken,
         "harnessExchangeRateDetails",
-        [jTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
+        [gTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
       );
-      const result = await call(jToken, "exchangeRateStored");
+      const result = await call(gToken, "exchangeRateStored");
       expect(result).toEqualNumber(avaxMantissa(100));
     });
 
-    it("calculates with cash, borrows, reserves and jTokenSupply", async () => {
-      const jTokenSupply = 500e18,
+    it("calculates with cash, borrows, reserves and gTokenSupply", async () => {
+      const gTokenSupply = 500e18,
         totalBorrows = 500e18,
         totalReserves = 5e18;
       expect(
-        await send(jToken.underlying, "transfer", [
-          jToken._address,
+        await send(gToken.underlying, "transfer", [
+          gToken._address,
           avaxMantissa(500),
         ])
       ).toSucceed();
       await send(
-        jToken,
+        gToken,
         "harnessExchangeRateDetails",
-        [jTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
+        [gTokenSupply, totalBorrows, totalReserves].map(avaxUnsigned)
       );
-      const result = await call(jToken, "exchangeRateStored");
+      const result = await call(gToken, "exchangeRateStored");
       expect(result).toEqualNumber(avaxMantissa(1.99));
     });
   });
 
   describe("getCash", () => {
     it("gets the cash", async () => {
-      const jToken = await makeGToken();
-      const result = await call(jToken, "getCash");
+      const gToken = await makeGToken();
+      const result = await call(gToken, "getCash");
       expect(result).toEqualNumber(0);
     });
   });

@@ -37,131 +37,131 @@ export async function getGXrc20DelegatorV(
 
 async function getInterestRateModel(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<AddressV> {
-  return new AddressV(await jToken.methods.interestRateModel().call());
+  return new AddressV(await gToken.methods.interestRateModel().call());
 }
 
-async function jTokenAddress(world: World, jToken: GToken): Promise<AddressV> {
-  return new AddressV(jToken._address);
+async function gTokenAddress(world: World, gToken: GToken): Promise<AddressV> {
+  return new AddressV(gToken._address);
 }
 
-async function getGTokenAdmin(world: World, jToken: GToken): Promise<AddressV> {
-  return new AddressV(await jToken.methods.admin().call());
+async function getGTokenAdmin(world: World, gToken: GToken): Promise<AddressV> {
+  return new AddressV(await gToken.methods.admin().call());
 }
 
 async function getGTokenPendingAdmin(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<AddressV> {
-  return new AddressV(await jToken.methods.pendingAdmin().call());
+  return new AddressV(await gToken.methods.pendingAdmin().call());
 }
 
 async function balanceOfUnderlying(
   world: World,
-  jToken: GToken,
+  gToken: GToken,
   user: string
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.balanceOfUnderlying(user).call());
+  return new NumberV(await gToken.methods.balanceOfUnderlying(user).call());
 }
 
 async function getBorrowBalance(
   world: World,
-  jToken: GToken,
+  gToken: GToken,
   user
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.borrowBalanceCurrent(user).call());
+  return new NumberV(await gToken.methods.borrowBalanceCurrent(user).call());
 }
 
 async function getBorrowBalanceStored(
   world: World,
-  jToken: GToken,
+  gToken: GToken,
   user
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.borrowBalanceStored(user).call());
+  return new NumberV(await gToken.methods.borrowBalanceStored(user).call());
 }
 
-async function getTotalBorrows(world: World, jToken: GToken): Promise<NumberV> {
-  return new NumberV(await jToken.methods.totalBorrows().call());
+async function getTotalBorrows(world: World, gToken: GToken): Promise<NumberV> {
+  return new NumberV(await gToken.methods.totalBorrows().call());
 }
 
 async function getTotalBorrowsCurrent(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.totalBorrowsCurrent().call());
+  return new NumberV(await gToken.methods.totalBorrowsCurrent().call());
 }
 
 async function getReserveFactor(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
   return new NumberV(
-    await jToken.methods.reserveFactorMantissa().call(),
+    await gToken.methods.reserveFactorMantissa().call(),
     1.0e18
   );
 }
 
 async function getTotalReserves(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.totalReserves().call());
+  return new NumberV(await gToken.methods.totalReserves().call());
 }
 
-async function getGtroller(world: World, jToken: GToken): Promise<AddressV> {
-  return new AddressV(await jToken.methods.gTroller().call());
+async function getGtroller(world: World, gToken: GToken): Promise<AddressV> {
+  return new AddressV(await gToken.methods.gTroller().call());
 }
 
 async function getExchangeRateStored(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.exchangeRateStored().call());
+  return new NumberV(await gToken.methods.exchangeRateStored().call());
 }
 
-async function getExchangeRate(world: World, jToken: GToken): Promise<NumberV> {
-  return new NumberV(await jToken.methods.exchangeRateCurrent().call(), 1e18);
+async function getExchangeRate(world: World, gToken: GToken): Promise<NumberV> {
+  return new NumberV(await gToken.methods.exchangeRateCurrent().call(), 1e18);
 }
 
-async function getCash(world: World, jToken: GToken): Promise<NumberV> {
-  return new NumberV(await jToken.methods.getCash().call());
+async function getCash(world: World, gToken: GToken): Promise<NumberV> {
+  return new NumberV(await gToken.methods.getCash().call());
 }
 
-async function getInterestRate(world: World, jToken: GToken): Promise<NumberV> {
+async function getInterestRate(world: World, gToken: GToken): Promise<NumberV> {
   return new NumberV(
-    await jToken.methods.borrowRatePerSecond().call(),
+    await gToken.methods.borrowRatePerSecond().call(),
     1.0e18 / 31536000
   );
 }
 
 async function getImplementation(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<AddressV> {
   return new AddressV(
-    await (jToken as GXrc20Delegator).methods.implementation().call()
+    await (gToken as GXrc20Delegator).methods.implementation().call()
   );
 }
 
 async function getAccountCollateralToken(
   world: World,
-  jToken: GToken,
+  gToken: GToken,
   user: string
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.accountCollateralTokens(user).call());
+  return new NumberV(await gToken.methods.accountCollateralTokens(user).call());
 }
 
 async function getTotalCollateralTokens(
   world: World,
-  jToken: GToken
+  gToken: GToken
 ): Promise<NumberV> {
-  return new NumberV(await jToken.methods.totalCollateralTokens().call());
+  return new NumberV(await gToken.methods.totalCollateralTokens().call());
 }
 
-export function jTokenFetchers() {
+export function gTokenFetchers() {
   return [
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### Address
 
@@ -169,12 +169,12 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX Address" - Returns cZRX's address
       `,
       "Address",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => jTokenAddress(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => gTokenAddress(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### InterestRateModel
 
@@ -182,12 +182,12 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX InterestRateModel" - Returns cZRX's interest rate model
       `,
       "InterestRateModel",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getInterestRateModel(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getInterestRateModel(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### Admin
 
@@ -195,12 +195,12 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX Admin" - Returns cZRX's admin
       `,
       "Admin",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getGTokenAdmin(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getGTokenAdmin(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### PendingAdmin
 
@@ -208,12 +208,12 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX PendingAdmin" - Returns cZRX's pending admin
       `,
       "PendingAdmin",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getGTokenPendingAdmin(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getGTokenPendingAdmin(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### Underlying
 
@@ -221,13 +221,13 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX Underlying"
       `,
       "Underlying",
-      [new Arg("jToken", getGTokenV)],
-      async (world, { jToken }) =>
-        new AddressV(await jToken.methods.underlying().call()),
+      [new Arg("gToken", getGTokenV)],
+      async (world, { gToken }) =>
+        new AddressV(await gToken.methods.underlying().call()),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken; address: AddressV }, NumberV>(
+    new Fetcher<{ gToken: GToken; address: AddressV }, NumberV>(
       `
         #### UnderlyingBalance
 
@@ -236,15 +236,15 @@ export function jTokenFetchers() {
       `,
       "UnderlyingBalance",
       [
-        new Arg("jToken", getGTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg<AddressV>("address", getAddressV),
       ],
-      (world, { jToken, address }) =>
-        balanceOfUnderlying(world, jToken, address.val),
+      (world, { gToken, address }) =>
+        balanceOfUnderlying(world, gToken, address.val),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken; address: AddressV }, NumberV>(
+    new Fetcher<{ gToken: GToken; address: AddressV }, NumberV>(
       `
         #### BorrowBalance
 
@@ -252,13 +252,13 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX BorrowBalance Geoff"
       `,
       "BorrowBalance",
-      [new Arg("jToken", getGTokenV), new Arg("address", getAddressV)],
-      (world, { jToken, address }) =>
-        getBorrowBalance(world, jToken, address.val),
+      [new Arg("gToken", getGTokenV), new Arg("address", getAddressV)],
+      (world, { gToken, address }) =>
+        getBorrowBalance(world, gToken, address.val),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken; address: AddressV }, NumberV>(
+    new Fetcher<{ gToken: GToken; address: AddressV }, NumberV>(
       `
         #### BorrowBalanceStored
 
@@ -266,52 +266,52 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX BorrowBalanceStored Geoff"
       `,
       "BorrowBalanceStored",
-      [new Arg("jToken", getGTokenV), new Arg("address", getAddressV)],
-      (world, { jToken, address }) =>
-        getBorrowBalanceStored(world, jToken, address.val),
+      [new Arg("gToken", getGTokenV), new Arg("address", getAddressV)],
+      (world, { gToken, address }) =>
+        getBorrowBalanceStored(world, gToken, address.val),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### TotalBorrows
 
-        * "GToken <GToken> TotalBorrows" - Returns the jToken's total borrow balance
+        * "GToken <GToken> TotalBorrows" - Returns the gToken's total borrow balance
           * E.g. "GToken cZRX TotalBorrows"
       `,
       "TotalBorrows",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getTotalBorrows(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getTotalBorrows(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### TotalBorrowsCurrent
 
-        * "GToken <GToken> TotalBorrowsCurrent" - Returns the jToken's total borrow balance with interest
+        * "GToken <GToken> TotalBorrowsCurrent" - Returns the gToken's total borrow balance with interest
           * E.g. "GToken cZRX TotalBorrowsCurrent"
       `,
       "TotalBorrowsCurrent",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getTotalBorrowsCurrent(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getTotalBorrowsCurrent(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### Reserves
 
-        * "GToken <GToken> Reserves" - Returns the jToken's total reserves
+        * "GToken <GToken> Reserves" - Returns the gToken's total reserves
           * E.g. "GToken cZRX Reserves"
       `,
       "Reserves",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getTotalReserves(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getTotalReserves(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### ReserveFactor
 
@@ -319,76 +319,76 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX ReserveFactor" - Returns cZRX's reserve factor
       `,
       "ReserveFactor",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getReserveFactor(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getReserveFactor(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### Gtroller
 
-        * "GToken <GToken> Gtroller" - Returns the jToken's gTroller
+        * "GToken <GToken> Gtroller" - Returns the gToken's gTroller
           * E.g. "GToken cZRX Gtroller"
       `,
       "Gtroller",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getGtroller(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getGtroller(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### ExchangeRateStored
 
-        * "GToken <GToken> ExchangeRateStored" - Returns the jToken's exchange rate (based on balances stored)
+        * "GToken <GToken> ExchangeRateStored" - Returns the gToken's exchange rate (based on balances stored)
           * E.g. "GToken cZRX ExchangeRateStored"
       `,
       "ExchangeRateStored",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getExchangeRateStored(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getExchangeRateStored(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### ExchangeRate
 
-        * "GToken <GToken> ExchangeRate" - Returns the jToken's current exchange rate
+        * "GToken <GToken> ExchangeRate" - Returns the gToken's current exchange rate
           * E.g. "GToken cZRX ExchangeRate"
       `,
       "ExchangeRate",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getExchangeRate(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getExchangeRate(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### Cash
 
-        * "GToken <GToken> Cash" - Returns the jToken's current cash
+        * "GToken <GToken> Cash" - Returns the gToken's current cash
           * E.g. "GToken cZRX Cash"
       `,
       "Cash",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getCash(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getCash(world, gToken),
       { namePos: 1 }
     ),
 
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### InterestRate
 
-        * "GToken <GToken> InterestRate" - Returns the jToken's current interest rate
+        * "GToken <GToken> InterestRate" - Returns the gToken's current interest rate
           * E.g. "GToken cZRX InterestRate"
       `,
       "InterestRate",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getInterestRate(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getInterestRate(world, gToken),
       { namePos: 1 }
     ),
-    new Fetcher<{ jToken: GToken; signature: StringV }, NumberV>(
+    new Fetcher<{ gToken: GToken; signature: StringV }, NumberV>(
       `
         #### CallNum
 
@@ -396,10 +396,10 @@ export function jTokenFetchers() {
           * E.g. "GToken cZRX Call \"borrowIndex()\""
       `,
       "CallNum",
-      [new Arg("jToken", getGTokenV), new Arg("signature", getStringV)],
-      async (world, { jToken, signature }) => {
+      [new Arg("gToken", getGTokenV), new Arg("signature", getStringV)],
+      async (world, { gToken, signature }) => {
         const res = await world.web3.eth.call({
-          to: jToken._address,
+          to: gToken._address,
           data: world.web3.eth.abi.encodeFunctionSignature(signature.val),
         });
         const resNum: any = world.web3.eth.abi.decodeParameter("uint256", res);
@@ -407,19 +407,19 @@ export function jTokenFetchers() {
       },
       { namePos: 1 }
     ),
-    new Fetcher<{ jToken: GToken }, AddressV>(
+    new Fetcher<{ gToken: GToken }, AddressV>(
       `
         #### Implementation
 
-        * "GToken <GToken> Implementation" - Returns the jToken's current implementation
+        * "GToken <GToken> Implementation" - Returns the gToken's current implementation
           * E.g. "GToken cDAI Implementation"
       `,
       "Implementation",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getImplementation(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getImplementation(world, gToken),
       { namePos: 1 }
     ),
-    new Fetcher<{ jToken: GToken; address: AddressV }, NumberV>(
+    new Fetcher<{ gToken: GToken; address: AddressV }, NumberV>(
       `
         #### CollateralBalance
 
@@ -427,12 +427,12 @@ export function jTokenFetchers() {
           * E.g. "GToken cDAI CollateralBalance Geoff"
       `,
       "CollateralBalance",
-      [new Arg("jToken", getGTokenV), new Arg("address", getAddressV)],
-      (world, { jToken, address }) =>
-        getAccountCollateralToken(world, jToken, address.val),
+      [new Arg("gToken", getGTokenV), new Arg("address", getAddressV)],
+      (world, { gToken, address }) =>
+        getAccountCollateralToken(world, gToken, address.val),
       { namePos: 1 }
     ),
-    new Fetcher<{ jToken: GToken }, NumberV>(
+    new Fetcher<{ gToken: GToken }, NumberV>(
       `
         #### TotalCollateralTokens
 
@@ -440,8 +440,8 @@ export function jTokenFetchers() {
           * E.g. "GToken cDAI TotalCollateralTokens"
       `,
       "TotalCollateralTokens",
-      [new Arg("jToken", getGTokenV)],
-      (world, { jToken }) => getTotalCollateralTokens(world, jToken),
+      [new Arg("gToken", getGTokenV)],
+      (world, { gToken }) => getTotalCollateralTokens(world, gToken),
       { namePos: 1 }
     ),
   ];
@@ -452,8 +452,8 @@ export async function getGTokenValue(
   event: Event
 ): Promise<Value> {
   return await getFetcherValue<any, any>(
-    "jToken",
-    jTokenFetchers(),
+    "gToken",
+    gTokenFetchers(),
     world,
     event
   );

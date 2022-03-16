@@ -49,7 +49,7 @@ contract GTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @notice Contract which oversees inter-jToken operations
+     * @notice Contract which oversees inter-gToken operations
      */
     GtrollerInterface public gTroller;
 
@@ -209,7 +209,7 @@ contract GTokenInterface is GTokenStorage {
         address liquidator,
         address borrower,
         uint256 repayAmount,
-        address jTokenCollateral,
+        address gTokenCollateral,
         uint256 seizeTokens
     );
 
@@ -350,7 +350,7 @@ contract GXrc20Interface is GXrc20Storage {
     function liquidateBorrow(
         address borrower,
         uint256 repayAmount,
-        GTokenInterface jTokenCollateral
+        GTokenInterface gTokenCollateral
     ) external returns (uint256);
 
     function _addReserves(uint256 addAmount) external returns (uint256);
@@ -383,7 +383,7 @@ contract GWrappedNativeInterface is GXrc20Interface {
 
     function repayBorrowBehalfNative(address borrower) external payable returns (uint256);
 
-    function liquidateBorrowNative(address borrower, GTokenInterface jTokenCollateral)
+    function liquidateBorrowNative(address borrower, GTokenInterface gTokenCollateral)
         external
         payable
         returns (uint256);

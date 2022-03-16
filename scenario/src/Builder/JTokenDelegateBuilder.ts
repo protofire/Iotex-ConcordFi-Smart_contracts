@@ -36,7 +36,7 @@ export async function buildGTokenDelegate(
   params: Event
 ): Promise<{
   world: World;
-  jTokenDelegate: GXrc20Delegate;
+  gTokenDelegate: GXrc20Delegate;
   delegateData: GTokenDelegateData;
 }> {
   const fetchers = [
@@ -170,18 +170,18 @@ export async function buildGTokenDelegate(
     throw invokation.error;
   }
 
-  const jTokenDelegate = invokation.value!;
+  const gTokenDelegate = invokation.value!;
 
   world = await storeAndSaveContract(
     world,
-    jTokenDelegate,
+    gTokenDelegate,
     delegateData.name,
     invokation,
     [
       {
         index: ["GTokenDelegate", delegateData.name],
         data: {
-          address: jTokenDelegate._address,
+          address: gTokenDelegate._address,
           contract: delegateData.contract,
           description: delegateData.description,
         },
@@ -189,5 +189,5 @@ export async function buildGTokenDelegate(
     ]
   );
 
-  return { world, jTokenDelegate, delegateData };
+  return { world, gTokenDelegate, delegateData };
 }

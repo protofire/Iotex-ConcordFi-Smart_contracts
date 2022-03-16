@@ -6,15 +6,15 @@ import "../../contracts/RewardDistributor.sol";
 contract MockRewardDistributor is RewardDistributor {
     uint256 blockTimestamp;
 
-    function updateSupplyIndex(address jToken, address[] calldata accounts) external {
+    function updateSupplyIndex(address gToken, address[] calldata accounts) external {
         // Do nothing.
-        jToken;
+        gToken;
         accounts;
     }
 
-    function updateBorrowIndex(address jToken, address[] calldata accounts) external {
+    function updateBorrowIndex(address gToken, address[] calldata accounts) external {
         // Do nothing.
-        jToken;
+        gToken;
         accounts;
     }
 

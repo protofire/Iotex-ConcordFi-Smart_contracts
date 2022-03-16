@@ -19,22 +19,22 @@ import "./Unitroller.sol";
  */
 contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
-    event MarketListed(GToken jToken);
+    event MarketListed(GToken gToken);
 
     /// @notice Emitted when an admin delists a market
-    event MarketDelisted(GToken jToken);
+    event MarketDelisted(GToken gToken);
 
     /// @notice Emitted when an account enters a market
-    event MarketEntered(GToken jToken, address account);
+    event MarketEntered(GToken gToken, address account);
 
     /// @notice Emitted when an account exits a market
-    event MarketExited(GToken jToken, address account);
+    event MarketExited(GToken gToken, address account);
 
     /// @notice Emitted when close factor is changed by admin
     event NewCloseFactor(uint256 oldCloseFactorMantissa, uint256 newCloseFactorMantissa);
 
     /// @notice Emitted when a collateral factor is changed by admin
-    event NewCollateralFactor(GToken jToken, uint256 oldCollateralFactorMantissa, uint256 newCollateralFactorMantissa);
+    event NewCollateralFactor(GToken gToken, uint256 oldCollateralFactorMantissa, uint256 newCollateralFactorMantissa);
 
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint256 oldLiquidationIncentiveMantissa, uint256 newLiquidationIncentiveMantissa);
@@ -49,16 +49,16 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     event ActionPaused(string action, bool pauseState);
 
     /// @notice Emitted when an action is paused on a market
-    event ActionPaused(GToken jToken, string action, bool pauseState);
+    event ActionPaused(GToken gToken, string action, bool pauseState);
 
-    /// @notice Emitted when borrow cap for a jToken is changed
-    event NewBorrowCap(GToken indexed jToken, uint256 newBorrowCap);
+    /// @notice Emitted when borrow cap for a gToken is changed
+    event NewBorrowCap(GToken indexed gToken, uint256 newBorrowCap);
 
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
-    /// @notice Emitted when supply cap for a jToken is changed
-    event NewSupplyCap(GToken indexed jToken, uint256 newSupplyCap);
+    /// @notice Emitted when supply cap for a gToken is changed
+    event NewSupplyCap(GToken indexed gToken, uint256 newSupplyCap);
 
     /// @notice Emitted when supply cap guardian is changed
     event NewSupplyCapGuardian(address oldSupplyCapGuardian, address newSupplyCapGuardian);
@@ -66,8 +66,8 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     /// @notice Emitted when protocol's credit limit has changed
     event CreditLimitChanged(address protocol, uint256 creditLimit);
 
-    /// @notice Emitted when jToken version is changed
-    event NewGTokenVersion(GToken jToken, Version oldVersion, Version newVersion);
+    /// @notice Emitted when gToken version is changed
+    event NewGTokenVersion(GToken gToken, Version oldVersion, Version newVersion);
 
     // No collateralFactorMantissa may exceed this value
     uint256 internal constant collateralFactorMaxMantissa = 0.9e18; // 0.9
@@ -105,26 +105,26 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     /**
      * @notice Returns whether the given account is entered in the given asset
      * @param account The address of the account to check
-     * @param jToken The jToken to check
+     * @param gToken The gToken to check
      * @return True if the account is in the asset, otherwise false.
      */
-    function checkMembership(address account, GToken jToken) external view returns (bool) {
-        return markets[address(jToken)].accountMembership[account];
+    function checkMembership(address account, GToken gToken) external view returns (bool) {
+        return markets[address(gToken)].accountMembership[account];
     }
 
     /**
      * @notice Add assets to be included in account liquidity calculation
-     * @param jTokens The list of addresses of the jToken markets to be enabled
+     * @param gTokens The list of addresses of the gToken markets to be enabled
      * @return Success indicator for whether each corresponding market was entered
      */
-    function enterMarkets(address[] memory jTokens) public returns (uint256[] memory) {
-        uint256 len = jTokens.length;
+    function enterMarkets(address[] memory gTokens) public returns (uint256[] memory) {
+        uint256 len = gTokens.length;
 
         uint256[] memory results = new uint256[](len);
         for (uint256 i = 0; i < len; i++) {
-            GToken jToken = GToken(jTokens[i]);
+            GToken gToken = GToken(gTokens[i]);
 
-            results[i] = uint256(addToMarketInternal(jToken, msg.sender));
+            results[i] = uint256(addToMarketInternal(gToken, msg.sender));
         }
 
         return results;
@@ -132,12 +132,12 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Add the market to the borrower's "assets in" for liquidity calculations
-     * @param jToken The market to enter
+     * @param gToken The market to enter
      * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
-    function addToMarketInternal(GToken jToken, address borrower) internal returns (Error) {
-        Market storage marketToJoin = markets[address(jToken)];
+    function addToMarketInternal(GToken gToken, address borrower) internal returns (Error) {
+        Market storage marketToJoin = markets[address(gToken)];
 
         if (!marketToJoin.isListed) {
             // market is not listed, cannot join
@@ -146,7 +146,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
         if (marketToJoin.version == Version.COLLATERALCAP) {
             // register collateral for the borrower if the token is CollateralCap version.
-            GCollateralCapXrc20Interface(address(jToken)).registerCollateral(borrower);
+            GCollateralCapXrc20Interface(address(gToken)).registerCollateral(borrower);
         }
 
         if (marketToJoin.accountMembership[borrower] == true) {
@@ -160,9 +160,9 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         //  that is, only when we need to perform liquidity checks
         //  and not whenever we want to check if an account is in a particular market
         marketToJoin.accountMembership[borrower] = true;
-        accountAssets[borrower].push(jToken);
+        accountAssets[borrower].push(gToken);
 
-        emit MarketEntered(jToken, borrower);
+        emit MarketEntered(gToken, borrower);
 
         return Error.NO_ERROR;
     }
@@ -171,13 +171,13 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing necessary collateral for an outstanding borrow.
-     * @param jTokenAddress The address of the asset to be removed
+     * @param gTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
-    function exitMarket(address jTokenAddress) external returns (uint256) {
-        GToken jToken = GToken(jTokenAddress);
-        /* Get sender tokensHeld and amountOwed underlying from the jToken */
-        (uint256 oErr, uint256 tokensHeld, uint256 amountOwed, ) = jToken.getAccountSnapshot(msg.sender);
+    function exitMarket(address gTokenAddress) external returns (uint256) {
+        GToken gToken = GToken(gTokenAddress);
+        /* Get sender tokensHeld and amountOwed underlying from the gToken */
+        (uint256 oErr, uint256 tokensHeld, uint256 amountOwed, ) = gToken.getAccountSnapshot(msg.sender);
         require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
 
         /* Fail if the sender has a borrow balance */
@@ -186,15 +186,15 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
 
         /* Fail if the sender is not permitted to redeem all of their tokens */
-        uint256 allowed = redeemAllowedInternal(jTokenAddress, msg.sender, tokensHeld);
+        uint256 allowed = redeemAllowedInternal(gTokenAddress, msg.sender, tokensHeld);
         if (allowed != 0) {
             return failOpaque(Error.REJECTION, FailureInfo.EXIT_MARKET_REJECTION, allowed);
         }
 
-        Market storage marketToExit = markets[jTokenAddress];
+        Market storage marketToExit = markets[gTokenAddress];
 
         if (marketToExit.version == Version.COLLATERALCAP) {
-            GCollateralCapXrc20Interface(jTokenAddress).unregisterCollateral(msg.sender);
+            GCollateralCapXrc20Interface(gTokenAddress).unregisterCollateral(msg.sender);
         }
 
         /* Return true if the sender is not already ‘in’ the market */
@@ -202,16 +202,16 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
             return uint256(Error.NO_ERROR);
         }
 
-        /* Set jToken account membership to false */
+        /* Set gToken account membership to false */
         delete marketToExit.accountMembership[msg.sender];
 
-        /* Delete jToken from the account’s list of assets */
+        /* Delete gToken from the account’s list of assets */
         // load into memory for faster iteration
         GToken[] memory userAssetList = accountAssets[msg.sender];
         uint256 len = userAssetList.length;
         uint256 assetIndex = len;
         for (uint256 i = 0; i < len; i++) {
-            if (userAssetList[i] == jToken) {
+            if (userAssetList[i] == gToken) {
                 assetIndex = i;
                 break;
             }
@@ -227,48 +227,48 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
         storedList.length--;
 
-        emit MarketExited(jToken, msg.sender);
+        emit MarketExited(gToken, msg.sender);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Return whether a specific market is listed or not
-     * @param jTokenAddress The address of the asset to be checked
+     * @param gTokenAddress The address of the asset to be checked
      * @return Whether or not the market is listed
      */
-    function isMarketListed(address jTokenAddress) public view returns (bool) {
-        return markets[jTokenAddress].isListed;
+    function isMarketListed(address gTokenAddress) public view returns (bool) {
+        return markets[gTokenAddress].isListed;
     }
 
     /*** Policy Hooks ***/
 
     /**
      * @notice Checks if the account should be allowed to mint tokens in the given market
-     * @param jToken The market to verify the mint against
+     * @param gToken The market to verify the mint against
      * @param minter The account which would get the minted tokens
      * @param mintAmount The amount of underlying being supplied to the market in exchange for tokens
      * @return 0 if the mint is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function mintAllowed(
-        address jToken,
+        address gToken,
         address minter,
         uint256 mintAmount
     ) external returns (uint256) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!mintGuardianPaused[jToken], "mint is paused");
+        require(!mintGuardianPaused[gToken], "mint is paused");
         require(!isCreditAccount(minter), "credit account cannot mint");
 
-        if (!isMarketListed(jToken)) {
+        if (!isMarketListed(gToken)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
-        uint256 supplyCap = supplyCaps[jToken];
+        uint256 supplyCap = supplyCaps[gToken];
         // Supply cap of 0 corresponds to unlimited supplying
         if (supplyCap != 0) {
-            uint256 totalCash = GToken(jToken).getCash();
-            uint256 totalBorrows = GToken(jToken).totalBorrows();
-            uint256 totalReserves = GToken(jToken).totalReserves();
+            uint256 totalCash = GToken(gToken).getCash();
+            uint256 totalBorrows = GToken(gToken).totalBorrows();
+            uint256 totalReserves = GToken(gToken).totalReserves();
             // totalSupplies = totalCash + totalBorrows - totalReserves
             (MathError mathErr, uint256 totalSupplies) = addThenSubUInt(totalCash, totalBorrows, totalReserves);
             require(mathErr == MathError.NO_ERROR, "totalSupplies failed");
@@ -278,26 +278,26 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
 
         // Keep the flywheel moving
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jToken, minter);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gToken, minter);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates mint and reverts on rejection. May emit logs.
-     * @param jToken Asset being minted
+     * @param gToken Asset being minted
      * @param minter The address minting the tokens
      * @param actualMintAmount The amount of the underlying asset being minted
      * @param mintTokens The number of tokens being minted
      */
     function mintVerify(
-        address jToken,
+        address gToken,
         address minter,
         uint256 actualMintAmount,
         uint256 mintTokens
     ) external {
         // Shh - currently unused
-        jToken;
+        gToken;
         minter;
         actualMintAmount;
         mintTokens;
@@ -310,44 +310,44 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the account should be allowed to redeem tokens in the given market
-     * @param jToken The market to verify the redeem against
+     * @param gToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
-     * @param redeemTokens The number of jTokens to exchange for the underlying asset in the market
+     * @param redeemTokens The number of gTokens to exchange for the underlying asset in the market
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function redeemAllowed(
-        address jToken,
+        address gToken,
         address redeemer,
         uint256 redeemTokens
     ) external returns (uint256) {
-        uint256 allowed = redeemAllowedInternal(jToken, redeemer, redeemTokens);
+        uint256 allowed = redeemAllowedInternal(gToken, redeemer, redeemTokens);
         if (allowed != uint256(Error.NO_ERROR)) {
             return allowed;
         }
 
         // Keep the flywheel going
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jToken, redeemer);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gToken, redeemer);
         return uint256(Error.NO_ERROR);
     }
 
     function redeemAllowedInternal(
-        address jToken,
+        address gToken,
         address redeemer,
         uint256 redeemTokens
     ) internal view returns (uint256) {
-        if (!isMarketListed(jToken)) {
+        if (!isMarketListed(gToken)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */
-        if (!markets[jToken].accountMembership[redeemer]) {
+        if (!markets[gToken].accountMembership[redeemer]) {
             return uint256(Error.NO_ERROR);
         }
 
         /* Otherwise, perform a hypothetical liquidity check to guard against shortfall */
         (Error err, , uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             redeemer,
-            GToken(jToken),
+            GToken(gToken),
             redeemTokens,
             0
         );
@@ -363,19 +363,19 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Validates redeem and reverts on rejection. May emit logs.
-     * @param jToken Asset being redeemed
+     * @param gToken Asset being redeemed
      * @param redeemer The address redeeming the tokens
      * @param redeemAmount The amount of the underlying asset being redeemed
      * @param redeemTokens The number of tokens being redeemed
      */
     function redeemVerify(
-        address jToken,
+        address gToken,
         address redeemer,
         uint256 redeemAmount,
         uint256 redeemTokens
     ) external {
         // Shh - currently unused
-        jToken;
+        gToken;
         redeemer;
 
         // Require tokens is zero or amount is also zero
@@ -386,52 +386,52 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
-     * @param jToken The market to verify the borrow against
+     * @param gToken The market to verify the borrow against
      * @param borrower The account which would borrow the asset
      * @param borrowAmount The amount of underlying the account would borrow
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function borrowAllowed(
-        address jToken,
+        address gToken,
         address borrower,
         uint256 borrowAmount
     ) external returns (uint256) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!borrowGuardianPaused[jToken], "borrow is paused");
+        require(!borrowGuardianPaused[gToken], "borrow is paused");
 
-        if (!isMarketListed(jToken)) {
+        if (!isMarketListed(gToken)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
-        if (!markets[jToken].accountMembership[borrower]) {
-            // only jTokens may call borrowAllowed if borrower not in market
-            require(msg.sender == jToken, "sender must be jToken");
+        if (!markets[gToken].accountMembership[borrower]) {
+            // only gTokens may call borrowAllowed if borrower not in market
+            require(msg.sender == gToken, "sender must be gToken");
 
             // attempt to add borrower to the market
-            Error err = addToMarketInternal(GToken(jToken), borrower);
+            Error err = addToMarketInternal(GToken(gToken), borrower);
             if (err != Error.NO_ERROR) {
                 return uint256(err);
             }
 
             // it should be impossible to break the important invariant
-            assert(markets[jToken].accountMembership[borrower]);
+            assert(markets[gToken].accountMembership[borrower]);
         }
 
-        if (oracle.getUnderlyingPrice(GToken(jToken)) == 0) {
+        if (oracle.getUnderlyingPrice(GToken(gToken)) == 0) {
             return uint256(Error.PRICE_ERROR);
         }
 
-        uint256 borrowCap = borrowCaps[jToken];
+        uint256 borrowCap = borrowCaps[gToken];
         // Borrow cap of 0 corresponds to unlimited borrowing
         if (borrowCap != 0) {
-            uint256 totalBorrows = GToken(jToken).totalBorrows();
+            uint256 totalBorrows = GToken(gToken).totalBorrows();
             uint256 nextTotalBorrows = add_(totalBorrows, borrowAmount);
             require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
         (Error err, , uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             borrower,
-            GToken(jToken),
+            GToken(gToken),
             0,
             borrowAmount
         );
@@ -443,25 +443,25 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
 
         // Keep the flywheel going
-        Exp memory borrowIndex = Exp({mantissa: GToken(jToken).borrowIndex()});
-        RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(jToken, borrower, borrowIndex);
+        Exp memory borrowIndex = Exp({mantissa: GToken(gToken).borrowIndex()});
+        RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(gToken, borrower, borrowIndex);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates borrow and reverts on rejection. May emit logs.
-     * @param jToken Asset whose underlying is being borrowed
+     * @param gToken Asset whose underlying is being borrowed
      * @param borrower The address borrowing the underlying
      * @param borrowAmount The amount of the underlying asset requested to borrow
      */
     function borrowVerify(
-        address jToken,
+        address gToken,
         address borrower,
         uint256 borrowAmount
     ) external {
         // Shh - currently unused
-        jToken;
+        gToken;
         borrower;
         borrowAmount;
 
@@ -473,14 +473,14 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the account should be allowed to repay a borrow in the given market
-     * @param jToken The market to verify the repay against
+     * @param gToken The market to verify the repay against
      * @param payer The account which would repay the asset
      * @param borrower The account which borrowed the asset
      * @param repayAmount The amount of the underlying asset the account would repay
      * @return 0 if the repay is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function repayBorrowAllowed(
-        address jToken,
+        address gToken,
         address payer,
         address borrower,
         uint256 repayAmount
@@ -490,32 +490,32 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         borrower;
         repayAmount;
 
-        if (!isMarketListed(jToken)) {
+        if (!isMarketListed(gToken)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
         // Keep the flywheel going
-        Exp memory borrowIndex = Exp({mantissa: GToken(jToken).borrowIndex()});
-        RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(jToken, borrower, borrowIndex);
+        Exp memory borrowIndex = Exp({mantissa: GToken(gToken).borrowIndex()});
+        RewardDistributor(rewardDistributor).updateAndDistributeBorrowerRewardsForToken(gToken, borrower, borrowIndex);
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates repayBorrow and reverts on rejection. May emit logs.
-     * @param jToken Asset being repaid
+     * @param gToken Asset being repaid
      * @param payer The address repaying the borrow
      * @param borrower The address of the borrower
      * @param actualRepayAmount The amount of underlying being repaid
      */
     function repayBorrowVerify(
-        address jToken,
+        address gToken,
         address payer,
         address borrower,
         uint256 actualRepayAmount,
         uint256 borrowerIndex
     ) external {
         // Shh - currently unused
-        jToken;
+        gToken;
         payer;
         borrower;
         actualRepayAmount;
@@ -529,15 +529,15 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the liquidation should be allowed to occur
-     * @param jTokenBorrowed Asset which was borrowed by the borrower
-     * @param jTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
      */
     function liquidateBorrowAllowed(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint256 repayAmount
@@ -547,7 +547,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         // Shh - currently unused
         liquidator;
 
-        if (!isMarketListed(jTokenBorrowed) || !isMarketListed(jTokenCollateral)) {
+        if (!isMarketListed(gTokenBorrowed) || !isMarketListed(gTokenCollateral)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
@@ -561,7 +561,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
-        uint256 borrowBalance = GToken(jTokenBorrowed).borrowBalanceStored(borrower);
+        uint256 borrowBalance = GToken(gTokenBorrowed).borrowBalanceStored(borrower);
         uint256 maxClose = mul_ScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
         if (repayAmount > maxClose) {
             return uint256(Error.TOO_MUCH_REPAY);
@@ -572,23 +572,23 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Validates liquidateBorrow and reverts on rejection. May emit logs.
-     * @param jTokenBorrowed Asset which was borrowed by the borrower
-     * @param jTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param actualRepayAmount The amount of underlying being repaid
      */
     function liquidateBorrowVerify(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint256 actualRepayAmount,
         uint256 seizeTokens
     ) external {
         // Shh - currently unused
-        jTokenBorrowed;
-        jTokenCollateral;
+        gTokenBorrowed;
+        gTokenCollateral;
         liquidator;
         borrower;
         actualRepayAmount;
@@ -602,15 +602,15 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the seizing of assets should be allowed to occur
-     * @param jTokenCollateral Asset which was used as collateral and will be seized
-     * @param jTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeAllowed(
-        address jTokenCollateral,
-        address jTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
@@ -623,39 +623,39 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         liquidator;
         seizeTokens;
 
-        if (!isMarketListed(jTokenCollateral) || !isMarketListed(jTokenBorrowed)) {
+        if (!isMarketListed(gTokenCollateral) || !isMarketListed(gTokenBorrowed)) {
             return uint256(Error.MARKET_NOT_LISTED);
         }
 
-        if (GToken(jTokenCollateral).gTroller() != GToken(jTokenBorrowed).gTroller()) {
+        if (GToken(gTokenCollateral).gTroller() != GToken(gTokenBorrowed).gTroller()) {
             return uint256(Error.JOETROLLER_MISMATCH);
         }
 
         // Keep the flywheel moving
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jTokenCollateral, borrower);
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jTokenCollateral, liquidator);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gTokenCollateral, borrower);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gTokenCollateral, liquidator);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates seize and reverts on rejection. May emit logs.
-     * @param jTokenCollateral Asset which was used as collateral and will be seized
-     * @param jTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeVerify(
-        address jTokenCollateral,
-        address jTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint256 seizeTokens
     ) external {
         // Shh - currently unused
-        jTokenCollateral;
-        jTokenBorrowed;
+        gTokenCollateral;
+        gTokenBorrowed;
         liquidator;
         borrower;
         seizeTokens;
@@ -668,14 +668,14 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the account should be allowed to transfer tokens in the given market
-     * @param jToken The market to verify the transfer against
+     * @param gToken The market to verify the transfer against
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of jTokens to transfer
+     * @param transferTokens The number of gTokens to transfer
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function transferAllowed(
-        address jToken,
+        address gToken,
         address src,
         address dst,
         uint256 transferTokens
@@ -689,32 +689,32 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
-        uint256 allowed = redeemAllowedInternal(jToken, src, transferTokens);
+        uint256 allowed = redeemAllowedInternal(gToken, src, transferTokens);
         if (allowed != uint256(Error.NO_ERROR)) {
             return allowed;
         }
 
         // Keep the flywheel moving
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jToken, src);
-        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(jToken, dst);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gToken, src);
+        RewardDistributor(rewardDistributor).updateAndDistributeSupplierRewardsForToken(gToken, dst);
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates transfer and reverts on rejection. May emit logs.
-     * @param jToken Asset being transferred
+     * @param gToken Asset being transferred
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of jTokens to transfer
+     * @param transferTokens The number of gTokens to transfer
      */
     function transferVerify(
-        address jToken,
+        address gToken,
         address src,
         address dst,
         uint256 transferTokens
     ) external {
         // Shh - currently unused
-        jToken;
+        gToken;
         src;
         dst;
         transferTokens;
@@ -727,37 +727,37 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Checks if the account should be allowed to transfer tokens in the given market
-     * @param jToken The market to verify the transfer against
+     * @param gToken The market to verify the transfer against
      * @param receiver The account which receives the tokens
      * @param amount The amount of the tokens
      * @param params The other parameters
      */
 
     function flashloanAllowed(
-        address jToken,
+        address gToken,
         address receiver,
         uint256 amount,
         bytes calldata params
     ) external view returns (bool) {
-        return !flashloanGuardianPaused[jToken];
+        return !flashloanGuardianPaused[gToken];
     }
 
     /**
      * @notice Update GToken's version.
-     * @param jToken Version of the asset being updated
+     * @param gToken Version of the asset being updated
      * @param newVersion The new version
      */
-    function updateGTokenVersion(address jToken, Version newVersion) external {
-        require(msg.sender == jToken, "only jToken could update its version");
+    function updateGTokenVersion(address gToken, Version newVersion) external {
+        require(msg.sender == gToken, "only gToken could update its version");
 
         // This function will be called when a new GToken implementation becomes active.
         // If a new GToken is newly created, this market is not listed yet. The version of
         // this market will be taken care of when calling `_supportMarket`.
-        if (isMarketListed(jToken)) {
-            Version oldVersion = markets[jToken].version;
-            markets[jToken].version = newVersion;
+        if (isMarketListed(gToken)) {
+            Version oldVersion = markets[gToken].version;
+            markets[gToken].version = newVersion;
 
-            emit NewGTokenVersion(GToken(jToken), oldVersion, newVersion);
+            emit NewGTokenVersion(GToken(gToken), oldVersion, newVersion);
         }
     }
 
@@ -774,13 +774,13 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
-     *  Note that `jTokenBalance` is the number of jTokens the account owns in the market,
+     *  Note that `gTokenBalance` is the number of gTokens the account owns in the market,
      *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
      */
     struct AccountLiquidityLocalVars {
         uint256 sumCollateral;
         uint256 sumBorrowPlusEffects;
-        uint256 jTokenBalance;
+        uint256 gTokenBalance;
         uint256 borrowBalance;
         uint256 exchangeRateMantissa;
         uint256 oraclePriceMantissa;
@@ -835,7 +835,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param jTokenModify The market to hypothetically redeem/borrow in
+     * @param gTokenModify The market to hypothetically redeem/borrow in
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
@@ -845,7 +845,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
      */
     function getHypotheticalAccountLiquidity(
         address account,
-        address jTokenModify,
+        address gTokenModify,
         uint256 redeemTokens,
         uint256 borrowAmount
     )
@@ -859,7 +859,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     {
         (Error err, uint256 liquidity, uint256 shortfall) = getHypotheticalAccountLiquidityInternal(
             account,
-            GToken(jTokenModify),
+            GToken(gTokenModify),
             redeemTokens,
             borrowAmount
         );
@@ -868,11 +868,11 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param jTokenModify The market to hypothetically redeem/borrow in
+     * @param gTokenModify The market to hypothetically redeem/borrow in
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
-     * @dev Note that we calculate the exchangeRateStored for each collateral jToken using stored data,
+     * @dev Note that we calculate the exchangeRateStored for each collateral gToken using stored data,
      *  without calculating accumulated interest.
      * @return (possible error code,
                 hypothetical account liquidity in excess of collateral requirements,
@@ -880,7 +880,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
      */
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        GToken jTokenModify,
+        GToken gTokenModify,
         uint256 redeemTokens,
         uint256 borrowAmount
     )
@@ -905,8 +905,8 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         for (uint256 i = 0; i < assets.length; i++) {
             GToken asset = assets[i];
 
-            // Read the balances and exchange rate from the jToken
-            (oErr, vars.jTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(
+            // Read the balances and exchange rate from the gToken
+            (oErr, vars.gTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(
                 account
             );
             if (oErr != 0) {
@@ -916,7 +916,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
             // Unlike compound protocol, getUnderlyingPrice is relatively expensive because we use ChainLink as our primary price feed.
             // If user has no supply / borrow balance on this asset, and user is not redeeming / borrowing this asset, skip it.
-            if (vars.jTokenBalance == 0 && vars.borrowBalance == 0 && asset != jTokenModify) {
+            if (vars.gTokenBalance == 0 && vars.borrowBalance == 0 && asset != gTokenModify) {
                 continue;
             }
 
@@ -933,8 +933,8 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
             // Pre-compute a conversion factor from tokens -> ether (normalized price value)
             vars.tokensToDenom = mul_(mul_(vars.collateralFactor, vars.exchangeRate), vars.oraclePrice);
 
-            // sumCollateral += tokensToDenom * jTokenBalance
-            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.jTokenBalance, vars.sumCollateral);
+            // sumCollateral += tokensToDenom * gTokenBalance
+            vars.sumCollateral = mul_ScalarTruncateAddUInt(vars.tokensToDenom, vars.gTokenBalance, vars.sumCollateral);
 
             // sumBorrowPlusEffects += oraclePrice * borrowBalance
             vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
@@ -943,8 +943,8 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
                 vars.sumBorrowPlusEffects
             );
 
-            // Calculate effects of interacting with jTokenModify
-            if (asset == jTokenModify) {
+            // Calculate effects of interacting with gTokenModify
+            if (asset == gTokenModify) {
                 // redeem effect
                 // sumBorrowPlusEffects += tokensToDenom * redeemTokens
                 vars.sumBorrowPlusEffects = mul_ScalarTruncateAddUInt(
@@ -978,20 +978,20 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
 
     /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
-     * @dev Used in liquidation (called in jToken.liquidateBorrowFresh)
-     * @param jTokenBorrowed The address of the borrowed jToken
-     * @param jTokenCollateral The address of the collateral jToken
-     * @param actualRepayAmount The amount of jTokenBorrowed underlying to convert into jTokenCollateral tokens
-     * @return (errorCode, number of jTokenCollateral tokens to be seized in a liquidation)
+     * @dev Used in liquidation (called in gToken.liquidateBorrowFresh)
+     * @param gTokenBorrowed The address of the borrowed gToken
+     * @param gTokenCollateral The address of the collateral gToken
+     * @param actualRepayAmount The amount of gTokenBorrowed underlying to convert into gTokenCollateral tokens
+     * @return (errorCode, number of gTokenCollateral tokens to be seized in a liquidation)
      */
     function liquidateCalculateSeizeTokens(
-        address jTokenBorrowed,
-        address jTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         uint256 actualRepayAmount
     ) external view returns (uint256, uint256) {
         /* Read oracle prices for borrowed and collateral markets */
-        uint256 priceBorrowedMantissa = oracle.getUnderlyingPrice(GToken(jTokenBorrowed));
-        uint256 priceCollateralMantissa = oracle.getUnderlyingPrice(GToken(jTokenCollateral));
+        uint256 priceBorrowedMantissa = oracle.getUnderlyingPrice(GToken(gTokenBorrowed));
+        uint256 priceCollateralMantissa = oracle.getUnderlyingPrice(GToken(gTokenCollateral));
         if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
             return (uint256(Error.PRICE_ERROR), 0);
         }
@@ -1002,7 +1002,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
          *  seizeTokens = seizeAmount / exchangeRate
          *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
-        uint256 exchangeRateMantissa = GToken(jTokenCollateral).exchangeRateStored(); // Note: reverts on error
+        uint256 exchangeRateMantissa = GToken(gTokenCollateral).exchangeRateStored(); // Note: reverts on error
         Exp memory numerator = mul_(
             Exp({mantissa: liquidationIncentiveMantissa}),
             Exp({mantissa: priceBorrowedMantissa})
@@ -1076,18 +1076,18 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     /**
      * @notice Sets the collateralFactor for a market
      * @dev Admin function to set per-market collateralFactor
-     * @param jToken The market to set the factor on
+     * @param gToken The market to set the factor on
      * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
      * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
      */
-    function _setCollateralFactor(GToken jToken, uint256 newCollateralFactorMantissa) external returns (uint256) {
+    function _setCollateralFactor(GToken gToken, uint256 newCollateralFactorMantissa) external returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
         }
 
         // Verify market is listed
-        Market storage market = markets[address(jToken)];
+        Market storage market = markets[address(gToken)];
         if (!market.isListed) {
             return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
         }
@@ -1101,7 +1101,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         }
 
         // If collateral factor != 0, fail if price == 0
-        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(jToken) == 0) {
+        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(gToken) == 0) {
             return fail(Error.PRICE_ERROR, FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE);
         }
 
@@ -1110,7 +1110,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
         // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(jToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
+        emit NewCollateralFactor(gToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
 
         return uint256(Error.NO_ERROR);
     }
@@ -1142,40 +1142,40 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     /**
      * @notice Add the market to the markets mapping and set it as listed
      * @dev Admin function to set isListed and add support for the market
-     * @param jToken The address of the market (token) to list
+     * @param gToken The address of the market (token) to list
      * @param version The version of the market (token)
      * @return uint 0=success, otherwise a failure. (See enum Error for details)
      */
-    function _supportMarket(GToken jToken, Version version) external returns (uint256) {
+    function _supportMarket(GToken gToken, Version version) external returns (uint256) {
         require(msg.sender == admin, "only admin may support market");
-        require(!isMarketListed(address(jToken)), "market already listed");
+        require(!isMarketListed(address(gToken)), "market already listed");
 
-        jToken.isGToken(); // Sanity check to make sure its really a GToken
+        gToken.isGToken(); // Sanity check to make sure its really a GToken
 
-        markets[address(jToken)] = Market({isListed: true, collateralFactorMantissa: 0, version: version});
+        markets[address(gToken)] = Market({isListed: true, collateralFactorMantissa: 0, version: version});
 
-        _addMarketInternal(address(jToken));
+        _addMarketInternal(address(gToken));
 
-        emit MarketListed(jToken);
+        emit MarketListed(gToken);
 
         return uint256(Error.NO_ERROR);
     }
 
     /**
      * @notice Remove the market from the markets mapping
-     * @param jToken The address of the market (token) to delist
+     * @param gToken The address of the market (token) to delist
      */
-    function _delistMarket(GToken jToken) external {
+    function _delistMarket(GToken gToken) external {
         require(msg.sender == admin, "only admin may delist market");
-        require(isMarketListed(address(jToken)), "market not listed");
-        require(jToken.totalSupply() == 0, "market not empty");
+        require(isMarketListed(address(gToken)), "market not listed");
+        require(gToken.totalSupply() == 0, "market not empty");
 
-        jToken.isGToken(); // Sanity check to make sure its really a GToken
+        gToken.isGToken(); // Sanity check to make sure its really a GToken
 
-        delete markets[address(jToken)];
+        delete markets[address(gToken)];
 
         for (uint256 i = 0; i < allMarkets.length; i++) {
-            if (allMarkets[i] == jToken) {
+            if (allMarkets[i] == gToken) {
                 allMarkets[i] = allMarkets[allMarkets.length - 1];
                 delete allMarkets[allMarkets.length - 1];
                 allMarkets.length--;
@@ -1183,14 +1183,14 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
             }
         }
 
-        emit MarketDelisted(jToken);
+        emit MarketDelisted(gToken);
     }
 
-    function _addMarketInternal(address jToken) internal {
+    function _addMarketInternal(address gToken) internal {
         for (uint256 i = 0; i < allMarkets.length; i++) {
-            require(allMarkets[i] != GToken(jToken), "market already added");
+            require(allMarkets[i] != GToken(gToken), "market already added");
         }
-        allMarkets.push(GToken(jToken));
+        allMarkets.push(GToken(gToken));
     }
 
     /**
@@ -1211,50 +1211,50 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     }
 
     /**
-     * @notice Set the given supply caps for the given jToken markets. Supplying that brings total supplys to or above supply cap will revert.
+     * @notice Set the given supply caps for the given gToken markets. Supplying that brings total supplys to or above supply cap will revert.
      * @dev Admin or supplyCapGuardian function to set the supply caps. A supply cap of 0 corresponds to unlimited supplying. If the total borrows
      *      already exceeded the cap, it will prevent anyone to borrow.
-     * @param jTokens The addresses of the markets (tokens) to change the supply caps for
+     * @param gTokens The addresses of the markets (tokens) to change the supply caps for
      * @param newSupplyCaps The new supply cap values in underlying to be set. A value of 0 corresponds to unlimited supplying.
      */
-    function _setMarketSupplyCaps(GToken[] calldata jTokens, uint256[] calldata newSupplyCaps) external {
+    function _setMarketSupplyCaps(GToken[] calldata gTokens, uint256[] calldata newSupplyCaps) external {
         require(
             msg.sender == admin || msg.sender == supplyCapGuardian,
             "only admin or supply cap guardian can set supply caps"
         );
 
-        uint256 numMarkets = jTokens.length;
+        uint256 numMarkets = gTokens.length;
         uint256 numSupplyCaps = newSupplyCaps.length;
 
         require(numMarkets != 0 && numMarkets == numSupplyCaps, "invalid input");
 
         for (uint256 i = 0; i < numMarkets; i++) {
-            supplyCaps[address(jTokens[i])] = newSupplyCaps[i];
-            emit NewSupplyCap(jTokens[i], newSupplyCaps[i]);
+            supplyCaps[address(gTokens[i])] = newSupplyCaps[i];
+            emit NewSupplyCap(gTokens[i], newSupplyCaps[i]);
         }
     }
 
     /**
-     * @notice Set the given borrow caps for the given jToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
+     * @notice Set the given borrow caps for the given gToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
      * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing. If the total supplies
      *      already exceeded the cap, it will prevent anyone to mint.
-     * @param jTokens The addresses of the markets (tokens) to change the borrow caps for
+     * @param gTokens The addresses of the markets (tokens) to change the borrow caps for
      * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
      */
-    function _setMarketBorrowCaps(GToken[] calldata jTokens, uint256[] calldata newBorrowCaps) external {
+    function _setMarketBorrowCaps(GToken[] calldata gTokens, uint256[] calldata newBorrowCaps) external {
         require(
             msg.sender == admin || msg.sender == borrowCapGuardian,
             "only admin or borrow cap guardian can set borrow caps"
         );
 
-        uint256 numMarkets = jTokens.length;
+        uint256 numMarkets = gTokens.length;
         uint256 numBorrowCaps = newBorrowCaps.length;
 
         require(numMarkets != 0 && numMarkets == numBorrowCaps, "invalid input");
 
         for (uint256 i = 0; i < numMarkets; i++) {
-            borrowCaps[address(jTokens[i])] = newBorrowCaps[i];
-            emit NewBorrowCap(jTokens[i], newBorrowCaps[i]);
+            borrowCaps[address(gTokens[i])] = newBorrowCaps[i];
+            emit NewBorrowCap(gTokens[i], newBorrowCaps[i]);
         }
     }
 
@@ -1297,33 +1297,33 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         return uint256(Error.NO_ERROR);
     }
 
-    function _setMintPaused(GToken jToken, bool state) public returns (bool) {
-        require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
+    function _setMintPaused(GToken gToken, bool state) public returns (bool) {
+        require(isMarketListed(address(gToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        mintGuardianPaused[address(jToken)] = state;
-        emit ActionPaused(jToken, "Mint", state);
+        mintGuardianPaused[address(gToken)] = state;
+        emit ActionPaused(gToken, "Mint", state);
         return state;
     }
 
-    function _setBorrowPaused(GToken jToken, bool state) public returns (bool) {
-        require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
+    function _setBorrowPaused(GToken gToken, bool state) public returns (bool) {
+        require(isMarketListed(address(gToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        borrowGuardianPaused[address(jToken)] = state;
-        emit ActionPaused(jToken, "Borrow", state);
+        borrowGuardianPaused[address(gToken)] = state;
+        emit ActionPaused(gToken, "Borrow", state);
         return state;
     }
 
-    function _setFlashloanPaused(GToken jToken, bool state) public returns (bool) {
-        require(isMarketListed(address(jToken)), "cannot pause a market that is not listed");
+    function _setFlashloanPaused(GToken gToken, bool state) public returns (bool) {
+        require(isMarketListed(address(gToken)), "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        flashloanGuardianPaused[address(jToken)] = state;
-        emit ActionPaused(jToken, "Flashloan", state);
+        flashloanGuardianPaused[address(gToken)] = state;
+        emit ActionPaused(gToken, "Flashloan", state);
         return state;
     }
 
@@ -1382,31 +1382,31 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
     /**
      * @notice Claim all the JOE/AVAX accrued by holder in the specified markets
      * @param holder The address to claim JOE/AVAX for
-     * @param jTokens The list of markets to claim JOE/AVAX in
+     * @param gTokens The list of markets to claim JOE/AVAX in
      */
     function claimReward(
         uint8 rewardType,
         address payable holder,
-        GToken[] memory jTokens
+        GToken[] memory gTokens
     ) public {
-        RewardDistributor(rewardDistributor).claimReward(rewardType, holder, jTokens);
+        RewardDistributor(rewardDistributor).claimReward(rewardType, holder, gTokens);
     }
 
     /**
      * @notice Claim all JOE/AVAX  accrued by the holders
      * @param rewardType  0 = JOE, 1 = AVAX
      * @param holders The addresses to claim JOE/AVAX for
-     * @param jTokens The list of markets to claim JOE/AVAX in
+     * @param gTokens The list of markets to claim JOE/AVAX in
      * @param borrowers Whether or not to claim JOE/AVAX earned by borrowing
      * @param suppliers Whether or not to claim JOE/AVAX earned by supplying
      */
     function claimReward(
         uint8 rewardType,
         address payable[] memory holders,
-        GToken[] memory jTokens,
+        GToken[] memory gTokens,
         bool borrowers,
         bool suppliers
     ) public payable {
-        RewardDistributor(rewardDistributor).claimReward(rewardType, holders, jTokens, borrowers, suppliers);
+        RewardDistributor(rewardDistributor).claimReward(rewardType, holders, gTokens, borrowers, suppliers);
     }
 }

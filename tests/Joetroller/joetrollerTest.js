@@ -159,9 +159,9 @@ describe("Gtroller", () => {
 
   describe("_setCloseFactor", () => {
     it("fails if not called by admin", async () => {
-      const jToken = await makeGToken();
+      const gToken = await makeGToken();
       expect(
-        await send(jToken.gTroller, "_setCloseFactor", [1], {
+        await send(gToken.gTroller, "_setCloseFactor", [1], {
           from: accounts[0],
         })
       ).toHaveTrollFailure("UNAUTHORIZED", "SET_CLOSE_FACTOR_OWNER_CHECK");
@@ -173,22 +173,22 @@ describe("Gtroller", () => {
     const one = avaxMantissa(1);
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeGToken();
+      const gToken = await makeGToken();
       expect(
         await send(
-          jToken.gTroller,
+          gToken.gTroller,
           "_setCollateralFactor",
-          [jToken._address, half],
+          [gToken._address, half],
           { from: accounts[0] }
         )
       ).toHaveTrollFailure("UNAUTHORIZED", "SET_COLLATERAL_FACTOR_OWNER_CHECK");
     });
 
     it("fails if asset is not listed", async () => {
-      const jToken = await makeGToken();
+      const gToken = await makeGToken();
       expect(
-        await send(jToken.gTroller, "_setCollateralFactor", [
-          jToken._address,
+        await send(gToken.gTroller, "_setCollateralFactor", [
+          gToken._address,
           half,
         ])
       ).toHaveTrollFailure(
@@ -198,10 +198,10 @@ describe("Gtroller", () => {
     });
 
     it("fails if factor is too high", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
+      const gToken = await makeGToken({ supportMarket: true });
       expect(
-        await send(jToken.gTroller, "_setCollateralFactor", [
-          jToken._address,
+        await send(gToken.gTroller, "_setCollateralFactor", [
+          gToken._address,
           one,
         ])
       ).toHaveTrollFailure(
@@ -211,10 +211,10 @@ describe("Gtroller", () => {
     });
 
     it("fails if factor is set without an underlying price", async () => {
-      const jToken = await makeGToken({ supportMarket: true });
+      const gToken = await makeGToken({ supportMarket: true });
       expect(
-        await send(jToken.gTroller, "_setCollateralFactor", [
-          jToken._address,
+        await send(gToken.gTroller, "_setCollateralFactor", [
+          gToken._address,
           half,
         ])
       ).toHaveTrollFailure(
@@ -224,16 +224,16 @@ describe("Gtroller", () => {
     });
 
     it("succeeds and sets market", async () => {
-      const jToken = await makeGToken({
+      const gToken = await makeGToken({
         supportMarket: true,
         underlyingPrice: 1,
       });
-      const result = await send(jToken.gTroller, "_setCollateralFactor", [
-        jToken._address,
+      const result = await send(gToken.gTroller, "_setCollateralFactor", [
+        gToken._address,
         half,
       ]);
       expect(result).toHaveLog("NewCollateralFactor", {
-        jToken: jToken._address,
+        gToken: gToken._address,
         oldCollateralFactorMantissa: "0",
         newCollateralFactorMantissa: half.toString(),
       });
@@ -244,9 +244,9 @@ describe("Gtroller", () => {
     const version = 0;
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeGToken(root);
+      const gToken = await makeGToken(root);
       await expect(
-        send(jToken.gTroller, "_supportMarket", [jToken._address, version], {
+        send(gToken.gTroller, "_supportMarket", [gToken._address, version], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin may support market");
@@ -261,39 +261,39 @@ describe("Gtroller", () => {
     });
 
     it("succeeds and sets market", async () => {
-      const jToken = await makeGToken();
-      const result = await send(jToken.gTroller, "_supportMarket", [
-        jToken._address,
+      const gToken = await makeGToken();
+      const result = await send(gToken.gTroller, "_supportMarket", [
+        gToken._address,
         version,
       ]);
-      expect(result).toHaveLog("MarketListed", { jToken: jToken._address });
+      expect(result).toHaveLog("MarketListed", { gToken: gToken._address });
     });
 
     it("cannot list a market a second time", async () => {
-      const jToken = await makeGToken();
-      const result1 = await send(jToken.gTroller, "_supportMarket", [
-        jToken._address,
+      const gToken = await makeGToken();
+      const result1 = await send(gToken.gTroller, "_supportMarket", [
+        gToken._address,
         version,
       ]);
-      expect(result1).toHaveLog("MarketListed", { jToken: jToken._address });
+      expect(result1).toHaveLog("MarketListed", { gToken: gToken._address });
       await expect(
-        send(jToken.gTroller, "_supportMarket", [jToken._address, version])
+        send(gToken.gTroller, "_supportMarket", [gToken._address, version])
       ).rejects.toRevert("revert market already listed");
     });
 
     it("can list two different markets", async () => {
-      const jToken1 = await makeGToken();
-      const jToken2 = await makeGToken({ gTroller: jToken1.gTroller });
-      const result1 = await send(jToken1.gTroller, "_supportMarket", [
-        jToken1._address,
+      const gToken1 = await makeGToken();
+      const gToken2 = await makeGToken({ gTroller: gToken1.gTroller });
+      const result1 = await send(gToken1.gTroller, "_supportMarket", [
+        gToken1._address,
         version,
       ]);
-      const result2 = await send(jToken1.gTroller, "_supportMarket", [
-        jToken2._address,
+      const result2 = await send(gToken1.gTroller, "_supportMarket", [
+        gToken2._address,
         version,
       ]);
-      expect(result1).toHaveLog("MarketListed", { jToken: jToken1._address });
-      expect(result2).toHaveLog("MarketListed", { jToken: jToken2._address });
+      expect(result1).toHaveLog("MarketListed", { gToken: gToken1._address });
+      expect(result2).toHaveLog("MarketListed", { gToken: gToken2._address });
     });
   });
 
@@ -301,17 +301,17 @@ describe("Gtroller", () => {
     const creditLimit = avaxMantissa(500);
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeGToken(root);
+      const gToken = await makeGToken(root);
       await expect(
-        send(jToken.gTroller, "_setCreditLimit", [accounts[0], creditLimit], {
+        send(gToken.gTroller, "_setCreditLimit", [accounts[0], creditLimit], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin can set protocol credit limit");
     });
 
     it("succeeds and sets credit limit", async () => {
-      const jToken = await makeGToken();
-      const result = await send(jToken.gTroller, "_setCreditLimit", [
+      const gToken = await makeGToken();
+      const result = await send(gToken.gTroller, "_setCreditLimit", [
         accounts[0],
         creditLimit,
       ]);
@@ -322,8 +322,8 @@ describe("Gtroller", () => {
     });
 
     it("succeeds and sets to max credit limit", async () => {
-      const jToken = await makeGToken();
-      const result = await send(jToken.gTroller, "_setCreditLimit", [
+      const gToken = await makeGToken();
+      const result = await send(gToken.gTroller, "_setCreditLimit", [
         accounts[0],
         UInt256Max(),
       ]);
@@ -334,8 +334,8 @@ describe("Gtroller", () => {
     });
 
     it("succeeds and sets to 0 credit limit", async () => {
-      const jToken = await makeGToken();
-      const result = await send(jToken.gTroller, "_setCreditLimit", [
+      const gToken = await makeGToken();
+      const result = await send(gToken.gTroller, "_setCreditLimit", [
         accounts[0],
         0,
       ]);
@@ -350,9 +350,9 @@ describe("Gtroller", () => {
     const version = 0;
 
     it("fails if not called by admin", async () => {
-      const jToken = await makeGToken(root);
+      const gToken = await makeGToken(root);
       await expect(
-        send(jToken.gTroller, "_delistMarket", [jToken._address], {
+        send(gToken.gTroller, "_delistMarket", [gToken._address], {
           from: accounts[0],
         })
       ).rejects.toRevert("revert only admin may delist market");
@@ -367,65 +367,65 @@ describe("Gtroller", () => {
     });
 
     it("fails if market not empty", async () => {
-      const jToken = await makeGToken(root);
+      const gToken = await makeGToken(root);
       expect(
-        await send(jToken.gTroller, "_supportMarket", [
-          jToken._address,
+        await send(gToken.gTroller, "_supportMarket", [
+          gToken._address,
           version,
         ])
       ).toSucceed();
-      await send(jToken, "harnessSetTotalSupply", [1]);
+      await send(gToken, "harnessSetTotalSupply", [1]);
       await expect(
-        send(jToken.gTroller, "_delistMarket", [jToken._address])
+        send(gToken.gTroller, "_delistMarket", [gToken._address])
       ).rejects.toRevert("revert market not empty");
     });
 
     it("succeeds and delists market", async () => {
-      const jToken = await makeGToken();
+      const gToken = await makeGToken();
       expect(
-        await send(jToken.gTroller, "_supportMarket", [
-          jToken._address,
+        await send(gToken.gTroller, "_supportMarket", [
+          gToken._address,
           version,
         ])
       ).toSucceed();
-      const result = await send(jToken.gTroller, "_delistMarket", [
-        jToken._address,
+      const result = await send(gToken.gTroller, "_delistMarket", [
+        gToken._address,
       ]);
-      expect(result).toHaveLog("MarketDelisted", { jToken: jToken._address });
+      expect(result).toHaveLog("MarketDelisted", { gToken: gToken._address });
     });
 
     it("can delist two different markets", async () => {
-      const jToken1 = await makeGToken();
-      const jToken2 = await makeGToken({ gTroller: jToken1.gTroller });
+      const gToken1 = await makeGToken();
+      const gToken2 = await makeGToken({ gTroller: gToken1.gTroller });
       expect(
-        await send(jToken1.gTroller, "_supportMarket", [
-          jToken1._address,
+        await send(gToken1.gTroller, "_supportMarket", [
+          gToken1._address,
           version,
         ])
       ).toSucceed();
       expect(
-        await send(jToken2.gTroller, "_supportMarket", [
-          jToken2._address,
+        await send(gToken2.gTroller, "_supportMarket", [
+          gToken2._address,
           version,
         ])
       ).toSucceed();
-      const result1 = await send(jToken1.gTroller, "_delistMarket", [
-        jToken1._address,
+      const result1 = await send(gToken1.gTroller, "_delistMarket", [
+        gToken1._address,
       ]);
-      const result2 = await send(jToken2.gTroller, "_delistMarket", [
-        jToken2._address,
+      const result2 = await send(gToken2.gTroller, "_delistMarket", [
+        gToken2._address,
       ]);
-      expect(result1).toHaveLog("MarketDelisted", { jToken: jToken1._address });
-      expect(result2).toHaveLog("MarketDelisted", { jToken: jToken2._address });
+      expect(result1).toHaveLog("MarketDelisted", { gToken: gToken1._address });
+      expect(result2).toHaveLog("MarketDelisted", { gToken: gToken2._address });
     });
   });
 
   describe("redeemVerify", () => {
     it("should allow you to redeem 0 underlying for 0 tokens", async () => {
       const gTroller = await makeGtroller();
-      const jToken = await makeGToken({ gTroller: gTroller });
+      const gToken = await makeGToken({ gTroller: gTroller });
       await call(gTroller, "redeemVerify", [
-        jToken._address,
+        gToken._address,
         accounts[0],
         0,
         0,
@@ -434,9 +434,9 @@ describe("Gtroller", () => {
 
     it("should allow you to redeem 5 underlyig for 5 tokens", async () => {
       const gTroller = await makeGtroller();
-      const jToken = await makeGToken({ gTroller: gTroller });
+      const gToken = await makeGToken({ gTroller: gTroller });
       await call(gTroller, "redeemVerify", [
-        jToken._address,
+        gToken._address,
         accounts[0],
         5,
         5,
@@ -445,9 +445,9 @@ describe("Gtroller", () => {
 
     it("should not allow you to redeem 5 underlying for 0 tokens", async () => {
       const gTroller = await makeGtroller();
-      const jToken = await makeGToken({ gTroller: gTroller });
+      const gToken = await makeGToken({ gTroller: gTroller });
       await expect(
-        call(gTroller, "redeemVerify", [jToken._address, accounts[0], 5, 0])
+        call(gTroller, "redeemVerify", [gToken._address, accounts[0], 5, 0])
       ).rejects.toRevert("revert redeemTokens zero");
     });
   });

@@ -1,6 +1,5 @@
 const { task } = require("hardhat/config");
 const { saveContractAddress } = require("../utils");
-const addresses = require("../../contract-addresses.json");
 
 task("deploy-xrc20-delegate").setAction(async (taskArgs, { ethers }) => {
   const contractName = "GXrc20Delegate";

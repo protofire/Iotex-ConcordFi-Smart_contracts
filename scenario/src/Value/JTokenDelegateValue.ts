@@ -24,16 +24,16 @@ export async function getGTokenDelegateV(
   return getWorldContractByAddress<GXrc20Delegate>(world, address.val);
 }
 
-async function jTokenDelegateAddress(
+async function gTokenDelegateAddress(
   world: World,
-  jTokenDelegate: GXrc20Delegate
+  gTokenDelegate: GXrc20Delegate
 ): Promise<AddressV> {
-  return new AddressV(jTokenDelegate._address);
+  return new AddressV(gTokenDelegate._address);
 }
 
-export function jTokenDelegateFetchers() {
+export function gTokenDelegateFetchers() {
   return [
-    new Fetcher<{ jTokenDelegate: GXrc20Delegate }, AddressV>(
+    new Fetcher<{ gTokenDelegate: GXrc20Delegate }, AddressV>(
       `
         #### Address
 
@@ -41,9 +41,9 @@ export function jTokenDelegateFetchers() {
           * E.g. "GTokenDelegate cDaiDelegate Address" - Returns cDaiDelegate's address
       `,
       "Address",
-      [new Arg("jTokenDelegate", getGTokenDelegateV)],
-      (world, { jTokenDelegate }) =>
-        jTokenDelegateAddress(world, jTokenDelegate),
+      [new Arg("gTokenDelegate", getGTokenDelegateV)],
+      (world, { gTokenDelegate }) =>
+        gTokenDelegateAddress(world, gTokenDelegate),
       { namePos: 1 }
     ),
   ];
@@ -55,7 +55,7 @@ export async function getGTokenDelegateValue(
 ): Promise<Value> {
   return await getFetcherValue<any, any>(
     "GTokenDelegate",
-    jTokenDelegateFetchers(),
+    gTokenDelegateFetchers(),
     world,
     event
   );

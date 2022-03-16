@@ -49,7 +49,7 @@ export async function buildGToken(
   world: World,
   from: string,
   params: Event
-): Promise<{ world: World; jToken: GToken; tokenData: TokenData }> {
+): Promise<{ world: World; gToken: GToken; tokenData: TokenData }> {
   const fetchers = [
     new Fetcher<
       {
@@ -808,19 +808,19 @@ export async function buildGToken(
     throw invokation.error;
   }
 
-  const jToken = invokation.value!;
-  tokenData.address = jToken._address;
+  const gToken = invokation.value!;
+  tokenData.address = gToken._address;
 
   world = await storeAndSaveContract(
     world,
-    jToken,
+    gToken,
     tokenData.symbol,
     invokation,
     [
-      { index: ["jTokens", tokenData.symbol], data: tokenData },
+      { index: ["gTokens", tokenData.symbol], data: tokenData },
       { index: ["Tokens", tokenData.symbol], data: tokenData },
     ]
   );
 
-  return { world, jToken, tokenData };
+  return { world, gToken, tokenData };
 }

@@ -21,89 +21,89 @@ const mintTokens = mintAmount.dividedBy(exchangeRate);
 const redeemTokens = avaxUnsigned(10e3);
 const redeemAmount = redeemTokens.multipliedBy(exchangeRate);
 
-async function preMint(jToken, minter, mintAmount, mintTokens, exchangeRate) {
-  await send(jToken.gTroller, "setMintAllowed", [true]);
-  await send(jToken.gTroller, "setMintVerify", [true]);
-  await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
-  await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
+async function preMint(gToken, minter, mintAmount, mintTokens, exchangeRate) {
+  await send(gToken.gTroller, "setMintAllowed", [true]);
+  await send(gToken.gTroller, "setMintVerify", [true]);
+  await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
+  await send(gToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
 }
 
-async function mintExplicit(jToken, minter, mintAmount) {
-  return send(jToken, "mint", [], { from: minter, value: mintAmount });
+async function mintExplicit(gToken, minter, mintAmount) {
+  return send(gToken, "mint", [], { from: minter, value: mintAmount });
 }
 
-async function mintFallback(jToken, minter, mintAmount) {
-  return sendFallback(jToken, { from: minter, value: mintAmount });
+async function mintFallback(gToken, minter, mintAmount) {
+  return sendFallback(gToken, { from: minter, value: mintAmount });
 }
 
 async function preRedeem(
-  jToken,
+  gToken,
   redeemer,
   redeemTokens,
   redeemAmount,
   exchangeRate
 ) {
-  await send(jToken.gTroller, "setRedeemAllowed", [true]);
-  await send(jToken.gTroller, "setRedeemVerify", [true]);
-  await send(jToken.interestRateModel, "setFailBorrowRate", [false]);
-  await send(jToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
-  await setAvaxBalance(jToken, redeemAmount);
-  await send(jToken, "harnessSetTotalSupply", [redeemTokens]);
-  await setBalance(jToken, redeemer, redeemTokens);
+  await send(gToken.gTroller, "setRedeemAllowed", [true]);
+  await send(gToken.gTroller, "setRedeemVerify", [true]);
+  await send(gToken.interestRateModel, "setFailBorrowRate", [false]);
+  await send(gToken, "harnessSetExchangeRate", [avaxMantissa(exchangeRate)]);
+  await setAvaxBalance(gToken, redeemAmount);
+  await send(gToken, "harnessSetTotalSupply", [redeemTokens]);
+  await setBalance(gToken, redeemer, redeemTokens);
 }
 
-async function redeemGTokens(jToken, redeemer, redeemTokens, redeemAmount) {
-  return send(jToken, "redeem", [redeemTokens], { from: redeemer });
+async function redeemGTokens(gToken, redeemer, redeemTokens, redeemAmount) {
+  return send(gToken, "redeem", [redeemTokens], { from: redeemer });
 }
 
-async function redeemUnderlying(jToken, redeemer, redeemTokens, redeemAmount) {
-  return send(jToken, "redeemUnderlying", [redeemAmount], { from: redeemer });
+async function redeemUnderlying(gToken, redeemer, redeemTokens, redeemAmount) {
+  return send(gToken, "redeemUnderlying", [redeemAmount], { from: redeemer });
 }
 
 describe("CAvax", () => {
   let root, minter, redeemer, accounts;
-  let jToken;
+  let gToken;
 
   beforeEach(async () => {
     [root, minter, redeemer, ...accounts] = saddle.accounts;
-    jToken = await makeGToken({
+    gToken = await makeGToken({
       kind: "javax",
       gTrollerOpts: { kind: "bool" },
     });
-    await fastForward(jToken, 1);
+    await fastForward(gToken, 1);
   });
 
   [mintExplicit, mintFallback].forEach((mint) => {
     describe(mint.name, () => {
       beforeEach(async () => {
-        await preMint(jToken, minter, mintAmount, mintTokens, exchangeRate);
+        await preMint(gToken, minter, mintAmount, mintTokens, exchangeRate);
       });
 
       it("reverts if interest accrual fails", async () => {
-        await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
-        await expect(mint(jToken, minter, mintAmount)).rejects.toRevert(
+        await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
+        await expect(mint(gToken, minter, mintAmount)).rejects.toRevert(
           "revert INTEREST_RATE_MODEL_ERROR"
         );
       });
 
       it("returns success from mintFresh and mints the correct number of tokens", async () => {
-        const beforeBalances = await getBalances([jToken], [minter]);
-        const receipt = await mint(jToken, minter, mintAmount);
-        const afterBalances = await getBalances([jToken], [minter]);
+        const beforeBalances = await getBalances([gToken], [minter]);
+        const receipt = await mint(gToken, minter, mintAmount);
+        const afterBalances = await getBalances([gToken], [minter]);
         expect(receipt).toSucceed();
         expect(mintTokens).not.toEqualNumber(0);
         expect(afterBalances).toEqual(
           await adjustBalances(beforeBalances, [
-            [jToken, "avax", mintAmount],
-            [jToken, "tokens", mintTokens],
-            [jToken, "cash", mintAmount],
+            [gToken, "avax", mintAmount],
+            [gToken, "tokens", mintTokens],
+            [gToken, "cash", mintAmount],
             [
-              jToken,
+              gToken,
               minter,
               "avax",
               -mintAmount.plus(await avaxGasCost(receipt)),
             ],
-            [jToken, minter, "tokens", mintTokens],
+            [gToken, minter, "tokens", mintTokens],
           ])
         );
       });
@@ -114,7 +114,7 @@ describe("CAvax", () => {
     describe(redeem.name, () => {
       beforeEach(async () => {
         await preRedeem(
-          jToken,
+          gToken,
           redeemer,
           redeemTokens,
           redeemAmount,
@@ -123,16 +123,16 @@ describe("CAvax", () => {
       });
 
       it("emits a redeem failure if interest accrual fails", async () => {
-        await send(jToken.interestRateModel, "setFailBorrowRate", [true]);
+        await send(gToken.interestRateModel, "setFailBorrowRate", [true]);
         await expect(
-          redeem(jToken, redeemer, redeemTokens, redeemAmount)
+          redeem(gToken, redeemer, redeemTokens, redeemAmount)
         ).rejects.toRevert("revert INTEREST_RATE_MODEL_ERROR");
       });
 
       it("returns error from redeemFresh without emitting any extra logs", async () => {
         await expect(
           redeem(
-            jToken,
+            gToken,
             redeemer,
             redeemTokens.multipliedBy(5),
             redeemAmount.multipliedBy(5)
@@ -141,29 +141,29 @@ describe("CAvax", () => {
       });
 
       it("returns success from redeemFresh and redeems the correct amount", async () => {
-        await fastForward(jToken);
-        const beforeBalances = await getBalances([jToken], [redeemer]);
+        await fastForward(gToken);
+        const beforeBalances = await getBalances([gToken], [redeemer]);
         const receipt = await redeem(
-          jToken,
+          gToken,
           redeemer,
           redeemTokens,
           redeemAmount
         );
         expect(receipt).toTokenSucceed();
-        const afterBalances = await getBalances([jToken], [redeemer]);
+        const afterBalances = await getBalances([gToken], [redeemer]);
         expect(redeemTokens).not.toEqualNumber(0);
         expect(afterBalances).toEqual(
           await adjustBalances(beforeBalances, [
-            [jToken, "avax", -redeemAmount],
-            [jToken, "tokens", -redeemTokens],
-            [jToken, "cash", -redeemAmount],
+            [gToken, "avax", -redeemAmount],
+            [gToken, "tokens", -redeemTokens],
+            [gToken, "cash", -redeemAmount],
             [
-              jToken,
+              gToken,
               redeemer,
               "avax",
               redeemAmount.minus(await avaxGasCost(receipt)),
             ],
-            [jToken, redeemer, "tokens", -redeemTokens],
+            [gToken, redeemer, "tokens", -redeemTokens],
           ])
         );
       });
