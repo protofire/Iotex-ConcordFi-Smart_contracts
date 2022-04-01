@@ -60,6 +60,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-etherscan": "^3.0.3",
     "simple-git": "^3.2.6"
   },
   "resolutions": {

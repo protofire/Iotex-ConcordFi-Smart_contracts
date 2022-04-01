@@ -17,12 +17,12 @@
   },
   "Xrc20Delegator": {
     "USDT": {
-      "underlying_": "0xD2d0730631379fC91b71C7E7019331bB977725d3",
+      "underlying_": "0x3D2EE1A607C88474ecc76Ea76cE3F40386a956d3",
       "initialExchangeRateMantissa_": "50",
-      "name": "cUSDT Token",
+      "name": "cUSD Tether",
       "symbol": "cUSDT",
       "decimals": 18,
-      "admin_": "0xd1dc807dcf0147764d70291d48d07a72065f2f9c",
+      "admin_": "0xc62661BAe6E8346725305318476521E87977E371",
       "becomeImplementationData": "0x4dec04e750ca11537cabcd8a9eab06494de08da3735bc8871cd41250e190bc04"
     }
   },
@@ -31,6 +31,6 @@
     "name": "GIoTex",
     "symbol": "gIOTX",
     "decimals": 18,
-    "admin_": "0xd1dc807dcf0147764d70291d48d07a72065f2f9c"
+    "admin_": "0xc62661BAe6E8346725305318476521E87977E371"
   }
 }

@@ -8,6 +8,8 @@ require("hardhat-deploy-ethers");
 require("hardhat-spdx-license-identifier");
 require("hardhat-watcher");
 require("hardhat-contract-sizer");
+require("@nomiclabs/hardhat-etherscan");
+
 //require("hardhat-storage-layout-diff");
 require("@openzeppelin/hardhat-upgrades");
 
@@ -17,7 +19,7 @@ const { HardhatUserConfig } = require("hardhat/types");
 const { removeConsoleLog } = require("hardhat-preprocessor");
 
 const accounts = [`0x${process.env.PK}`];
-
+const mnemonic = process.env.MNEMONIC;
 module.exports = {
   abiExporter: {
     path: "./abi",
@@ -76,6 +78,17 @@ module.exports = {
       tags: ["staging"],
       gas: "auto",
     },
+    rinkeby: {
+      url: "https://rinkeby.infura.io/v3/64ba41bd74e34b33900f0ad19f548758",
+      accounts: {
+        count: 10,
+        initialIndex: 0,
+        mnemonic,
+        path: "m/44'/60'/0'/0",
+      },
+      chainId: 4,
+      gas: 'auto',
+    }
   },
   paths: {
     artifacts: "artifacts",
@@ -133,5 +146,8 @@ module.exports = {
       files: ["./contracts"],
       verbose: true,
     },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_ID,
   },
 };

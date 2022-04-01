@@ -44,7 +44,11 @@ task("deploy-xrc20-delegator")
       decimals,
       admin,
       cXrc20Delegate,
-      becomeImplementationData
+      becomeImplementationData,
+      {
+        gasPrice: 10000000000000,
+        gasLimit: 2000000 
+      }
     );
 
     await xrc20Delegator.deployed();
