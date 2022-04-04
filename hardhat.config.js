@@ -17,6 +17,7 @@ const { HardhatUserConfig } = require("hardhat/types");
 const { removeConsoleLog } = require("hardhat-preprocessor");
 
 const accounts = [`0x${process.env.PK}`];
+console.log("accounts: ", accounts)
 
 module.exports = {
   abiExporter: {
@@ -68,12 +69,12 @@ module.exports = {
       tags: ["test", "local"],
     },
     testnet: {
-      url: "https://babel-api.testnet.iotex.io",
+      url: "https://babel-api.testnet.iotex.io/",
       accounts,
       chainId: 4690,
-      live: true,
-      saveDeployments: true,
-      tags: ["staging"],
+      // live: true,
+      // saveDeployments: true,
+      // tags: ["staging"],
       gas: "auto",
     },
   },
