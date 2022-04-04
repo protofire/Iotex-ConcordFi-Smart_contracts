@@ -1302,7 +1302,7 @@ contract Gtroller is GtrollerV1Storage, GtrollerInterface, GtrollerErrorReporter
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        0x0800E0E874B09A5Ae462909740242B1dA04f78A2[address(gToken)] = state;
+        mintGuardianPaused[address(gToken)] = state;
         emit ActionPaused(gToken, "Mint", state);
         return state;
     }

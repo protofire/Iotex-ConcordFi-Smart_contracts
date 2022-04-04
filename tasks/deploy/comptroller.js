@@ -1,7 +1,7 @@
 const { task } = require("hardhat/config");
 const { saveContractAddress } = require("../utils");
 
-task("deploy-comptroller").setAction(async (taskArgs, { ethers }) => {
+task("deploy-gtroller").setAction(async (taskArgs, { ethers }) => {
   const contractName = "Gtroller";
 
   console.log("Deploying comptroller");
@@ -10,4 +10,5 @@ task("deploy-comptroller").setAction(async (taskArgs, { ethers }) => {
 
   console.log(`Gtroller token deployed to ${gtroller.address}`);
   saveContractAddress(network.config.chainId, contractName, gtroller.address);
+  return gtroller;
 });

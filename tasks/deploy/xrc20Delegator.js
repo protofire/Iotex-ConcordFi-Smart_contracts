@@ -32,8 +32,6 @@ task("deploy-xrc20-delegator")
 
     const Xrc20Delegator = await hre.ethers.getContractFactory(contractName);
 
-    console.log(cXrc20Delegate, underlying)
-
     const xrc20Delegator = await Xrc20Delegator.deploy(
       underlying,
       comptroller,
@@ -56,4 +54,6 @@ task("deploy-xrc20-delegator")
     );
 
     console.log(`${contractName} deployed to address:`, xrc20Delegator.address);
+
+    return xrc20Delegator
   });

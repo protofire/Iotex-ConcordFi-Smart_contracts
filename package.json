@@ -60,6 +60,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@ethersproject/abstract-provider": "^5.6.0",
     "simple-git": "^3.2.6"
   },
   "resolutions": {

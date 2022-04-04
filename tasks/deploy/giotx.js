@@ -45,4 +45,6 @@ task("deploy-giotx").setAction(async (taskArgs, { ethers }) => {
   );
 
   console.log(`${contractName} deployed to address:`, gIotx.address);
+  
+  return gIotx
 });

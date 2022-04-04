@@ -21,4 +21,6 @@ task("deploy-unitroller").setAction(async (taskArgs, { ethers }) => {
   saveContractAddress(network.config.chainId, contractName, unitroller.address);
 
   console.log(`${contractName} deployed to address:`, unitroller.address);
+
+  return unitroller
 });

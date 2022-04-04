@@ -43,7 +43,7 @@ task("deploy-jump-rate-model-v2")
     );
 
     console.log(
-      `${contractName}_USDT deployed to address:`,
+      `${contractName}_${taskArgs.token} deployed to address:`,
       jumpRateModelV2.address
     );
 
@@ -52,4 +52,6 @@ task("deploy-jump-rate-model-v2")
       `${contractName}_${taskArgs.token}`,
       jumpRateModelV2.address
     );
+
+    return jumpRateModelV2
   });

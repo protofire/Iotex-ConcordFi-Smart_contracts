@@ -2,14 +2,14 @@
   "JumpRateModelV2": {
     "USDT": {
       "baseRatePerYear": "0",
-      "multiplierPerYear": "0.4",
+      "multiplierPerYear": "0.32",
       "jumpMultiplierPerYear": "1.50",
       "kink": "0.8",
       "roof": "1"
     },
     "IOTX": {
       "baseRatePerYear": "0.02",
-      "multiplierPerYear": "0.5",
+      "multiplierPerYear": "0.35",
       "jumpMultiplierPerYear": "2.50",
       "kink": "0.7",
       "roof": "1"

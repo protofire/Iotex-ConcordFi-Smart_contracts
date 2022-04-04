@@ -6,3 +6,4 @@ require("./xrc20Delegator.js");
 require("./giotx.js");
 require("./unitroller.js");
 require("./rewardDistributor")
+require("./full")

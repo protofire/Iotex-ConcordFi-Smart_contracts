@@ -23,4 +23,6 @@ task("deploy-maximillion").setAction(async (taskArgs, { ethers }) => {
     contractName,
     maximillion.address
   );
+
+  return maximillion
 });

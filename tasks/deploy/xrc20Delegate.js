@@ -22,4 +22,5 @@ task("deploy-xrc20-delegate").setAction(async (taskArgs, { ethers }) => {
   );
 
   console.log(`${contractName} deployed to address:`, xrc20Delegate.address);
+  return xrc20Delegate
 });
