@@ -15,4 +15,6 @@ task("deploy-rewardDistributor").setAction(async (taskArgs, { ethers }) => {
 
   console.log(`RewardDistributor token deployed to ${rewardDistributor.address}`);
   saveContractAddress(network.config.chainId, contractName, rewardDistributor.address);
+
+  return rewardDistributor;
 });

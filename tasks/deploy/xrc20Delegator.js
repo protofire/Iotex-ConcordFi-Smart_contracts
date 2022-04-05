@@ -31,7 +31,7 @@ task("deploy-xrc20-delegator")
     const cXrc20Delegate = addresses[network.config.chainId]["GXrc20Delegate"];
 
     const Xrc20Delegator = await hre.ethers.getContractFactory(contractName);
-
+  
     const xrc20Delegator = await Xrc20Delegator.deploy(
       underlying,
       comptroller,
