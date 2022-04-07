@@ -19,7 +19,7 @@ task("deploy-concordfi").setAction(async (taskArgs, { run, ethers }) => {
   await run("deploy-jump-rate-model-v2", { 
     token: "IOTX"
   })
-  
+
   const giotx = await run("deploy-giotx")
 
  const rewardDistributor = await run("deploy-rewardDistributor")
@@ -27,8 +27,10 @@ task("deploy-concordfi").setAction(async (taskArgs, { run, ethers }) => {
  await run("deploy-maximillion")
 
   const xrc20Delegate = await run("deploy-xrc20-delegate")
+  //const xrc20Delegate = await run("deploy-xrc20-cap-delegate")
 
   const xrc20Delegator = await run("deploy-xrc20-delegator", { token: "USDT"})
+  //const xrc20Delegator = await run("deploy-xrc20-cap-delegator", { token: "USDT"})
 
 
   // setting market prices
@@ -47,7 +49,7 @@ task("deploy-concordfi").setAction(async (taskArgs, { run, ethers }) => {
   console.log(`${giotx.address} => ${await oracleContract.getUnderlyingPrice(giotx.address)}`)
   console.log(`${xrc20Delegator.address} => ${await oracleContract.getUnderlyingPrice(xrc20Delegator.address)}`)
 
-  // Configure Grroller contract
+  // Configure Gtroller contract
   console.log('Configuring deployments...: ')
   await(await(await unitroller._setPendingImplementation(gtroller.address))).wait(3);
 
@@ -60,7 +62,7 @@ task("deploy-concordfi").setAction(async (taskArgs, { run, ethers }) => {
   await(await gtroller._setLiquidationIncentive(parseBN("1.1"))).wait(3);
 
   await(await gtroller._supportMarket(xrc20Delegator.address, 1)).wait(3);
-  await(await gtroller._supportMarket(giotx.address, 1)).wait(3);
+  await(await gtroller._supportMarket(giotx.address, 2)).wait(3);
 
   await(await gtroller._setCollateralFactor(giotx.address, parseBN("0.7"))).wait(3);
   await(await gtroller._setCollateralFactor(xrc20Delegator.address, parseBN("0.85"))).wait(3);

@@ -3,10 +3,10 @@ const { saveContractAddress, parseBN } = require("../utils");
 const addresses = require("../../contract-addresses.json");
 const conf = require("../../deploy-config.json");
 
-task("deploy-xrc20-delegator")
+task("deploy-xrc20-cap-delegator")
   .addParam("token", "token symbol")
   .setAction(async (taskArgs, { ethers }) => {
-    const contractName = "GXrc20Delegator";
+    const contractName = "GCollateralCapXrc20Delegator";
     const [deployer] = await ethers.getSigners();
 
     console.log(
@@ -19,25 +19,29 @@ task("deploy-xrc20-delegator")
     const initialExchangeRateMantissa = parseBN(
       constructorArguements["initialExchangeRateMantissa_"]
     );
+
     const name = constructorArguements["name"];
     const symbol = constructorArguements["symbol"];
     const decimals = constructorArguements["decimals"];
     const admin = constructorArguements["admin_"];
+
     const becomeImplementationData =
       constructorArguements["becomeImplementationData"];
     const comptroller = addresses[network.config.chainId]["Gtroller"];
+
     const interestRateModel =
       addresses[network.config.chainId][`JumpRateModelV2_${taskArgs.token}`];
-    const cXrc20Delegate = addresses[network.config.chainId]["GXrc20Delegate"];
     const implementation = addresses[network.config.chainId]["GXrc20Delegate"];
+      console.log("implementation: ", implementation)
 
-    const Xrc20Delegator = await hre.ethers.getContractFactory(contractName);
-
-    const options = {
+    const GCollateralCapXrc20Delegator = await hre.ethers.getContractFactory(contractName);
+      console.log("NEXT...")
+      const options = {
         gasPrice: ethers.utils.parseUnits('100', 'gwei'),
         gasLimit: 5000000
       };
-    const xrc20Delegator = await Xrc20Delegator.deploy(
+
+    const gCollateralCapXrc20Delegator = await GCollateralCapXrc20Delegator.deploy(
       underlying,
       comptroller,
       interestRateModel,
@@ -50,15 +54,15 @@ task("deploy-xrc20-delegator")
       becomeImplementationData
     );
 
-    await xrc20Delegator.deployed();
+    await gCollateralCapXrc20Delegator.deployed();
 
     saveContractAddress(
       network.config.chainId,
       contractName,
-      xrc20Delegator.address
+      gCollateralCapXrc20Delegator.address
     );
 
-    console.log(`${contractName} deployed to address:`, xrc20Delegator.address);
+    console.log(`${contractName} deployed to address:`, gCollateralCapXrc20Delegator.address);
 
-    return xrc20Delegator
+    return gCollateralCapXrc20Delegator
   });

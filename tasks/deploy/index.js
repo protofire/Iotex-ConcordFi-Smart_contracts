@@ -7,3 +7,6 @@ require("./giotx.js");
 require("./unitroller.js");
 require("./rewardDistributor")
 require("./full")
+require("./xrc20Cap")
+require("./xrc20CapDelegate")
+require("./xrc20CapDelegator")

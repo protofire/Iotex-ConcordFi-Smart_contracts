@@ -3,13 +3,14 @@
 pragma solidity ^0.5.16;
 
 import "./GTokenDeprecated.sol";
+import "./GWrappedNative.sol";
 
 /**
  * @title Compound's GIotx Contract
- * @notice GToken which wraps Ether
+ * @notice GToken which wraps Iotx
  * @author Compound
  */
-contract GIotx is GTokenDeprecated {
+contract GIotx is GWrappedNative {
     /**
      * @notice Construct a new GIotx money market
      * @param gTroller_ The address of the Gtroller
